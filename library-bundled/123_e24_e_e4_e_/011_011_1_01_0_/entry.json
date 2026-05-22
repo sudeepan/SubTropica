@@ -56,25 +56,6 @@
       "doi": ""
     },
     {
-      "dimScheme": "d=4",
-      "recordId": "bf_8c2da9676582",
-      "verified": false,
-      "verifiedAt": "",
-      "authors": "Correia, Miguel, Giroux, Mathieu, Mizera, Sebastian",
-      "texkey": "Correia:2025wtb",
-      "computationLevel": "maximal_cut",
-      "masterCount": 0,
-      "reference": "arXiv:2503.16601, Comput.Phys.Commun. 320, 2026",
-      "ancillaryFiles": [],
-      "description": "Two-loop H+jet with closed top loop. 6 propagators (5 massive top, 1 massless). Maximal cut reveals elliptic curve.",
-      "familyName": "H+jet top loop",
-      "location": "Section 5.2",
-      "method": [],
-      "epsOrders": "",
-      "tools": [],
-      "doi": "10.1016/j.cpc.2025.109970"
-    },
-    {
       "reference": "arXiv:2305.19768",
       "authors": "",
       "description": "Two-loop four-point integral with elliptic function class, containing 5 massive and 1 massless internal propagator across 5 vertices. Three external legs massless, one massive (p4^2=m^2). Used extensively in the paper to benchmark median QMC rules vs CBC lattice construction, demonstrating the effect of unlucky lattices. Previously existing pySecDec example.",
@@ -169,5 +150,6 @@
   "Subsectors": [],
   "ParentSectors": [
     "123|45|e4|e5|e|e|:011|11|01|01|0|1|"
-  ]
+  ],
+  "Genus": 1
 }

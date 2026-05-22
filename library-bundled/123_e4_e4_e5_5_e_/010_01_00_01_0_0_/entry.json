@@ -8,25 +8,6 @@
   ],
   "Records": [
     {
-      "dimScheme": "d=4",
-      "recordId": "bf_dfab7f7ff85e",
-      "verified": false,
-      "verifiedAt": "",
-      "authors": "Marzucca, Robin, McLeod, Andrew J., Page, Ben, Pögel, Sebastian, Weinzierl, Stefan",
-      "texkey": "Marzucca:2023gto",
-      "computationLevel": "maximal_cut",
-      "masterCount": 0,
-      "reference": "arXiv:2307.11497, Phys.Rev.D 109, 2024",
-      "ancillaryFiles": [],
-      "description": "Two-loop nonplanar crossed box for Moller scattering with 3 massive (Z boson) and 4 massless (electron) internal propagators. Genus drop from 3 to 2.",
-      "familyName": "nonplanar crossed box (Moller)",
-      "location": "Figure 2 (lower)",
-      "method": [],
-      "epsOrders": "",
-      "tools": [],
-      "doi": "10.1103/PhysRevD.109.L031901"
-    },
-    {
       "reference": "arXiv:2307.11497 (Phys.Rev.D 109 (), 2024)",
       "authors": "Marzucca, Robin, McLeod, Andrew J., Page, Ben, Pögel, Sebastian, Weinzierl, Stefan",
       "description": "Two-loop nonplanar crossed box for Moller scattering with 3 massive (Z boson) and 4 massless (electron) internal propagators. Genus drop from 3 to 2.",

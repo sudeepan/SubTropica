@@ -176,25 +176,6 @@
       "verifiedAt": "auto-loopedia"
     },
     {
-      "reference": "arXiv:hep-ph/0611236 (JHEP 01 (082), 2007)",
-      "authors": "Anastasiou, Charalampos, Beerli, Stefan, Bucherer, Stefan, Daleo, Alejandro, Kunszt, Zoltan",
-      "description": "Parent topology TP1 for two-loop gg->H via massive quark loop. Left triangle is massless (k1-loop), right box is massive (k2-loop with mass mt), connected by massive propagator (k1-k2)^2-mt^2. Hosts 10 of the 17 master integrals. Results in HPLs with alphabet {x,1-x,1+x} where x=(sqrt(1-4mt^2/s)-1)/(sqrt(1-4mt^2/s)+1).",
-      "epsOrders": "4",
-      "familyName": "TP1",
-      "method": "DE, IBP",
-      "tools": [],
-      "ancillaryFiles": false,
-      "doi": "10.1088/1126-6708/2007/01/082",
-      "texkey": "Anastasiou:2006hc",
-      "masterCount": 17,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "Section 2, Eq. below Eq.(2)",
-      "recordId": "bx_3a8d3f5bf758",
-      "verified": false,
-      "verifiedAt": ""
-    },
-    {
       "reference": "arXiv:1801.09696",
       "authors": "",
       "description": "Two-loop planar double-box family for gg->HH with 4 massive (mt) and 3 massless internal propagators. Same graph topology as D_6 but with different mass assignment: the rung (k1-k2)^2 is massive while propagators k1^2, (k1-p1-p2)^2, (k1-p1)^2 are massless. Expanded in small mt^2 for the amplitude at O(mt^16). One crossing family: D_26 = D_20(p4,p3,p1,p2). Total 12 master integrals across D_20 and D_26. Integration measure: (mu^2)^{(4-d)/2} e^{eps*gamma_E} d^d k / (i pi^{d/2}).",

@@ -10,7 +10,8 @@
     "arXiv:2603.18691 (Missing[\"KeyAbsent\", \"journal\"] Missing[\"KeyAbsent\", \"volume\"] (Missing[\"KeyAbsent\", \"pages\"]), Missing[\"KeyAbsent\", \"year\"])",
     "arXiv:1712.09215",
     "arXiv:hep-ph/9307327",
-    "arXiv:hep-ph/0304028 (Nucl.Phys.B 668 (3), 2003)"
+    "arXiv:hep-ph/0304028 (Nucl.Phys.B 668 (3), 2003)",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -145,6 +146,25 @@
       "recordId": "bx_225f9928fc96",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{**}_{3,1,2}$ two-loop topology with three internal paths of lengths a=3, b=1, c=2 (neither v_L nor v_R carries external legs); 3-point integral, planar (b=1). Geometry: 0 ISPs; algebraic leading singularity; dlog form (§3.4 zero-ISPs)",
+      "epsOrders": "",
+      "familyName": "I^{**}_{3,1,2}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with zero ISPs'",
+      "recordId": "bx_2c75405f669a",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
@@ -153,7 +173,8 @@
     "two-loop massless planar ladder triangle with off-shell external legs",
     "Massless 2-loop 3-point topology A (6 propagators)",
     "Massless 2-loop 3-point topology B (6 propagators)",
-    "massless 2-loop 3-point planar double-box (form factor)"
+    "massless 2-loop 3-point planar double-box (form factor)",
+    "$I^{**}_{3,1,2}$"
   ],
   "Source": [
     "arXiv"

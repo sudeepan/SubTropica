@@ -4,7 +4,8 @@
   "FunctionClass": "MPL",
   "EpsilonOrder": "0",
   "References": [
-    "arXiv:1712.09610"
+    "arXiv:1712.09610",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -25,10 +26,30 @@
       "recordId": "bx_d552c6d0d171",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I_{2,2,2}$ two-loop topology with three internal paths of lengths a=2, b=2, c=2 (both v_L and v_R carry external legs); 5-point integral, non-planar (b=>=2). Geometry: 3 ISPs; tardigrade; K3 surface (§3.4 three-ISP)",
+      "epsOrders": "",
+      "familyName": "I_{2,2,2}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with three ISPs' + §4 tardigrade I_{2,2,2}",
+      "recordId": "bx_e3a594a53882",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
-    "topology (i)"
+    "topology (i)",
+    "$I_{2,2,2}$"
   ],
   "Source": [
     "arXiv"

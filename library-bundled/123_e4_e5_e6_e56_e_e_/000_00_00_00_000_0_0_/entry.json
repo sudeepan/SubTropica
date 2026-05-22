@@ -1,0 +1,43 @@
+{
+  "CNickelIndex": "123|e4|e5|e6|e56|e|e|:000|00|00|00|000|0|0|",
+  "MassScales": 9,
+  "FunctionClass": "hyperelliptic",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:2512.13794"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{*}_{3,2,3}$ two-loop topology with three internal paths of lengths a=3, b=2, c=3 (only one of v_L/v_R carries external legs); 6-point integral, non-planar (b=>=2). Geometry: 2 ISPs; at least elliptic; refer to special-case discussions in §4",
+      "epsOrders": "",
+      "familyName": "I^{*}_{3,2,3}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with two ISPs' + §4 special cases",
+      "recordId": "bx_438181c2b22c",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "$I^{*}_{3,2,3}$"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 2,
+  "NumPropagators": 8,
+  "Results": [],
+  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{3, 6}, 0}, {{4, 7}, 0}, {{5, 6}, 0}, {{5, 7}, 0}}",
+  "nodes": "{{2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}}",
+  "CanonicalName": "2-loop 6-point (8 propagators)",
+  "Genus": 2
+}

@@ -25,25 +25,6 @@
       "method": [],
       "dimScheme": "d=4",
       "familyName": "nonplanar crossed box (gg->tt)"
-    },
-    {
-      "reference": "arXiv:2307.11497 (Phys.Rev.D 109 (), 2024)",
-      "authors": "Marzucca, Robin, McLeod, Andrew J., Page, Ben, Pögel, Sebastian, Weinzierl, Stefan",
-      "description": "Two-loop nonplanar crossed box for gg->tt with 5 massive (top quark) and 2 massless (gluon) internal propagators. Genus drop from 3 to 2.",
-      "epsOrders": "",
-      "familyName": "nonplanar crossed box (gg->tt)",
-      "method": "direct_integration",
-      "tools": [],
-      "ancillaryFiles": false,
-      "doi": "10.1103/PhysRevD.109.L031901",
-      "texkey": "Marzucca:2023gto",
-      "masterCount": 0,
-      "dimScheme": "d=4",
-      "computationLevel": "maximal_cut",
-      "location": "Figure 3 (upper)",
-      "recordId": "bx_1d17a43b65a4",
-      "verified": false,
-      "verifiedAt": ""
     }
   ],
   "Names": [

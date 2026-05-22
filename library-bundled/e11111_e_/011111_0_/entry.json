@@ -1,0 +1,86 @@
+{
+  "CNickelIndex": "e11111|e|:011111|0|",
+  "MassScales": 1,
+  "FunctionClass": "Calabi-Yau",
+  "EpsilonOrder": "2",
+  "References": [
+    "arXiv:2108.05310",
+    "arXiv:2212.08908",
+    "arXiv:2211.04292",
+    "arXiv:2211.04292 (Phys.Rev.Lett. 130 (), 2023)"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2108.05310",
+      "authors": "Bönisch, Kilian, Duhr, Claude, Fischbach, Fabian, Klemm, Albrecht, Nega, Christoph",
+      "description": "Four-loop equal-mass banana in d=2-2eps. First numerical results to O(eps^2). Associated CY threefold with h^{2,1}=1. 4th-order self-adjoint PF operator. No representation in classical transcendentals known.",
+      "epsOrders": "2",
+      "familyName": "4-loop equal-mass banana",
+      "method": "DE, Mellin-Barnes, series_expansion",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 5,
+      "dimScheme": "d=2-2*eps",
+      "computationLevel": "full",
+      "location": "Sections 2-6, Section 3.5, Eq. (3.26)",
+      "recordId": "bx_b42c26520357",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2212.08908",
+      "authors": "",
+      "description": "Four-loop equal-mass banana integral in D=2-2eps dimensions. Related to a Calabi-Yau 3-fold. First appearance of a non-trivial Y-invariant Y_2 in the eps-factorised differential equation. Singular points at x in {1,9,25}. Five master integrals. The eps-factorised form was previously given in arXiv:2211.04292. The special local normal form of the Picard-Fuchs operator is theta_q^2 (1/Y_2) theta_q^2.",
+      "epsOrders": "all_orders",
+      "familyName": "four-loop equal-mass banana",
+      "method": "DE",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 5,
+      "dimScheme": "d=2-2*eps",
+      "computationLevel": "full",
+      "location": "Eq.(1), Section 2",
+      "recordId": "bx_b1218b1862dd",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2211.04292",
+      "authors": "",
+      "description": "Four-loop equal-mass banana (sunrise) integral in D=2-2eps. Associated to a Calabi-Yau 3-fold (CY operator #34 in Almkvist et al.). First Feynman integral related to a non-trivial CY manifold for which an epsilon-factorised differential equation is established. Five master integrals; the construction uses a 'Yukawa coupling' function K arising from the non-symmetric-product structure of the Picard-Fuchs operator. Nine-letter symbol alphabet defined in terms of q-expansion functions. Singular points at y=-1,-1/9,-1/25 (i.e. p^2/m^2=1,9,25).",
+      "epsOrders": "all_orders",
+      "familyName": "4-loop equal-mass banana",
+      "method": "DE, Mellin-Barnes",
+      "tools": [
+        "pySecDec"
+      ],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 5,
+      "dimScheme": "d=2-2*eps",
+      "computationLevel": "full",
+      "location": "Eq. (3), Eq. (10)-(14), Eq. (22)-(30)",
+      "recordId": "bx_01d917447296",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "4-loop equal-mass banana",
+    "four-loop equal-mass banana"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 4,
+  "NumPropagators": 5,
+  "Results": [],
+  "edges": "{{{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless banana"
+}

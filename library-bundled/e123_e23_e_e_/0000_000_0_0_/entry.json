@@ -9,7 +9,8 @@
     "arXiv:2305.01585 (JHEP 11 (202), 2023)",
     "arXiv:2007.04977 (Phys.Rev.Lett. 125 (), 2020)",
     "arXiv:1912.06561",
-    "arXiv:2506.10456"
+    "arXiv:2506.10456",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -208,6 +209,25 @@
       "recordId": "bx_ea15bbaee723",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I_{2,1,2}$ two-loop topology with three internal paths of lengths a=2, b=1, c=2 (both v_L and v_R carry external legs); 4-point integral, planar (b=1). Geometry: 2 ISPs; at least elliptic; refer to special-case discussions in §4",
+      "epsOrders": "",
+      "familyName": "I_{2,1,2}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with two ISPs' + §4 special cases",
+      "recordId": "bx_38cf5015ef11",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
@@ -217,9 +237,10 @@
     "2L-box-triangle-planar",
     "P_11",
     "2L massless N-box",
-    "M^{(a,atilde)}_{n1 n2; i1...i5} (cut two-loop H family)",
+    "$M^{(a,atilde)}_{n1 n2; i1...i5} $(cut two-loop H family)",
     "Two-loop massless four-point diagonal box",
-    "one-loop s-channel AdS4 Witten 4-point diagram"
+    "one-loop s-channel AdS4 Witten 4-point diagram",
+    "$I_{2,1,2}$"
   ],
   "Source": [
     "arXiv",

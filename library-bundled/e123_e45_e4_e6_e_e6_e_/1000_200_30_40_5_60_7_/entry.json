@@ -1,0 +1,43 @@
+{
+  "CNickelIndex": "e123|e45|e4|e6|e|e6|e|:1000|200|30|40|5|60|7|",
+  "MassScales": 21,
+  "FunctionClass": "elliptic",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:2406.15549 (Phys.Rev.Lett. 134 (), 2025)"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2406.15549 (Phys.Rev.Lett. 134 (), 2025)",
+      "authors": "Spiering, Anne, Wilhelm, Matthias, Zhang, Chi",
+      "description": "The general planar dual-conformally invariant four-dimensional pentabox tensor integral with numerator (N,X_0) (N orthogonal to all X_l, l in L), in massless N=4 SYM. Decomposed into three six-dimensional scalar pentaboxes with one doubled propagator (eq: pb_reduction), each related by (1+partial_L) to an eight-dimensional heptagon (eq:pbDE) and further reduced to six-dimensional hexagons. Yields a one-fold integral representation containing four elliptic curves corresponding to its four double-box subtopologies; symbol determined here.",
+      "epsOrders": "",
+      "familyName": "pentabox (PB)",
+      "method": "DE, direct_integration, symbol_bootstrap",
+      "tools": [],
+      "ancillaryFiles": true,
+      "doi": "10.1103/PhysRevLett.134.071602",
+      "texkey": "Spiering:2024sea",
+      "masterCount": 0,
+      "dimScheme": "d=4",
+      "computationLevel": "full",
+      "location": "Sec. 2.2 (Pentabox), Eq. (eq: tensor pentabox), Fig. 2(a)",
+      "recordId": "bx_40dad707d87c",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "pentabox (PB)"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 2,
+  "NumPropagators": 8,
+  "Results": [],
+  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{3, 5}, 0}, {{4, 7}, 0}, {{6, 7}, 0}}",
+  "nodes": "{{1, M[1]}, {2, M[2]}, {3, M[3]}, {4, M[4]}, {5, M[5]}, {6, M[6]}, {7, M[7]}}",
+  "CanonicalName": "Massless box-pentagon",
+  "Genus": 1
+}

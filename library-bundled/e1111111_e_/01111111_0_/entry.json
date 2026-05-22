@@ -1,0 +1,44 @@
+{
+  "CNickelIndex": "e1111111|e|:01111111|0|",
+  "MassScales": 1,
+  "FunctionClass": "Calabi-Yau",
+  "EpsilonOrder": "2",
+  "References": [
+    "arXiv:2212.08908"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2212.08908",
+      "authors": "",
+      "description": "Six-loop equal-mass banana integral in D=2-2eps dimensions. Related to a Calabi-Yau 5-fold. First case with two non-trivial Y-invariants Y_2 and Y_3. Seven master integrals M_0,...,M_6. The eps-expansion of M_1 starts at order eps^6: M_1^{(6,6)} involves iterated integrals over Y_2 and Y_3, with leading terms 1120*zeta_3^2 - 2016*zeta_5*ln(q). Singular points at x in {4,16,36,64} (i.e. (2k)^2 for k=1,...,4, but from paper: S^{(6)} = {1,9,49} for l=6 even). The special local normal form is theta_q^2 (1/Y_2) theta_q (1/Y_3) theta_q (1/Y_2) theta_q^2. Compared against pySecDec with excellent agreement.",
+      "epsOrders": "2",
+      "familyName": "six-loop equal-mass banana",
+      "method": "DE",
+      "tools": [
+        "pySecDec"
+      ],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 7,
+      "dimScheme": "d=2-2*eps",
+      "computationLevel": "full",
+      "location": "Eq.(1), Section 7 (label sect:6_loops)",
+      "recordId": "bx_c12ae40356e6",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "six-loop equal-mass banana"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 6,
+  "NumPropagators": 7,
+  "Results": [],
+  "edges": "{{{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless banana"
+}

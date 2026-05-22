@@ -186,27 +186,6 @@
       "verifiedAt": "auto-loopedia"
     },
     {
-      "reference": "arXiv:1404.2922 (JHEP 06 (114), 2014)",
-      "authors": "Caron-Huot, Simon, Henn, Johannes M.",
-      "description": "One-loop massive box for light-by-light scattering in planar N=4 SYM with Higgs regulator. All 4 internal propagators massive (mass m), all external massless. 6 master integrals, dual conformal invariant. Weight 2 MPLs.",
-      "epsOrders": "all_orders",
-      "familyName": "massive 1-loop box (LbL)",
-      "method": "DE",
-      "tools": [
-        "FIRE"
-      ],
-      "ancillaryFiles": false,
-      "doi": "10.1007/JHEP06(2014)114",
-      "texkey": "Caron-Huot:2014lda",
-      "masterCount": 6,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "eq. (2.2), basis eq. (3.3)",
-      "recordId": "bx_268945f857e9",
-      "verified": false,
-      "verifiedAt": ""
-    },
-    {
       "reference": "arXiv:1801.09696",
       "authors": "",
       "description": "One-loop massive box integral family for gg->HH in the mH=0 approximation and high-energy limit (mt^2 << s,t). All 4 internal propagators carry top quark mass mt. Results expanded in small mt^2 to O(mt^16) for the amplitude, expressed in terms of harmonic polylogarithms. Crossings D_2 = D_1(p1,p2,p4,p3) and D_3 = D_1(p1,p4,p3,p2) define two additional one-loop families. Integration measure: (mu^2)^{(4-d)/2} e^{eps*gamma_E} d^d k / (i pi^{d/2}). The 10 one-loop master integrals (across D_1, D_2, D_3) are listed in Eq. (A.1).",
@@ -227,25 +206,6 @@
       "computationLevel": "full",
       "location": "Appendix A, one-loop family definition, Eq. after 'We define the propagators of the one-loop integral family as'",
       "recordId": "bx_8d20cfacbba9",
-      "verified": false,
-      "verifiedAt": ""
-    },
-    {
-      "reference": "arXiv:1909.04777 (JHEP 02 (099), 2020)",
-      "authors": "Herrmann, Enrico, Parra-Martinez, Julio",
-      "description": "One-loop box in D=4 with four equal-mass internal propagators and all massless external legs. Dlog DE relates it to D=2 massive bubbles.",
-      "epsOrders": "",
-      "familyName": "one-loop massive box",
-      "method": "DE",
-      "tools": [],
-      "ancillaryFiles": false,
-      "doi": "10.1007/JHEP02(2020)099",
-      "texkey": "Herrmann:2019upk",
-      "masterCount": 4,
-      "dimScheme": "d=4",
-      "computationLevel": "DE_only",
-      "location": "Section 3.1, Eq. (3.2)",
-      "recordId": "bx_34f49e98c4d3",
       "verified": false,
       "verifiedAt": ""
     }

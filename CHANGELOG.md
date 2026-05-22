@@ -7,6 +7,82 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+---
+
+## [1.1.9] — 2026-05-21
+
+Library expansion and a new in-UI request-paper workflow.  No kernel
+API changes; user-visible additions are concentrated in the library
+browser and the submission pathway.
+
+### Added
+
+- **"Request paper analysis" in the library browser.**  An empty-state
+  toast appended to the bottom of the library list (also shown when a
+  search yields no matches) opens a modal that takes an arXiv ID plus
+  an optional reason / name / email.  Submitting relays the request
+  through a Cloudflare Worker (`/request-paper`) and a GitHub Actions
+  workflow that files a public issue on the SubTropica repository
+  with the `paper-request` label.  Repeated submissions of the same
+  arXiv ID within 24 h are deduplicated.
+- **Spiering, Wilhelm, Zhang (arXiv:2406.15549) ingest** — 3 new
+  library entries from two-loop intersection-theory examples.
+- **Bargiela et al. (arXiv:2512.13794) ingest** — 79 new library
+  entries covering a parametric two-loop family `I_{a,b,c}` (with
+  starred variants).
+- **`function_class: "higher_genus"` schema extension** for integrals
+  whose period structure is a Riemann surface of genus g > 1.  Two
+  optional companion fields: `genus` (positive integer) and
+  `hyperelliptic_confirmed` (boolean).  Existing elliptic entries
+  carry `genus: 1` automatically.
+- **Marquee `PrimaryName` curation** for 7 newly-introduced frontier
+  topologies.
+
+### Changed
+
+- **Inline LaTeX renders correctly in library titles and
+  descriptions.**  146 topology / configuration titles and 79
+  record descriptions had their embedded math (e.g. `I_{4,3,3}`,
+  `M^2 - s_{12} - s_{23}`) wrapped with `$...$` so the UI typesets
+  them via KaTeX.  Previously the same fragments were shown as
+  raw LaTeX source.  Affected fields: `Name`, `PrimaryName`,
+  `CanonicalName`, `Names[]`, and `Records[].description`.
+- **`PrimaryName` now reaches the UI.**  The library.json builder
+  was silently dropping `PrimaryName` on rollup; 327 curated names
+  authored across previous releases had never been visible.  The
+  aggregator now emits both `name` and `primaryName` per topology.
+- **110 duplicate paper records auto-removed** across 72 entries
+  (same `texkey`, identical or near-identical descriptions; the
+  highest-quality record is kept).
+- **19 new paper thumbnails** added.
+- **Community submissions**: 3 results from PRs #30 and #33 on the
+  public repo (`e12|e2|e|` and `e12|e3|e3|e|` two-loop one-mass
+  families).
+
+### Fixed
+
+- **Spurious n=1 "Sunrise tadpole" topology removed.**  The entry at
+  `111|e|:000|0|` was physically impossible (with one external leg,
+  momentum conservation forces $p \to 0$, contradicting the cited
+  $k_1^2 = M^2$).  The record (Zhang, arXiv:1612.02249, Exercise
+  3.1) was describing the n=2 self-energy `e111|e|:1000|1|`; it
+  has been migrated to the canonical entry, which now carries 9
+  references.
+- **Machine-generated audit text scrubbed from descriptions**: 158
+  entries had inlined correction blocks and internal classifier
+  tags pasted into `Records[].description`; the audit trail now
+  lives in `Records[].structural.corrections[]`.
+
+---
+
 ## [1.1.8] — 2026-04-27
 
 UI and numerical-verification stability release.  Closes a systematic

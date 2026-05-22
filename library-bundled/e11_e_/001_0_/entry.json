@@ -1,0 +1,45 @@
+{
+  "CNickelIndex": "e11|e|:001|0|",
+  "MassScales": 1,
+  "FunctionClass": "hypergeometric",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:2204.12983"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2204.12983",
+      "authors": "",
+      "description": "One-loop bubble with one massive propagator. Used to demonstrate IBP reduction via matrix factorial recurrence from Pfaffian system. Master integrals I(4,1,1) and I(4,2,0). Result for I(4,1,2) decomposition verified against LiteRed.",
+      "epsOrders": "",
+      "familyName": "one-loop bubble (one mass)",
+      "method": "IBP, DE",
+      "tools": [
+        "Risa/Asir",
+        "LiteRed"
+      ],
+      "ancillaryFiles": true,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 2,
+      "dimScheme": "",
+      "computationLevel": "full",
+      "location": "Section 6.3, eq. (6.10)-(6.11)",
+      "recordId": "bx_3901b15b3b5a",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "one-loop bubble (one mass)"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 1,
+  "NumPropagators": 2,
+  "Results": [],
+  "edges": "{{{1, 2}, 0}, {{1, 2}, m}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless bubble"
+}

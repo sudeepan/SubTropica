@@ -8,25 +8,6 @@
   ],
   "Records": [
     {
-      "dimScheme": "d=4-2*eps",
-      "recordId": "bf_15b4883f188a",
-      "verified": false,
-      "verifiedAt": "",
-      "authors": "Correia, Miguel, Giroux, Mathieu, Mizera, Sebastian",
-      "texkey": "Correia:2025wtb",
-      "computationLevel": "basis",
-      "masterCount": 0,
-      "reference": "arXiv:2503.16601, Comput.Phys.Commun. 320, 2026",
-      "ancillaryFiles": [],
-      "description": "Two-loop planar Bhabha/Moller t-channel topology. 7 propagators (4 massive electron, 3 massless photon). SOFIA finds 52 candidate symbol letters. Cross-checked against 2108.03828.",
-      "familyName": "Bhabha t-channel planar",
-      "location": "Section 5.1",
-      "method": [],
-      "epsOrders": "",
-      "tools": [],
-      "doi": "10.1016/j.cpc.2025.109970"
-    },
-    {
       "reference": "arXiv:2503.16601 (Comput.Phys.Commun. 320 (), 2026)",
       "authors": "Correia, Miguel, Giroux, Mathieu, Mizera, Sebastian",
       "description": "Two-loop planar Bhabha/Moller t-channel topology. 7 propagators (4 massive electron, 3 massless photon). SOFIA finds 52 candidate symbol letters. Cross-checked against 2108.03828.",

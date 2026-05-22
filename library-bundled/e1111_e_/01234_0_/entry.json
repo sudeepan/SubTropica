@@ -1,0 +1,91 @@
+{
+  "CNickelIndex": "e1111|e|:01234|0|",
+  "MassScales": 4,
+  "FunctionClass": "Calabi-Yau",
+  "EpsilonOrder": "4",
+  "References": [
+    "arXiv:2006.05510 (Comput.Phys.Commun. 269 (), 2021)",
+    "arXiv:1807.11466 (doi: 10.1007/978-3-030-04480-0_17)",
+    "arXiv:2210.09898 (JHEP 03 (155), 2023)"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2006.05510 (Comput.Phys.Commun. 269 (), 2021)",
+      "authors": "Hidding, Martijn",
+      "description": "Unequal-mass three-loop banana graph family with 4 massive propagators carrying distinct masses m1-m4 in d=2-2*eps. 15 master integrals with 11 coupled in the top sector. Associated with a Calabi-Yau 2-fold. Cross-checked against pySecDec.",
+      "epsOrders": "4",
+      "familyName": "Unequal-mass three-loop banana",
+      "method": "DE, series_expansion, IBP",
+      "tools": [
+        "DiffExp",
+        "Kira",
+        "pySecDec"
+      ],
+      "ancillaryFiles": false,
+      "doi": "10.1016/j.cpc.2021.108125",
+      "texkey": "Hidding:2020ytt",
+      "masterCount": 15,
+      "dimScheme": "d=2-2*eps",
+      "computationLevel": "full",
+      "location": "Section 6.2",
+      "recordId": "bx_9401009d8be4",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:1807.11466 (doi: 10.1007/978-3-030-04480-0_17)",
+      "authors": "Vanhove, Pierre",
+      "description": "Three-loop massive sunset in D=2 with four distinct masses. Picard-Fuchs operator of order 6 computed. Geometry is a K3 surface in equal-mass case.",
+      "epsOrders": "",
+      "familyName": "3L-sunset-4m",
+      "method": "direct_integration",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "10.1007/978-3-030-04480-0_17",
+      "texkey": "Vanhove:2018mto",
+      "masterCount": 0,
+      "dimScheme": "d=2",
+      "computationLevel": "DE_only",
+      "location": "Section 4.3, Eqs. (4.84)-(4.98)",
+      "recordId": "bx_a15cafc4fa37",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2210.09898 (JHEP 03 (155), 2023)",
+      "authors": "Giroux, Mathieu, Pokraka, Andrzej",
+      "description": "Three-loop four-mass banana. Maximal cut yields elliptically fibered K3 surface (h^{1,1}=20, h^{2,0}=1). 15 master integrals. Full DE left to future work.",
+      "epsOrders": "",
+      "familyName": "four-mass banana (3-loop)",
+      "method": "DE, intersection",
+      "tools": [
+        "Maple",
+        "Macaulay2"
+      ],
+      "ancillaryFiles": false,
+      "doi": "10.1007/JHEP03(2023)155",
+      "texkey": "Giroux:2022wav",
+      "masterCount": 15,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "",
+      "location": "Section 7",
+      "recordId": "bx_ffc9d8b343e2",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "Unequal-mass three-loop banana",
+    "3L-sunset-4m",
+    "four-mass banana (3-loop)"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 3,
+  "NumPropagators": 4,
+  "Results": [],
+  "edges": "{{{1, 2}, m[1]}, {{1, 2}, m[2]}, {{1, 2}, m[3]}, {{1, 2}, m[4]}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless banana"
+}

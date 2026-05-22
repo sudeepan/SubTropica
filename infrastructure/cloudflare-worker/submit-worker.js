@@ -17,6 +17,18 @@
 const GITHUB_REPO = "SubTropica/SubTropica";
 const WORKFLOW_FILE = "submit.yml";
 const CORRECTION_WORKFLOW_FILE = "correction.yml";
+const PAPER_REQUEST_WORKFLOW_FILE = "paper-request.yml";
+
+// arXiv ID validation: new-style YYMM.NNNNN OR old-style category/YYMMNNN.
+// Same regex used for /pdf — kept inline rather than refactored to a
+// shared constant to keep this Worker single-file and dependency-free.
+const ARXIV_ID_RE = /^(\d{4}\.\d{4,5}|(?:hep-(?:ph|th|lat|ex)|astro-ph|gr-qc|cond-mat|math-ph|nucl-th|quant-ph|nlin|math)\/\d{7})$/;
+
+function paperRequestDedupKey(payload) {
+  // Dedup purely by arXiv ID: re-requests for the same paper within the
+  // TTL window are no-ops, regardless of who asked.
+  return "papreq:" + (payload.arxivId || "").trim().toLowerCase();
+}
 
 // Build a dedup key from the submission's identity fields
 function dedupKey(payload) {
@@ -213,6 +225,116 @@ export default {
         });
       } catch (e) {
         console.error("Worker error (correction):", e);
+        return Response.json(
+          { status: "error", error: e.message },
+          { status: 500 }
+        );
+      }
+    }
+
+    // ── POST /request-paper — "please analyze this paper" intake ──
+    // Opens a public GitHub issue with label `paper-request` so a
+    // maintainer can run the v2 arXiv pipeline on the paper at their
+    // leisure. No integration / submission required — this is the
+    // pre-integration intake path for elliptic or higher-genus papers
+    // that current SubTropica can't integrate.
+    if (request.method === "POST" && url.pathname === "/request-paper") {
+      try {
+        const payload = await request.json();
+
+        const arxivId = (payload.arxivId || "").trim();
+        if (!arxivId) {
+          return Response.json(
+            { status: "error", error: "Missing required field: arxivId" },
+            { status: 400 }
+          );
+        }
+        if (!ARXIV_ID_RE.test(arxivId)) {
+          return Response.json(
+            { status: "error", error: "Invalid arXiv ID format" },
+            { status: 400 }
+          );
+        }
+
+        // Free-text reason capped to keep issue bodies readable; name +
+        // email each capped at typical-form sizes.
+        const reason = (payload.reason || "").toString().slice(0, 2000);
+        const name   = (payload.name   || "").toString().slice(0, 200);
+        const email  = (payload.email  || "").toString().slice(0, 320);  // RFC 5321
+        // Loose email format check — only used to suppress garbage in
+        // the issue body; the field is optional and we don't actually
+        // email anyone from the Worker.
+        if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+          return Response.json(
+            { status: "error", error: "Invalid email format" },
+            { status: 400 }
+          );
+        }
+
+        const normalized = { arxivId, reason, name, email,
+                             timestamp: new Date().toISOString() };
+        const payloadStr = JSON.stringify(normalized);
+        if (payloadStr.length > 8_000) {
+          return Response.json(
+            { status: "error", error: "Payload too large (max 8 KB)" },
+            { status: 413 }
+          );
+        }
+
+        // Dedup: 24 h cooldown per arXiv ID. Long enough to swallow
+        // double-clicks and accidental re-submissions; short enough
+        // that a user who realises they want to add context can re-file
+        // next day.
+        const dkey = paperRequestDedupKey(normalized);
+        if (env.SUBMISSIONS) {
+          const existing = await env.SUBMISSIONS.get(dkey);
+          if (existing) {
+            return Response.json({
+              status: "duplicate",
+              message: "A request for this paper was already filed in the last 24 hours.",
+              previousSubmission: existing,
+            });
+          }
+        }
+
+        const ghResp = await fetch(
+          `https://api.github.com/repos/${GITHUB_REPO}/actions/workflows/${PAPER_REQUEST_WORKFLOW_FILE}/dispatches`,
+          {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${env.GITHUB_PAT}`,
+              "Accept": "application/vnd.github+json",
+              "User-Agent": "SubTropica-Worker",
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+            body: JSON.stringify({
+              ref: "main",
+              inputs: { payload: payloadStr },
+            }),
+          }
+        );
+
+        if (!ghResp.ok) {
+          const err = await ghResp.text();
+          console.error("GitHub API error (paper-request):", ghResp.status, err);
+          return Response.json(
+            { status: "error", error: "GitHub API error", detail: err },
+            { status: 502 }
+          );
+        }
+
+        if (env.SUBMISSIONS) {
+          await env.SUBMISSIONS.put(dkey, new Date().toISOString(), {
+            expirationTtl: 24 * 3600,
+          });
+        }
+
+        return Response.json({
+          status: "ok",
+          message: "Paper request filed. A maintainer will pick it up shortly.",
+        });
+      } catch (e) {
+        console.error("Worker error (paper-request):", e);
         return Response.json(
           { status: "error", error: e.message },
           { status: 500 }

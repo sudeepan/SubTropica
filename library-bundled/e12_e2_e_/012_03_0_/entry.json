@@ -50,27 +50,6 @@
       "verifiedAt": ""
     },
     {
-      "reference": "arXiv:2012.15646 (Phys.Rev.D 103 (), 2021)",
-      "authors": "Ananthanarayan, B., Banik, Sumit, Friot, Samuel, Ghosh, Shayan",
-      "description": "Massive one-loop conformal 3-point (triangle) Feynman integral with unit propagator powers a1=a2=a3=1 (resonant case, D=3). This specialization leads to overlapping poles requiring the full multivariate residue calculus (resonant procedure). The series representations S2^unit through S5^unit involve logarithmic and digamma terms (log(-w), psi functions) absent in the generic case, arising from double poles. Four sub-contributions S_{2,1}^unit to S_{2,4}^unit are explicitly computed. An amusing conjecture H_C(1,1,1;2;1/2,1/2,1/2)=pi is stated.",
-      "epsOrders": "",
-      "familyName": "massive_conformal_triangle_unit",
-      "method": "Mellin-Barnes",
-      "tools": [
-        "MultivariateResidues"
-      ],
-      "ancillaryFiles": true,
-      "doi": "10.1103/PhysRevD.103.096008",
-      "texkey": "Ananthanarayan:2020xpd",
-      "masterCount": 0,
-      "dimScheme": "",
-      "computationLevel": "full",
-      "location": "Sec.5, Appendix A.4",
-      "recordId": "bx_cdc9700d5246",
-      "verified": false,
-      "verifiedAt": ""
-    },
-    {
       "reference": "arXiv:hep-th/0012189 (Nucl.Phys.B 605 (266), 2001)",
       "authors": "Davydychev, Andrei I., Kalmykov, M.Yu.",
       "description": "One-loop three-point function J^(3)(n;1,1,1) with three arbitrary internal masses m1, m2, m3 and three off-shell external momenta p1, p2, p3 (p1+p2+p3=0). At eps=0 the result is a sum of six rectangular-triangle integrals (Eq. 3.6) yielding the standard 't Hooft-Veltman form in terms of Cl_2; the eps-term is given as Li_3 (cf. ref. [NMB]). General higher orders in eps are presented as one-fold angular integrals (Eq. 3.6).",

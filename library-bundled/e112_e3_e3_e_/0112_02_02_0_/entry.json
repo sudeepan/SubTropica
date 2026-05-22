@@ -72,5 +72,6 @@
   "Subsectors": [
     "e12|e2|e|:011|01|2|"
   ],
-  "ParentSectors": []
+  "ParentSectors": [],
+  "Genus": 1
 }

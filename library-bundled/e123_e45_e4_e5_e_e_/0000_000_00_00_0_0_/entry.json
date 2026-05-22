@@ -9,7 +9,8 @@
     "arXiv:1805.09326",
     "arXiv:2106.14902 (Phys.Rev.Lett. 127 (25), 2021)",
     "arXiv:2403.19742 (JHEP 08 (027), 2024)",
-    "arXiv:2602.02783"
+    "arXiv:2602.02783",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -179,6 +180,25 @@
       "recordId": "bx_691dec50604c",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I_{3,1,3}$ two-loop topology with three internal paths of lengths a=3, b=1, c=3 (both v_L and v_R carry external legs); 6-point integral, planar (b=1). Geometry: 2 ISPs; at least elliptic; refer to special-case discussions in §4",
+      "epsOrders": "",
+      "familyName": "I_{3,1,3}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with two ISPs' + §4 special cases",
+      "recordId": "bx_94f3a51f6d0f",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
@@ -187,7 +207,8 @@
     "traintrack_2L_elliptic_double_box",
     "10pt-2L-elliptic-double-box",
     "double-box",
-    "massless 2-loop 6-point double-box (prescriptive, two legs on each outer vertex)"
+    "massless 2-loop 6-point double-box (prescriptive, two legs on each outer vertex)",
+    "$I_{3,1,3}$"
   ],
   "Source": [
     "arXiv"

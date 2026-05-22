@@ -1,0 +1,86 @@
+{
+  "CNickelIndex": "e111|e|:0000|0|",
+  "MassScales": 0,
+  "FunctionClass": "rational",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:1901.11510 (JHEP 05 (153), 2019)",
+    "arXiv:1804.00131 (Phys.Rev.D 98 (), 2018)",
+    "arXiv:2512.13794"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:1901.11510 (JHEP 05 (153), 2019)",
+      "authors": "Frellesvig, Hjalte, Gasparotto, Federico, Laporta, Stefano, Mandal, Manoj K., Mastrolia, Pierpaolo, Mattiazzi, Luca, Mizera, Sebastian",
+      "description": "Massless two-loop sunrise (banana) diagram, with three massless propagators and one ISP z=k2^2. The 1-form omega from the standard Baikov representation has a single master on the maximal cut. The reduction I_{1,1,1;-1} = (s/3) I_{1,1,1;0} is obtained in the monomial basis via intersection numbers, in agreement with LiteRed. The same family is also treated via iterated 1-form intersections in Section 17.1 using the two-fold Baikov representation.",
+      "epsOrders": "",
+      "familyName": "Two-Loop Massless Sunrise",
+      "method": "intersection",
+      "tools": [
+        "LiteRed"
+      ],
+      "ancillaryFiles": false,
+      "doi": "10.1007/JHEP05(2019)153",
+      "texkey": "Frellesvig:2019kgj",
+      "masterCount": 1,
+      "dimScheme": "d=D",
+      "computationLevel": "maximal_cut",
+      "location": "Section 8.1, Eqs. (8.1)-(8.5), Fig. 6",
+      "recordId": "bx_aff21ea408ce",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:1804.00131 (Phys.Rev.D 98 (), 2018)",
+      "authors": "",
+      "description": "Massless sunrise (sunset) with 3 propagators and one massive external momentum K^2=s. Closed-form in Gamma functions. 1 master integral.",
+      "epsOrders": "all_orders",
+      "familyName": "P_00",
+      "method": "IBP, direct_integration",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "10.1103/PhysRevD.98.025008",
+      "texkey": "",
+      "masterCount": 1,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "full",
+      "location": "Fig. 3, Sec. VIII.A",
+      "recordId": "bx_190de1e53c2c",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I_{1,1,1}$ two-loop topology with three internal paths of lengths a=1, b=1, c=1 (both v_L and v_R carry external legs); 2-point integral, planar (b=1). Geometry: 1 ISP; max cut ∫dz/(√Q_2(z)·√P_2(z)); elliptic curve (§3.4 Type 1.3)",
+      "epsOrders": "",
+      "familyName": "I_{1,1,1}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 Type 1.3",
+      "recordId": "bx_833f56fd4292",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "Two-Loop Massless Sunrise",
+    "P_00",
+    "$I_{1,1,1}$"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 2,
+  "NumPropagators": 3,
+  "Results": [],
+  "edges": "{{{1, 2}, 0}, {{1, 2}, 0}, {{1, 2}, 0}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless sunrise"
+}

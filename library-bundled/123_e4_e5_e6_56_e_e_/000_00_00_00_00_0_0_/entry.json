@@ -21,7 +21,8 @@
     "arXiv:1912.09294",
     "arXiv:1908.04301",
     "arXiv:1901.05932",
-    "arXiv:2209.06816"
+    "arXiv:2209.06816",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -173,25 +174,6 @@
         "GiNaC"
       ],
       "doi": "10.1007/JHEP10(2020)188"
-    },
-    {
-      "dimScheme": "d=4-2*eps",
-      "recordId": "bf_8c747dc340c5",
-      "familyName": "double pentagon",
-      "verified": true,
-      "verifiedAt": "auto-loopedia",
-      "authors": "Bendle, Dominik, Boehm, Janko, Heymann, Murray, Ma, Rourou, Rahn, Mirko, Ristau, Lukas et al.",
-      "texkey": "Bendle:2021ueg",
-      "computationLevel": "IBP_only",
-      "masterCount": 108,
-      "location": "Eq. (1) in Section 5.1, Fig. 1",
-      "method": [],
-      "reference": "arXiv:2104.06866, Comput.Phys.Commun. 294, 2024",
-      "ancillaryFiles": [],
-      "description": "Nonplanar two-loop five-point double pentagon, all massless. 8 propagators + 3 ISPs. IBP reduction of degree-5 numerators to 108-element UT basis via module intersection. PFD compression from 19.6 GB to 186 MB.",
-      "epsOrders": "",
-      "tools": [],
-      "doi": "10.1016/j.cpc.2023.108942"
     },
     {
       "dimScheme": "D",
@@ -440,30 +422,6 @@
       "verifiedAt": "auto-loopedia"
     },
     {
-      "reference": "arXiv:1812.11160 (Phys.Rev.Lett. 123 (), 2019)",
-      "authors": "Chicherin, D., Gehrmann, T., Henn, J.M., Wasser, P., Zhang, Y., Zoia, S.",
-      "description": "Nonplanar double-pentagon integral family for massless two-loop five-point scattering. This is the last missing family needed for three-jet production at NNLO. Has 8 propagators (D1-D8) and 3 irreducible scalar products (D9-D11). The 108 master integrals are computed in canonical differential equation form with uniform transcendental weight, expressed as Goncharov polylogarithms. The UT basis is found using a novel D-dimensional Baikov cut criterion that detects Gram-determinant numerators invisible to 4d methods.",
-      "epsOrders": "all_orders",
-      "familyName": "double-pentagon",
-      "method": "DE, IBP",
-      "tools": [
-        "GiNaC",
-        "SecDec",
-        "FIRE",
-        "Singular"
-      ],
-      "ancillaryFiles": true,
-      "doi": "10.1103/PhysRevLett.123.041603",
-      "texkey": "Chicherin:2018old",
-      "masterCount": 108,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "Eq. (2), Figs. 1(c), Section 'Integral families'",
-      "recordId": "bx_c8f0406ffb63",
-      "verified": false,
-      "verifiedAt": ""
-    },
-    {
       "reference": "arXiv:1908.04301",
       "authors": "",
       "description": "Two-loop five-point nonplanar double pentagon integral family. 8 propagators defining the topology plus 3 irreducible scalar products. IBP reduction of 26 target integrals (up to numerator degree 4, no double propagators) to 108 master integrals (Laporta basis), with conversion to dlog basis of Chicherin et al. 113 master integrals before symmetry relations.",
@@ -511,30 +469,6 @@
       "verifiedAt": ""
     },
     {
-      "reference": "arXiv:2003.03120 (JHEP 10 (188), 2020)",
-      "authors": "Caron-Huot, Simon, Chicherin, Dmitry, Henn, Johannes, Zhang, Yang, Zoia, Simone",
-      "description": "Non-planar double-pentagon family for massless two-loop five-point scattering. 8 propagators, 108 MIs. Used for multi-Regge limit computation.",
-      "epsOrders": "0",
-      "familyName": "double-pentagon (c)",
-      "method": "IBP, DE",
-      "tools": [
-        "FIRE",
-        "Kira",
-        "Reduze",
-        "GiNaC"
-      ],
-      "ancillaryFiles": true,
-      "doi": "10.1007/JHEP10(2020)188",
-      "texkey": "Caron-Huot:2020vlo",
-      "masterCount": 108,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "Fig. 1(c), Eqs. (3.4)-(3.5), Section 3.2",
-      "recordId": "bx_e805fd5a5a98",
-      "verified": false,
-      "verifiedAt": ""
-    },
-    {
       "reference": "arXiv:2104.06866 (Comput.Phys.Commun. 294 (), 2024)",
       "authors": "Bendle, Dominik, Boehm, Janko, Heymann, Murray, Ma, Rourou, Rahn, Mirko, Ristau, Lukas et al.",
       "description": "Nonplanar two-loop five-point double pentagon, all massless. 8 propagators + 3 ISPs. IBP reduction of degree-5 numerators to 108-element UT basis via module intersection. PFD compression from 19.6 GB to 186 MB.",
@@ -556,6 +490,25 @@
       "recordId": "bx_1381890bae05",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{**}_{3,2,3}$ two-loop topology with three internal paths of lengths a=3, b=2, c=3 (neither v_L nor v_R carries external legs); 5-point integral, non-planar (b=>=2). Geometry: 2 ISPs; at least elliptic; refer to special-case discussions in §4",
+      "epsOrders": "",
+      "familyName": "I^{**}_{3,2,3}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with two ISPs' + §4 special cases",
+      "recordId": "bx_9fe0b619a3b9",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
@@ -568,7 +521,8 @@
     "massless 2-loop 5-point non-planar three-jet topology",
     "two-loop five-point massless double-pentagon",
     "two-loop five-point non-planar double pentagon",
-    "massless 2-loop 5-point planar double pentagon"
+    "massless 2-loop 5-point planar double pentagon",
+    "$I^{**}_{3,2,3}$"
   ],
   "Source": [
     "arXiv",

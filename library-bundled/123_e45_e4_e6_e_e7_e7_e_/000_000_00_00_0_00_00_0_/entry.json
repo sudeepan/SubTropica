@@ -1,0 +1,42 @@
+{
+  "CNickelIndex": "123|e45|e4|e6|e|e7|e7|e|:000|000|00|00|0|00|00|0|",
+  "MassScales": 14,
+  "FunctionClass": "rational",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:2512.13794"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{*}_{5,1,3}$ two-loop topology with three internal paths of lengths a=5, b=1, c=3 (only one of v_L/v_R carries external legs); 7-point integral, planar (b=1). Geometry: 0 ISPs; algebraic leading singularity; dlog form (§3.4 zero-ISPs)",
+      "epsOrders": "",
+      "familyName": "I^{*}_{5,1,3}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with zero ISPs'",
+      "recordId": "bx_a3ef7703e7aa",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "$I^{*}_{5,1,3}$"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 2,
+  "NumPropagators": 9,
+  "Results": [],
+  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{3, 5}, 0}, {{4, 7}, 0}, {{6, 8}, 0}, {{7, 8}, 0}}",
+  "nodes": "{{2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}}",
+  "CanonicalName": "2-loop 7-point (9 propagators)"
+}

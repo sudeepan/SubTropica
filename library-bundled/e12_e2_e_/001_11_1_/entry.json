@@ -8,25 +8,6 @@
   ],
   "Records": [
     {
-      "authors": "Bern, Zvi, Enciso, Michael, Ita, Harald, Zeng, Mao",
-      "ancillaryFiles": [],
-      "recordId": "bf_6145f0e1e64d",
-      "epsOrders": "",
-      "location": "Section 3.3, Eqs. (3.39)-(3.45), Fig. 4",
-      "texkey": "Bern:2017gdk",
-      "verified": false,
-      "verifiedAt": "",
-      "reference": "arXiv:1709.06055, Phys.Rev.D 96, 2017",
-      "masterCount": 0,
-      "computationLevel": "IBP_only",
-      "doi": "10.1103/PhysRevD.96.096017",
-      "tools": [],
-      "description": "One-loop triangle with three massive internal propagators (b-quark mass) for Hbb decay. Embedding formalism extended to internal masses. No integral evaluation.",
-      "method": [],
-      "dimScheme": "d=4-2*eps",
-      "familyName": "Hbb triangle"
-    },
-    {
       "reference": "arXiv:1709.06055 (Phys.Rev.D 96 (), 2017)",
       "authors": "Bern, Zvi, Enciso, Michael, Ita, Harald, Zeng, Mao",
       "description": "One-loop triangle with three massive internal propagators (b-quark mass) for Hbb decay. Embedding formalism extended to internal masses. No integral evaluation.",

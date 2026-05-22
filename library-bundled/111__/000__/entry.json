@@ -1,0 +1,42 @@
+{
+  "CNickelIndex": "111||:000||",
+  "MassScales": 0,
+  "FunctionClass": "rational",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:2512.13794"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{**}_{1,1,1}$ two-loop topology with three internal paths of lengths a=1, b=1, c=1 (neither v_L nor v_R carries external legs); 0-point integral, planar (b=1). Geometry: 0 ISPs; algebraic leading singularity; dlog form (§3.4 zero-ISPs)",
+      "epsOrders": "",
+      "familyName": "I^{**}_{1,1,1}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with zero ISPs'",
+      "recordId": "bx_eb7c7a5c4329",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "$I^{**}_{1,1,1}$"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 2,
+  "NumPropagators": 3,
+  "Results": [],
+  "edges": "{{{1, 2}, 0}, {{1, 2}, 0}, {{1, 2}, 0}}",
+  "nodes": "{}",
+  "CanonicalName": "Massless theta"
+}

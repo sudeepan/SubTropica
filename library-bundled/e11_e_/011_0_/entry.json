@@ -1,0 +1,86 @@
+{
+  "CNickelIndex": "e11|e|:011|0|",
+  "MassScales": 1,
+  "FunctionClass": "MPL",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:2201.03593 (doi: 10.1007/978-3-030-99558-4)",
+    "arXiv:2108.10807",
+    "arXiv:2212.08908"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2201.03593 (doi: 10.1007/978-3-030-99558-4)",
+      "authors": "Weinzierl, Stefan",
+      "description": "Equal-mass one-loop two-point function I_{nu1 nu2}(D,x) with q1=k-p, q2=k, m1=m2=m, x=-p^2/m^2. Used as worked IBP and differential-equation example: IBP reduces all integer (nu1,nu2) to two masters {I_{11}, I_{10}}; pre-canonical 2x2 DE matrix in eq. example_A_oneloop_twopoint and eps-form transformation in eq. trafo_bubble produce uniform-weight expansions in 4D and 2D (eqs. example_bubble_uniform_weight_4D/2D).",
+      "epsOrders": "",
+      "familyName": "equal-mass one-loop bubble I_{nu1 nu2}",
+      "method": "IBP, DE",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "10.1007/978-3-030-99558-4",
+      "texkey": "Weinzierl:2022eaz",
+      "masterCount": 2,
+      "dimScheme": "d=D",
+      "computationLevel": "full",
+      "location": "Chapter 'Iterated integrals', Eq. (chapter_iterated_integrals:example_equal_mass_bubble, line ~113); Example 1 of Sec. 'Differential equations' line ~922",
+      "recordId": "bx_65744fc03253",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2108.10807",
+      "authors": "",
+      "description": "One-loop bubble with equal internal masses. Used to demonstrate expansion by regions in large-mass and small-mass limits with pySecDec.",
+      "epsOrders": "0",
+      "familyName": "bubble1L",
+      "method": "sector_decomposition",
+      "tools": [
+        "pySecDec"
+      ],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "numerical",
+      "location": "Section 6.1, Fig. 1",
+      "recordId": "bx_d82194eabc30",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2212.08908",
+      "authors": "",
+      "description": "One-loop equal-mass banana (bubble) integral in D=2-2eps dimensions. Trivial case: the change of variables from y to q-bar rationalises the square root sqrt(1+4y). Two master integrals I_{10} and I_{11}. Discussed as the l=1 degenerate case of the all-loop formula.",
+      "epsOrders": "all_orders",
+      "familyName": "banana_1loop_equal_mass",
+      "method": "DE",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 2,
+      "dimScheme": "d=2-2*eps",
+      "computationLevel": "full",
+      "location": "Eq.(1), Section 5.1 (The degenerate cases, one-loop subsection)",
+      "recordId": "bx_fde3907059dd",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "$equal-mass one-loop bubble I_{nu1 nu2}$",
+    "bubble1L",
+    "banana_1loop_equal_mass"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 1,
+  "NumPropagators": 2,
+  "Results": [],
+  "edges": "{{{1, 2}, m}, {{1, 2}, m}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless bubble"
+}

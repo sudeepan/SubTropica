@@ -1,0 +1,42 @@
+{
+  "CNickelIndex": "112|e2|e|:123|04|0|",
+  "MassScales": 4,
+  "FunctionClass": "MPL",
+  "EpsilonOrder": "0",
+  "References": [
+    "arXiv:hep-ph/0501132 (Comput.Phys.Commun. 174 (133), 2006)"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:hep-ph/0501132 (Comput.Phys.Commun. 174 (133), 2006)",
+      "authors": "Martin, Stephen P., Robertson, David G.",
+      "description": "Two-loop self-energy integral with four propagators forming a bubble-triangle topology in d=4-2*eps. Denoted U(x,y,z,u) in the TSIL basis. The triangle connects three vertices with a doubled edge between two of them, creating the second loop. Symmetric under z <-> u.",
+      "epsOrders": "0",
+      "familyName": "two-loop bubble-triangle",
+      "method": "DE, direct_integration",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "10.1016/j.cpc.2005.08.005",
+      "texkey": "Martin:2005qm",
+      "masterCount": 1,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "full",
+      "location": "eq.(2.13) for bold U(x,y,z,u), or eq.(2.23) for finite U(x,y,z,u)",
+      "recordId": "bx_741af99d0e47",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "two-loop bubble-triangle"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 2,
+  "NumPropagators": 4,
+  "Results": [],
+  "edges": "{{{1, 2}, m[1]}, {{1, 2}, m[2]}, {{1, 3}, m[3]}, {{2, 3}, m[4]}}",
+  "nodes": "{{2, 0}, {3, 0}}",
+  "CanonicalName": "Massless parachute"
+}

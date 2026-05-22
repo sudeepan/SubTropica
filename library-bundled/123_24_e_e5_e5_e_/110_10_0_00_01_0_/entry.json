@@ -8,33 +8,6 @@
   ],
   "Records": [
     {
-      "authors": "Badger, Simon, Chaubey, Ekta, Hartanto, Heribertus Bayu, Marzucca, Robin",
-      "texkey": "Badger:2021owl",
-      "verified": false,
-      "verifiedAt": "",
-      "reference": "arXiv:2102.13450, JHEP 06 (163), 2021",
-      "ancillaryFiles": [],
-      "recordId": "bf_5c52da9caf48",
-      "masterCount": 22,
-      "transcendentalWeight": 4,
-      "computationLevel": "master_integrals",
-      "doi": "10.1007/JHEP06(2021)163",
-      "tools": [
-        "FiniteFlow",
-        "LiteRed",
-        "QGRAF",
-        "FORM",
-        "Spinney",
-        "GiNaC"
-      ],
-      "description": "Penta-triangle integral family for the closed top-quark loop contribution $A^{(2),N_h}$ to the two-loop leading colour $gg \\to t\\bar{t}$ amplitude. Contains two new elliptic master integrals ($J_{21}, J_{22}$) not previously in the literature. 15 of the 22 master integrals map to the topbox family of Adams et al.",
-      "epsOrders": "-2,-1,0,1,2,3,4",
-      "method": [],
-      "dimScheme": "CDR",
-      "location": "Eq. below Eq. (4.7), Section 4.1",
-      "familyName": "penta-triangle"
-    },
-    {
       "reference": "arXiv:2102.13450 (JHEP 06 (163), 2021)",
       "authors": "Badger, Simon, Chaubey, Ekta, Hartanto, Heribertus Bayu, Marzucca, Robin",
       "description": "Penta-triangle integral family for the closed top-quark loop contribution A^{(2),N_h} to the two-loop leading colour gg -> ttbar amplitude. Contains two new elliptic master integrals (J_21, J_22) not previously in the literature. 15 of the 22 master integrals map to the topbox family of Adams et al.",
@@ -90,5 +63,6 @@
     "extLegSignature": "0000"
   },
   "Subsectors": [],
-  "ParentSectors": []
+  "ParentSectors": [],
+  "Genus": 1
 }

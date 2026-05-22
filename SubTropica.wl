@@ -38,6 +38,27 @@ stDiscoverHyperInt[] := SelectFirst[$STHyperIntSearchPaths, FileExistsQ, ""];
 $SThyperIntPath = stDiscoverHyperInt[];
 
 (* ---------------------------------------------------------------- *)
+(*  HyperLogProcedures (Schnetz, Maple, v0.8) \[LongDash] Phase 0             *)
+(* ---------------------------------------------------------------- *)
+(*  $STHyperLogProceduresPath points to the absolute path of the    *)
+(*  `HyperlogProcedures` Maple file (no extension).  HLP also loads *)
+(*  `FastIsomorphism`, `FastEvaluation`, `Periods`, `PeriodsPhi3`   *)
+(*  from the same directory; STHyperLogProcedures references them   *)
+(*  via FileNameJoin against this file's parent dir.                *)
+$STHyperLogProceduresPath = "";  (* auto-discovered below, or set via ConfigureSubTropica[HyperLogProceduresPath -> ...] *)
+
+$STHyperLogProceduresSearchPaths = {
+    FileNameJoin[{$HomeDirectory, "Projects", "HyperLogProcedures", "HyperlogProcedures"}],
+    FileNameJoin[{$HomeDirectory, "HyperLogProcedures",             "HyperlogProcedures"}],
+    "/opt/HyperLogProcedures/HyperlogProcedures"
+};
+
+stDiscoverHyperLogProcedures[] :=
+    SelectFirst[$STHyperLogProceduresSearchPaths, FileExistsQ, ""];
+
+$STHyperLogProceduresPath = stDiscoverHyperLogProcedures[];
+
+(* ---------------------------------------------------------------- *)
 (*  HyperFLINT CLI backend (analytic, C++/FLINT)                    *)
 (* ---------------------------------------------------------------- *)
 (*  $STHyperFlintPath points to the compiled `hyperflint` binary    *)
@@ -59,16 +80,22 @@ stHFArchDir[] := Switch[$SystemID,
     _,               "macos-arm64"];
 
 $STHyperFlintSearchPaths = {
-    (* Repo-local prebuilt CLI shipped via Git LFS.  This is the canonical
-       path for collaborators on a SubTropica-dev clone: nothing for them
-       to build, just `git lfs pull` (and `git lfs install` once per
-       machine).  $SubTropicaInstallDir isn't bound yet at this point in
-       the load, so derive the dir from $InputFileName directly. *)
-    FileNameJoin[{DirectoryName[$InputFileName], "HyperFLINT", "dist",
-        stHFArchDir[], "hyperflint"}],
-    (* Source-tree-build location (devs running cmake locally). *)
+    (* DEV-FIRST: source-tree build (devs running `cmake --build
+       build-release` locally).  Preferred over dist/<arch>/ so that
+       a fresh local rebuild is sufficient — no need to re-stage into
+       dist/ on every iteration.  When this path doesn't exist (paclet
+       users without an HF source tree) the search falls through to
+       the LFS-shipped dist/<arch>/ binary below. *)
     FileNameJoin[{DirectoryName[$InputFileName], "HyperFLINT",
         "build-release", "hyperflint"}],
+    (* PACLET: repo-local prebuilt CLI shipped via Git LFS.  Canonical
+       path for collaborators on a SubTropica-dev clone who haven't
+       run cmake locally: nothing for them to build, just `git lfs
+       pull` (and `git lfs install` once per machine).
+       $SubTropicaInstallDir isn't bound yet at this point in the
+       load, so derive the dir from $InputFileName directly. *)
+    FileNameJoin[{DirectoryName[$InputFileName], "HyperFLINT", "dist",
+        stHFArchDir[], "hyperflint"}],
     FileNameJoin[{$HomeDirectory, "Projects", "SubTropica-branchSM", "HyperFLINT", "build-release", "hyperflint"}],
     FileNameJoin[{$HomeDirectory, "Projects", "HyperFLINT", "build-release", "hyperflint"}],
     FileNameJoin[{$HomeDirectory, "HyperFLINT",            "build-release", "hyperflint"}],
@@ -116,7 +143,7 @@ stResolveHyperFlintDataPath[binPath_String] :=
 $STHyperFlintPath     = stDiscoverHyperFlint[];
 $STHyperFlintDataPath = stResolveHyperFlintDataPath[$STHyperFlintPath];
 
-(* Phase γ.1: LibraryLink transport.  `$STHyperFlintLibraryPath` is
+(* Phase \[Gamma].1: LibraryLink transport.  `$STHyperFlintLibraryPath` is
    the path to `libhyperflint_librarylink.dylib` co-located with the
    CLI binary under `build-release/`.  `$STHFLibFindLROrders` is the
    resolved LibraryFunction handle (None if the library couldn't load
@@ -125,7 +152,7 @@ $STHyperFlintDataPath = stResolveHyperFlintDataPath[$STHyperFlintPath];
 $STHyperFlintLibraryPath = "";
 $STHFLibVersion          = "";
 $STHFLibFindLROrders     = None;
-$STHFLibHyperFlintSym    = None;  (* Phase γ.2: integrator LibraryLink handle *)
+$STHFLibHyperFlintSym    = None;  (* Phase \[Gamma].2: integrator LibraryLink handle *)
 $STHFLibClearState       = None;
 $STHyperFlintUseLibraryLink = False;  (* becomes True after successful load *)
 
@@ -154,13 +181,17 @@ stHyperFlintLibraryPathCandidates[binPath_String] := Module[
         AppendTo[cands, FileNameJoin[{dir, libName}]];
         AppendTo[cands, FileNameJoin[{dir, "bundle", libName}]]];
     If[StringQ[$SubTropicaInstallDir] && $SubTropicaInstallDir =!= "",
-        (* Prebuilt dist/ shipped via Git LFS (SubTropica-dev). *)
-        AppendTo[cands, FileNameJoin[{$SubTropicaInstallDir, "HyperFLINT",
-            "dist", stHFArchDir[], libName}]];
+        (* DEV-FIRST: source-tree build location.  Preferred over dist/
+           so that `cmake --build build-release` is sufficient — no
+           re-staging required on every iteration. *)
         AppendTo[cands, FileNameJoin[{$SubTropicaInstallDir, "HyperFLINT",
             "build-release", libName}]];
         AppendTo[cands, FileNameJoin[{$SubTropicaInstallDir, "HyperFLINT",
             "build-release", "bundle", libName}]];
+        (* PACLET: prebuilt dist/<arch>/ shipped via Git LFS, used only
+           when no local build-release/ exists. *)
+        AppendTo[cands, FileNameJoin[{$SubTropicaInstallDir, "HyperFLINT",
+            "dist", stHFArchDir[], libName}]];
         AppendTo[cands, FileNameJoin[{$SubTropicaInstallDir, "HyperFLINT",
             libName}]]];
     cands];
@@ -169,6 +200,50 @@ stResolveHyperFlintLibraryPath[binPath_String] :=
     SelectFirst[stHyperFlintLibraryPathCandidates[binPath], FileExistsQ, ""];
 
 $STHyperFlintLibraryPath = stResolveHyperFlintLibraryPath[$STHyperFlintPath];
+
+(* Staleness check (2026-05-05): after a successful library load, compare
+   the loaded dylib's mtime to the newest mtime under HyperFLINT/src/
+   and HyperFLINT/include/.  Warn loudly if any source file is newer —
+   the dev forgot to rebuild after editing source.  Silently no-ops when
+   the source tree isn't present (paclet users).
+   Set $STSuppressStaleWarn = True to silence (e.g. in scripts that
+   deliberately use the LFS dist/ binary). *)
+stHyperFlintWarnIfStale::stale = "Loaded HyperFLINT dylib `1` is OLDER than HyperFLINT source files.  Newest source: `3`; loaded dylib: `2`.  Likely you edited source but forgot `cmake --build HyperFLINT/build-release --target hyperflint-cli --target hyperflint_librarylink`.  $STSuppressStaleWarn=True to silence.";
+
+If[!ValueQ[$STSuppressStaleWarn], $STSuppressStaleWarn = False];
+
+(* Capture the package directory at load time.  $InputFileName at
+   function-call time would resolve to the *caller's* script (e.g. a
+   wolframscript test), not SubTropica.wl, so we lock it in via With[]. *)
+With[{stHFLoadDir = DirectoryName[$InputFileName]},
+stHyperFlintWarnIfStale[libPath_String] := Module[
+        {srcDirs, srcFiles, srcMaxAt, libAt, srcNewestPath},
+    If[TrueQ[$STSuppressStaleWarn], Return[Null]];
+    srcDirs = Select[{
+        FileNameJoin[{stHFLoadDir, "HyperFLINT", "src"}],
+        FileNameJoin[{stHFLoadDir, "HyperFLINT", "include"}]
+    }, DirectoryQ];
+    If[srcDirs === {}, Return[Null]];   (* paclet install: no source tree *)
+    srcFiles = Flatten[FileNames[{"*.cpp", "*.hpp", "*.h"}, #, Infinity] & /@ srcDirs];
+    If[srcFiles === {}, Return[Null]];
+    srcNewestPath = First[MaximalBy[srcFiles,
+        AbsoluteTime[FileDate[#, "Modification"]] &]];
+    srcMaxAt = AbsoluteTime[FileDate[srcNewestPath, "Modification"]];
+    libAt    = AbsoluteTime[FileDate[libPath, "Modification"]];
+    If[NumericQ[srcMaxAt] && NumericQ[libAt] && srcMaxAt > libAt + 1,
+        (* Print bypasses the Quiet[] wrapper around the lazy loader
+           in stHFLibraryEnsureLoaded; Message would otherwise be
+           silenced.  Both are emitted so callers can also Off[] the
+           message for grep-ability or unit-test detection. *)
+        Print["[SubTropica] WARNING: HyperFLINT dylib is OLDER than source files."];
+        Print["  dylib  : ", libPath];
+        Print["           ", DateString[libAt]];
+        Print["  newest : ", srcNewestPath];
+        Print["           ", DateString[srcMaxAt]];
+        Print["  Run    : cmake --build HyperFLINT/build-release --target hyperflint-cli --target hyperflint_librarylink"];
+        Print["  Silence: $STSuppressStaleWarn = True before Needs[\"SubTropica`\"]"];
+        Message[stHyperFlintWarnIfStale::stale, libPath,
+            DateString[libAt], DateString[srcMaxAt]]]]];
 
 stHyperFlintTryLoadLibrary[] := Module[{libPath = $STHyperFlintLibraryPath,
         verFn, ver, lrFn, symFn, clrFn},
@@ -181,7 +256,7 @@ stHyperFlintTryLoadLibrary[] := Module[{libPath = $STHyperFlintLibraryPath,
     ver = Quiet @ Check[verFn[], $Failed];
     $STHFLibVersion = ToString[ver];
     If[StringQ[ver] && ver =!= $SubTropicaVersion,
-        (* Per Phase-γ adversarial-review recommendation (finding #8):
+        (* Per Phase-\[Gamma] adversarial-review recommendation (finding #8):
            refuse to use a HF library whose version disagrees with the
            Mma-side SubTropica version.  Prevents ABI drift between
            a stale .dylib and a newer SubTropica.wl. *)
@@ -191,11 +266,11 @@ stHyperFlintTryLoadLibrary[] := Module[{libPath = $STHyperFlintLibraryPath,
             {"UTF8String"}, "UTF8String"],
         $Failed];
     If[Head[lrFn] =!= LibraryFunction, Return[False]];
-    (* Phase γ.2: hyperflint_sym is the hot op (integrator core).
-       Optional — if this symbol fails to load (e.g., Mma is pinned
+    (* Phase \[Gamma].2: hyperflint_sym is the hot op (integrator core).
+       Optional \[LongDash] if this symbol fails to load (e.g., Mma is pinned
        to an older libhyperflint_librarylink.dylib), LR-order lookups
        still transit LibraryLink, but STHyperFlint falls back to the
-       CLI.  Don't abort the whole load on γ.2 absence. *)
+       CLI.  Don't abort the whole load on \[Gamma].2 absence. *)
     symFn = Quiet @ Check[
         LibraryFunctionLoad[libPath, "hf_hyperflint_sym",
             {"UTF8String"}, "UTF8String"],
@@ -207,6 +282,7 @@ stHyperFlintTryLoadLibrary[] := Module[{libPath = $STHyperFlintLibraryPath,
     $STHFLibHyperFlintSym = If[Head[symFn] === LibraryFunction, symFn, None];
     $STHFLibClearState    = If[Head[clrFn] === LibraryFunction, clrFn, None];
     $STHyperFlintUseLibraryLink = True;
+    stHyperFlintWarnIfStale[libPath];
     True];
 
 (* The load is deferred behind a one-shot "have we succeeded?" guard.
@@ -214,7 +290,7 @@ stHyperFlintTryLoadLibrary[] := Module[{libPath = $STHyperFlintLibraryPath,
    `$SubTropicaVersion` is bound (the With-scoped definition is further
    down this file), so the version mismatch guard inside
    stHyperFlintTryLoadLibrary trips.  The lazy call from STHyperFlint /
-   STFindLROrdersHF retries until success — once the library loads, the
+   STFindLROrdersHF retries until success \[LongDash] once the library loads, the
    guard short-circuits every subsequent call. *)
 stHFLibraryEnsureLoaded[] := If[!TrueQ[$STHyperFlintUseLibraryLink],
     Quiet @ Check[stHyperFlintTryLoadLibrary[], False]];
@@ -297,6 +373,15 @@ $STDependencies = <|
     "usedBy" -> {"STIntegrate[\"Integrator\" -> \"HyperFLINT\"]", "STHyperFlint"},
     "installHint" -> "cd ~/Projects/SubTropica-branchSM/HyperFLINT && cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release && cmake --build build-release -j",
     "configHint" -> "Auto-discovered at ~/Projects/SubTropica-branchSM/HyperFLINT/build-release/hyperflint; override: ConfigureSubTropica[HyperFlintPath -> \"/absolute/path/to/hyperflint\"]"
+  |>,
+  "HyperLogProcedures" -> <|
+    "type" -> "maple-package", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[$STHyperLogProceduresPath],
+    "usedBy" -> {"STHyperLogProcedures", "STParseHyperLogProceduresOutput"},
+    "installHint" -> "Download HyperlogProcedures08small.zip from Schnetz's homepage (https://www.physik.uni-hamburg.de/en/th2/ag-moch/personen/schnetz-oliver.html) and unzip to ~/Projects/HyperLogProcedures/. Requires Maple.",
+    "configHint" -> "Auto-discovered at ~/Projects/HyperLogProcedures/HyperlogProcedures; override: ConfigureSubTropica[HyperLogProceduresPath -> \"/absolute/path/to/HyperlogProcedures\"]"
   |>,
   "python3" -> <|
     "type" -> "binary", "required" -> False,
@@ -676,24 +761,34 @@ stTestOneDependency[name_String] := CheckAbort[Module[
     "maple-package",
       (* Plain Maple source file (.mpl).  Read enough of the header to
          catch both the copyright line and the "HyperInt, version X.Y"
-         banner printf; avoids invoking Maple to keep kernel startup fast. *)
+         banner printf; avoids invoking Maple to keep kernel startup fast.
+         Also handles Schnetz's HyperLogProcedures banner. *)
       If[!StringQ[path] || path === "",
         {"missing", "", "path not set"},
         If[!FileExistsQ[path],
           {"missing", "", "not found at " <> path},
-          Module[{headerLines, joined, verCases, versionString},
+          Module[{headerLines, joined, verCases, hlpCases, versionString},
             $STDependencies[name, "resolvedPath"] = path;
             headerLines = Quiet @ Check[ReadList[path, String, 120], {}];
             joined = StringJoin[Riffle[headerLines, "\n"]];
             verCases = StringCases[joined,
               "HyperInt, version " ~~ v:RegularExpression["[0-9][0-9A-Za-z.\\-]*"] :>
                 "HyperInt " <> v, 1];
-            versionString = If[Length[verCases] > 0, First[verCases], ""];
+            hlpCases = StringCases[joined,
+              "Hyperlog Procedures, Version " ~~
+                v:RegularExpression["[0-9][0-9A-Za-z.\\-]*"] :>
+                "HyperLogProcedures " <> v, 1];
+            versionString = Which[
+              Length[verCases] > 0,  First[verCases],
+              Length[hlpCases] > 0,  First[hlpCases],
+              True, ""];
             Which[
               StringContainsQ[joined, "Erik Panzer"] || StringContainsQ[joined, "PanzerErik/hyperint"],
                 {"ok", If[versionString =!= "", versionString, "Panzer HyperInt"], ""},
+              StringContainsQ[joined, "Hyperlog Procedures"] || StringContainsQ[joined, "Oliver Schnetz"],
+                {"ok", If[versionString =!= "", versionString, "HyperLogProcedures"], ""},
               True,
-                {"ok", versionString, "file found but no HyperInt header; using as-is"}]]]],
+                {"ok", versionString, "file found but no HyperInt/HLP header; using as-is"}]]]],
 
     _, {"untested", "", "unknown type"}
   ];
@@ -1032,6 +1127,7 @@ Module[{loaded, applyOne},
                                                    $STHyperFlintDataPath = stResolveHyperFlintDataPath[v]],
                 "HyperFlintDataPath",          If[StringQ[v] && v =!= "" && FileExistsQ[v],
                                                    $STHyperFlintDataPath = v],
+                "HyperLogProceduresPath",      If[StringQ[v] && v =!= "", $STHyperLogProceduresPath = v] (* else keep auto-discovered value *),
                 "PythonPath",                  $PythonCommand = v,
                 "PolymakeConcurrencyFraction", $PolymakeConcurrencyFraction = v,
                 "FiniteFlowPath",              $FiniteFlowPath = v,
@@ -1058,6 +1154,7 @@ Options[ConfigureSubTropica] = {
     HyperIntPath                -> Inherited,    (* "" = re-run auto-discovery; Inherited = no change *)
     HyperFlintPath              -> Inherited,    (* "" = re-run auto-discovery; Inherited = no change *)
     HyperFlintDataPath          -> Inherited,    (* "" = derive from binary; Inherited = no change *)
+    HyperLogProceduresPath      -> Inherited,    (* "" = re-run auto-discovery; Inherited = no change *)
     PythonPath                  -> Inherited,
     PolymakeConcurrencyFraction -> Inherited,
     FiniteFlowPath              -> Inherited,    (* "" = no FF; Inherited = no change *)
@@ -1073,7 +1170,7 @@ Options[ConfigureSubTropica] = {
 With[{$SubTropicaDir = DirectoryName[$InputFileName]},
 
 $SubTropicaInstallDir = $SubTropicaDir;
-$SubTropicaVersion = "1.1.8";
+$SubTropicaVersion = "1.1.9";
 
 (* Init-order fix: line 109 set $STHyperFlintDataPath before
    $SubTropicaInstallDir was bound, so the install-dir-derived data
@@ -1099,7 +1196,7 @@ $stEuclideanPoint = False;
    $LibraryPath augmented with FiniteFlow package root (parent of mathlink/) so FindLibrary
    locates fflowmlink.dylib. FFLoadLib[] retried if already cached with unloaded library.
    $UseFFPolynomialQuotient verified via FFDefaultNThreadsImplem (reliable C-library indicator). *)
-(* CheckAbort: Check[Quiet[...]] does NOT intercept Abort[] — only messages.
+(* CheckAbort: Check[Quiet[...]] does NOT intercept Abort[] \[LongDash] only messages.
    A FF C-library load that aborts (e.g., stale .dylib, ABI mismatch) would
    otherwise bubble past this block and take the whole package load down. *)
 CheckAbort[
@@ -1179,6 +1276,9 @@ ConfigureSubTropica[opts:OptionsPattern[]] := Module[
                 $STHyperFlintDataPath = hfd,
             hfp =!= Inherited,
                 $STHyperFlintDataPath = stResolveHyperFlintDataPath[$STHyperFlintPath]]];
+    Module[{hlp = OptionValue[HyperLogProceduresPath]},
+        If[hlp =!= Inherited,
+            $STHyperLogProceduresPath = If[StringQ[hlp] && hlp =!= "", hlp, stDiscoverHyperLogProcedures[]]]];
     If[OptionValue[PythonPath]                  =!= Inherited, $PythonCommand               = OptionValue[PythonPath]];
     If[OptionValue[PolymakeConcurrencyFraction] =!= Inherited, $PolymakeConcurrencyFraction = OptionValue[PolymakeConcurrencyFraction]];
     If[OptionValue[FIESTAPath]                  =!= Inherited, $FIESTAPath                  = OptionValue[FIESTAPath]];
@@ -1266,6 +1366,7 @@ ConfigureSubTropica[opts:OptionsPattern[]] := Module[
             "MaplePath"                   -> $MapleCommand,
             "HyperIntPath"                -> $SThyperIntPath,
             "HyperFlintPath"              -> $STHyperFlintPath,
+            "HyperLogProceduresPath"      -> $STHyperLogProceduresPath,
             "PythonPath"                  -> $PythonCommand,
             "PolymakeConcurrencyFraction" -> $PolymakeConcurrencyFraction,
             "FiniteFlowPath"              -> $FiniteFlowPath,
@@ -1372,7 +1473,12 @@ STSubmitResult::usage = "STSubmitResult[] submits the most recent integration re
 to the central SubTropica library. No GitHub account required.
 Submissions are gated on numerical verification: if $integrationResult does not carry \
 a passing STVerify record, STSubmitResult runs STVerify inline (1 kinematic point, \
-pySecDec, Tolerance 10^-3) before submitting and aborts on failure.";
+pySecDec, Tolerance 10^-3) before submitting and aborts on failure.
+Backend-tuning options are forwarded to the inline STVerify (\"Method\", \"MaxTime\", \
+\"NumSamples\", \"Seed\", \"Accuracy\", \"MaxEval\", \"Integrator\", \"Verbose\", and \
+FIESTA / AMFlow / feyntrop tunings). The pass-criterion options (\"Tolerance\", \
+\"Order\", \"Substitutions\", \"Dimension\", \"Exponents\", \"ResultIndex\", \
+\"LibraryPath\") are locked so the submission gate cannot be bypassed.";
 
 STNIntegrate::usage="
 STNIntegrate[{edges, nodes}, opts] numerically evaluates a Feynman integral via sector decomposition.
@@ -1769,7 +1875,7 @@ loops,props
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Gaussian Integration*)
 
 
@@ -1820,7 +1926,7 @@ nonpinched=DeleteCases[Range[exponents//Length],Alternatives@@pinched];
 ]
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Feynman Parametric Integrand Data*)
 
 
@@ -2176,9 +2282,9 @@ Module[{unusedLoops},
 ];
 
 LL = LLinternal = loops // Length;
-EE = propagatorsParsed // Length;
-NN = numeratorsParsed // Length;
-DD = OptionValue["Dimension"];
+EE = EEinternal =  propagatorsParsed // Length;
+NN = NNinternal = numeratorsParsed // Length;
+DD = DDinternal = OptionValue["Dimension"];
 
 loopDegrees = combinedPropagators // CoefficientList[#, loops] & // Map[Length];
 If[Max[loopDegrees] > 3,
@@ -2190,7 +2296,7 @@ If[Max[loopDegrees] > 3,
    on-shell conditions) before any user-supplied substitutions *)
 Module[{extMom, nExt, basisRules, basisVarRules},
 	extMom = Complement[Cases[Variables[combinedPropagators], p[_]], loops] // Sort;
-	nExt = Length[extMom]+1;
+	nExt = nExtInternal = Length[extMom]+1;
 	If[nExt >= 2,
 		basisRules = basis[nExt] /. Subscript[M, i_] :> Subscript[M, i]^2;
 
@@ -2264,7 +2370,7 @@ Module[{extMom, nExt, basisRules, basisVarRules},
 (*  3. Build the quadratic form                                  *)
 (* ============================================================ *)
 
-dd = (Total[combinedExponents] - LL DD/2) // Expand;
+dd = ddInternal = (Total[combinedExponentsInternal = combinedExponents] - LL DD/2) // Expand;
 sum = Table[\[Alpha][e], {e, EE + NN}] . combinedPropagators // Expand;
 
 Q\[Beta] = Table[
@@ -2463,7 +2569,7 @@ Module[{Uphys, Fphys},
 
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Users' functions*)
 
 
@@ -2750,7 +2856,8 @@ Options[STToPySecDec] = {
 	"Exponents"          -> Automatic,
 	"LoopMomenta"        -> Automatic,
 	"Substitutions"      -> {},
-	"Integrator"         -> "Qmc"   (* "Qmc", "Disteval", or "Vegas" *)
+	"Integrator"         -> "Qmc",  (* "Qmc", "Disteval", or "Vegas" *)
+	"MaxTime"            -> Automatic   (* wall-clock cap on the Python subprocess (signal.alarm + subprocess.run timeout).  Automatic = 3600 s; pass an integer (seconds) to override; Infinity disables. *)
 };
 
 STToPySecDec[g:{_List, _List}, opts:OptionsPattern[]] :=
@@ -3246,8 +3353,19 @@ Module[{props, loops, extMom, nExt, nLoops, exponents, powers, nNu,
 ];
 
 stBuildPySecDecScript[integralData_Association, soPath_String, pkgDir_String, pkgName_String,
-	kinValues_List, epsrel_, maxeval_, verbose_, integrator_String:"Qmc"] :=
-Module[{script, prefStr, orderStr, rpStr, contStr, rrStr, pwStr, kinDict, evalBlock},
+	kinValues_List, epsrel_, maxeval_, verbose_, integrator_String:"Qmc",
+	maxTimeSec_:3600] :=
+Module[{script, prefStr, orderStr, rpStr, contStr, rrStr, pwStr, kinDict, evalBlock,
+	timeoutStr},
+
+	(* Python literal for the timeout value: integer seconds, or None to
+	   disable.  None makes signal.alarm a no-op (skipped via if-guard
+	   below) and subprocess.run(timeout=None) wait forever.  Values
+	   above ~2^31 (e.g. MaxTime->10^17 used as "effectively infinite")
+	   would overflow signal.alarm's C int, so we collapse them to None. *)
+	timeoutStr = If[maxTimeSec === Infinity || !NumericQ[maxTimeSec] ||
+			N[maxTimeSec] >= 2^31 - 1,
+		"None", ToString[Round[maxTimeSec]]];
 
 	orderStr = ToString[integralData["order"]];
 	rpStr = "[" <> StringRiffle["'" <> # <> "'" & /@ integralData["realParamNames"], ", "] <> "]";
@@ -3377,15 +3495,16 @@ KIN_VALUES = " <> ExportString[kinValues, "JSON"] <> "
 EPSREL = " <> ToString[CForm[N[epsrel]]] <> "
 MAXEVAL = " <> ToString[maxeval] <> "
 VERBOSE = " <> If[verbose, "True", "False"] <> "
-TIMEOUT = 3600  # seconds (was 600; 2-loop 7-prop builds need more)
+TIMEOUT = " <> timeoutStr <> "  # seconds; None = no cap (MaxTime->Infinity)
 
 def _timeout_handler(signum, frame):
     print('EVAL_TIMEOUT', file=sys.stderr)
     sys.exit(3)
 
 def main():
-    signal.signal(signal.SIGALRM, _timeout_handler)
-    signal.alarm(TIMEOUT)
+    if TIMEOUT is not None:
+        signal.signal(signal.SIGALRM, _timeout_handler)
+        signal.alarm(TIMEOUT)
     if not os.path.exists(SO_PATH):
         import shutil
         pkg_path = os.path.join(PKG_DIR, PKG_NAME)
@@ -3413,7 +3532,7 @@ def main():
 
         if VERBOSE: print('pySecDec: compiling C++...', file=sys.stderr, flush=True)
         r = subprocess.run(['make', '-j4', 'pylink'],
-            cwd=os.path.join(PKG_DIR, PKG_NAME), capture_output=True, text=True, timeout=3600)
+            cwd=os.path.join(PKG_DIR, PKG_NAME), capture_output=True, text=True, timeout=TIMEOUT)
         if r.returncode != 0:
             print('BUILD_FAILED', file=sys.stderr)
             print(r.stderr[:2000], file=sys.stderr)
@@ -3429,7 +3548,7 @@ if __name__ == '__main__':
 
 stPySecDecEvaluate[integralData_Association, opts:OptionsPattern[STToPySecDec]] :=
 Module[{cacheDir, hash, pkgDir, pkgName, soPath, kinPoint, kinValues,
-	epsrel, maxeval, verbose, script, scriptPath, proc, stdout, stderr,
+	epsrel, maxeval, maxTime, verbose, script, scriptPath, proc, stdout, stderr,
 	jsonResult, valStr, errStr, result, resultErr, realParamSymbols, realParamNames,
 	missingParams},
 
@@ -3437,6 +3556,12 @@ Module[{cacheDir, hash, pkgDir, pkgName, soPath, kinPoint, kinValues,
 	epsrel = OptionValue[STToPySecDec, {opts}, "Accuracy"];
 	maxeval = OptionValue[STToPySecDec, {opts}, "MaxEval"];
 	kinPoint = OptionValue[STToPySecDec, {opts}, "KinematicPoint"];
+	(* Resolve MaxTime: Automatic -> 3600 s (legacy default); Infinity -> no
+	   cap (Python: signal.alarm(0) and subprocess.run(timeout=None));
+	   explicit number -> seconds.  Same value applied to every timer in
+	   the generated script. *)
+	maxTime = OptionValue[STToPySecDec, {opts}, "MaxTime"];
+	If[maxTime === Automatic, maxTime = 3600];
 
 	If[stRequireTool["python3"] === $Failed, Return[$Failed]];
 
@@ -3522,7 +3647,7 @@ Module[{cacheDir, hash, pkgDir, pkgName, soPath, kinPoint, kinValues,
 
 	Module[{integrator = OptionValue[STToPySecDec, {opts}, "Integrator"]},
 	script = stBuildPySecDecScript[integralData, soPath, pkgDir, pkgName,
-		kinValues, epsrel, maxeval, verbose, integrator];
+		kinValues, epsrel, maxeval, verbose, integrator, maxTime];
 	];
 
 	scriptPath = FileNameJoin[{pkgDir, "eval.py"}];
@@ -3543,7 +3668,8 @@ Module[{cacheDir, hash, pkgDir, pkgName, soPath, kinPoint, kinValues,
 	If[proc["ExitCode"] =!= 0,
 		Which[
 			proc["ExitCode"] === 2, Message[STToPySecDec::buildfail],
-			proc["ExitCode"] === 3, Message[STToPySecDec::evalfail, "Evaluation timed out (600s)"],
+			proc["ExitCode"] === 3, Message[STToPySecDec::evalfail,
+				"Evaluation timed out (" <> ToString[maxTime] <> "s)"],
 			True, Message[STToPySecDec::pythonfail, proc["ExitCode"], StringTake[stderr, UpTo[200]]]
 		];
 		Return[$Failed]
@@ -3724,7 +3850,7 @@ Module[{method, verbose, stnOpts, r, maxTime, nLoopsGuess},
 	stnOpts = FilterRules[optsList, Options[STNIntegrate]];
 	stnOpts = DeleteCases[stnOpts,
 		Rule[("Method" | "Substitutions" | "KinematicPoint" | "Order" |
-		      "MaxEval" | "Verbose" | "Normalization"), _]];
+		      "MaxEval" | "Verbose" | "Normalization" | "MaxTime"), _]];
 
 	(* B8: hard cap on backend wall-clock to keep one runaway integral
 	   from taking down the long-running UI kernel.  Resolve "MaxTime"
@@ -3760,6 +3886,7 @@ Module[{method, verbose, stnOpts, r, maxTime, nLoopsGuess},
 				"MaxEval"       -> maxeval,
 				"Verbose"       -> verbose,
 				"Normalization" -> normalization,
+				"MaxTime"       -> maxTime,
 				Sequence @@ stnOpts
 			],
 			maxTime,
@@ -3827,7 +3954,7 @@ STVerify[cni_String, opts:OptionsPattern[]] := Module[
 	   field (post-v1.0.389 entries). `deltaSign` (+/- 1), if stored per
 	   index, is appended as a delta[i] -> sign rule so stVerifyEvalSymbolicGeneric
 	   can resolve iepsilon-disambiguated signs.  Entries written before the
-	   Phase-5 recompute may be missing `algebraicLetters` — those return
+	   Phase-5 recompute may be missing `algebraicLetters` \[LongDash] those return
 	   an empty rule list and STVerify will fail the W-atom substitution,
 	   flagging the entry for re-save. *)
 	$stRootSubstitutions = stLoadRootSubs[resultData];
@@ -3842,16 +3969,18 @@ STVerify[cni_String, opts:OptionsPattern[]] := Module[
 	   parameters absent from the result were zero in the original computation.
 	   Use Cases to find all symbolic atoms (Variables misses symbols inside Log/Hlog). *)
 	seed = Hash[cni, "CRC32"];
-	Module[{resultSymbols},
+	Module[{resultSymbols, rolled},
 		resultSymbols = Cases[result, _Symbol | _Symbol[_Integer], {0, Infinity}]
 			// DeleteDuplicates // DeleteCases[_?(MemberQ[{eps, Pi, E, I, SeriesData, List, Plus, Times, Power, Log, Hlog, zeta, mzv, Rational, Complex}, #] &)];
-		kinPoint = stMakeVerificationPoint[edges, nodes, seed, resultSymbols];
+		rolled = stMakeNonDegenerateVerificationPoint[edges, nodes, seed, resultSymbols, 20, verbose];
+		kinPoint = rolled[[1]];
+		seed     = rolled[[2]];
 	];
 	If[kinPoint === $Failed,
 		Return[<|"pass" -> False,
 			"reason" -> "no Euclidean kinematic point found",
 			"cni" -> cni, "loops" -> nLoops|>]];
-	If[verbose, Print["[STVerify] KinematicPoint: ", kinPoint]];
+	If[verbose, Print["[STVerify] KinematicPoint: ", kinPoint, "  (final seed=", seed, ")"]];
 
 	(* 3b. Detect shared internal/external mass symbols.
 	   When a symbol appears as both an internal edge mass and an external
@@ -4034,10 +4163,12 @@ STVerify[{edges_List, nodes_List}, result_, opts:OptionsPattern[STVerify]] := Mo
 					"cni" -> cni, "loops" -> nLoops|>]]]];
 
 	seed = If[NumericQ[userSeed], userSeed, Hash[cni, "CRC32"]];
-	Module[{resultSymbols},
+	Module[{resultSymbols, rolled},
 		resultSymbols = Cases[result, _Symbol | _Symbol[_Integer], {0, Infinity}]
 			// DeleteDuplicates // DeleteCases[_?(MemberQ[{eps, Pi, E, I, SeriesData, List, Plus, Times, Power, Log, Hlog, zeta, mzv, Rational, Complex}, #] &)];
-		kinPoint = stMakeVerificationPoint[edges, nodes, seed, resultSymbols];
+		rolled = stMakeNonDegenerateVerificationPoint[edges, nodes, seed, resultSymbols, 20, verbose];
+		kinPoint = rolled[[1]];
+		seed     = rolled[[2]];
 	];
 	If[kinPoint === $Failed,
 		Return[<|"pass" -> False,
@@ -4092,10 +4223,10 @@ STVerify[{edges_List, nodes_List}, result_, opts:OptionsPattern[STVerify]] := Mo
 	   eps^-1, eps^0" and bumped psdOrder up by nLoops + (-symLead) to
 	   compensate.  That was a workaround for an older pySecDec convention
 	   and no longer needed: pySecDec with `Order -> 0` returns the full
-	   series from the leading pole through ε^0.  Aggressively bumping the
+	   series from the leading pole through \[CurlyEpsilon]^0.  Aggressively bumping the
 	   Order caused verification to time out on multi-scale integrals like
 	   the massless pentagon (pySecDec spent >300s trying to compute
-	   through ε^2). *)
+	   through \[CurlyEpsilon]^2). *)
 	psdResult = stVerifyRunBackend[{edges, nodes}, kinPoint, normalization,
 		order, maxeval, {opts}];
 	If[psdResult === $Failed,
@@ -4836,6 +4967,85 @@ stMakeVerificationPoint[edges_, nodes_, seed_Integer, resultVars_List:{}] := Cat
 	   for the same Mandelstam and either silently uses one or fails to build. *)
 	DeleteDuplicatesBy[DeleteDuplicates[applySharedMassOnShell[rules]], First]
 ], "euclidean"];
+
+
+(* ---- Algebraic-letter degeneracy guard ----
+
+   stMakeVerificationPoint can deterministically land on a kinematic point
+   where the algebraic letters {Wm[i], Wp[i]} hit a boundary singularity
+   that makes the result's denominators vanish (1/0 -> ComplexInfinity).
+   The 2-mass hexagonal core with bubble insertion (b)
+   `1123|e|e4|e4|e|:0000|1|00|10|0|` was the original culprit:
+   Hash[cni,"CRC32"] = 2227685404 produces {Msq=-17/31, s12=-51/124,
+   s23=-17/124} where s12+s23 = -17/31 = MM, hence Wm,Wp are primitive 6th
+   roots of unity and 1+Wm+Wp = 0 identically.
+
+   stLetterDegeneraciesAtPoint reports degenerate letter indices (0, 1,
+   -1, Wm=Wp, 1+Wm+Wp=0) under a candidate point; Vieta's identity
+   Wp*Wm = -(Wp+Wm) for these square-root letters means the latter check
+   also catches the equivalent Wp*Wm=1 condition.
+
+   stMakeNonDegenerateVerificationPoint wraps stMakeVerificationPoint and
+   reseeds (seed, seed+1, ..., seed+maxAttempts-1) until a non-degenerate
+   point is found.  Used by STVerify in both the library/CNI form and the
+   graph form.  Falls back to the original seed's point if every attempt
+   degenerates (rather than blocking verification entirely); the
+   downstream STToGinsh/ginsh failure path then surfaces a "ginsh/eval
+   failed" outcome with a clean trace. *)
+
+stLetterDegeneraciesAtPoint[kinPoint_List, rootSubs_List, edges_, nodes_] := Module[
+	{indices, ksubs, tol = 10^-10},
+	If[rootSubs === {}, Return[{}]];
+	indices = Cases[rootSubs, HoldPattern[Wm[i_] -> _] :> i] // DeleteDuplicates;
+	If[indices === {}, Return[{}]];
+	ksubs = Quiet[Check[stBuildSymbolicSubRules[edges, nodes, kinPoint], $Failed]];
+	If[ksubs === $Failed, Return[{}]];
+	Cases[
+		Table[
+			Module[{wm, wp},
+				wm = Quiet[N[Wm[i] /. rootSubs /. ksubs]];
+				wp = Quiet[N[Wp[i] /. rootSubs /. ksubs]];
+				If[!NumericQ[wm] || !NumericQ[wp],
+					Nothing,
+					Which[
+						Abs[wm] < tol,            {i, "Wm=0"},
+						Abs[wp] < tol,            {i, "Wp=0"},
+						Abs[wm - 1] < tol,        {i, "Wm=1"},
+						Abs[wp - 1] < tol,        {i, "Wp=1"},
+						Abs[wm + 1] < tol,        {i, "Wm=-1"},
+						Abs[wp + 1] < tol,        {i, "Wp=-1"},
+						Abs[wp - wm] < tol,       {i, "Wp=Wm (disc=0)"},
+						Abs[1 + wm + wp] < tol,   {i, "1+Wm+Wp=0"},
+						True,                     Nothing]]],
+			{i, indices}],
+		_List]
+];
+
+stMakeVerificationPoint::allDegenerate =
+	"All `1` seed reroll attempts (starting from seed=`2`) gave kinematic points where some algebraic letter Wm[i]/Wp[i] hits a boundary singularity (=0, =1, =-1, Wm=Wp, or 1+Wm+Wp=0).  Falling back to the original seed's point; symbolic evaluation will likely produce ComplexInfinity in Hlog c-lists and the verifier will report ginsh/eval failed.  Inspect the result for spurious denominators in the algebraic-letter alphabet.";
+
+stMakeNonDegenerateVerificationPoint[edges_, nodes_, seed_Integer,
+	resultVars_List:{}, maxAttempts_Integer:20, verbose_:False] := Module[
+	{try = 0, currSeed = seed, kinPoint, degens,
+	 firstKinPoint = Null, firstSeed = seed},
+	While[try < maxAttempts,
+		kinPoint = stMakeVerificationPoint[edges, nodes, currSeed, resultVars];
+		If[kinPoint === $Failed, Return[{$Failed, currSeed}]];
+		If[try == 0, firstKinPoint = kinPoint; firstSeed = currSeed];
+		degens = stLetterDegeneraciesAtPoint[kinPoint,
+			If[ValueQ[$stRootSubstitutions], $stRootSubstitutions, {}],
+			edges, nodes];
+		If[degens === {}, Return[{kinPoint, currSeed}]];
+		If[verbose,
+			Print["[STVerify] seed=", currSeed,
+				" landed on algebraic-letter degeneracy ", degens,
+				"; rerolling (attempt ", try + 1, "/", maxAttempts, ")"]];
+		try++;
+		currSeed = seed + try
+	];
+	Message[stMakeVerificationPoint::allDegenerate, maxAttempts, seed];
+	{firstKinPoint, firstSeed}
+];
 
 
 (* ---- Helper: build substitution rules mapping pySecDec params \[RightArrow] symbolic result vars ----
@@ -5835,7 +6045,8 @@ Options[STNIntegrate] = {
 	(* feyntrop-specific *)
 	"FeyntropLambda"     -> 0,            (* contour deformation param; 0 = Euclidean. Nonzero for physical-region integrals. *)
 	"FeyntropSeed"       -> 0,
-	"FeyntropNThread"    -> Automatic     (* OMP_NUM_THREADS env var; Automatic = all cores *)
+	"FeyntropNThread"    -> Automatic,    (* OMP_NUM_THREADS env var; Automatic = all cores *)
+	"MaxTime"            -> Automatic     (* unified wall-clock cap; Automatic in this layer is a pass-through (the verify layer resolves it).  Infinity disables every timer in the chain (Mma TimeConstrained, Python signal.alarm, subprocess.run timeout). *)
 };
 
 (* --- Form 1: graph topology {edges, nodes} --- *)
@@ -6246,9 +6457,15 @@ stBuildPySecDecQuadScript[pkgDir_String, pkgName_String, intVarStrs_List,
     polysDecomposeStrs_List, remainderStr_String, prefactorStr_String,
     realParamStrs_List, kinValues_List, orderInt_Integer,
     epsrel_Real, maxeval_Integer, verbose_, integrator_String,
-    decompositionMethod_String:"geometric_no_primary"] := Module[
+    decompositionMethod_String:"geometric_no_primary",
+    maxTimeSec_:3600] := Module[
     {polyListPyStr, intVarsPyStr, realParamsPyStr, kinValuesPyStr, evalBlock,
-     intVarPyList, polyPyList, realParamPyList, kinValPyList},
+     intVarPyList, polyPyList, realParamPyList, kinValPyList, timeoutStr},
+
+    (* See stBuildPySecDecScript for the Python None / int convention. *)
+    timeoutStr = If[maxTimeSec === Infinity || !NumericQ[maxTimeSec] ||
+			N[maxTimeSec] >= 2^31 - 1,
+		"None", ToString[Round[maxTimeSec]]];
 
     (* Each xvar / coeff name as a Python string, e.g. "'x'" *)
     intVarsPyStr   = "[" <> StringRiffle["'" <> # <> "'" & /@ intVarStrs, ", "] <> "]";
@@ -6298,7 +6515,7 @@ MAXEVAL  = " <> ToString[maxeval] <> "
 VERBOSE  = " <> If[verbose, "True", "False"] <> "
 KIN_VALUES = " <> kinValuesPyStr <> "
 REAL_PARAMS = " <> realParamsPyStr <> "
-TIMEOUT  = 3600  # was 600; multi-loop make_package + compile needs more
+TIMEOUT  = " <> timeoutStr <> "  # seconds; None = no cap (MaxTime->Infinity)
 
 def _timeout_handler(signum, frame):
     print('EVAL_TIMEOUT', file=sys.stderr); sys.exit(3)
@@ -6306,8 +6523,9 @@ def _timeout_handler(signum, frame):
 # IMPORTANT: must guard make_package() in `if __name__ == '__main__':`
 # because it spawns multiprocessing workers that re-execute the script.
 def main():
-    signal.signal(signal.SIGALRM, _timeout_handler)
-    signal.alarm(TIMEOUT)
+    if TIMEOUT is not None:
+        signal.signal(signal.SIGALRM, _timeout_handler)
+        signal.alarm(TIMEOUT)
 
     pkg_root = os.path.join(PKG_DIR, PKG_NAME)
     integral_name = PKG_NAME + '_integral'
@@ -6368,7 +6586,7 @@ def main():
         for h in sector_hs:
             sname = os.path.basename(h)[:-len('.h')]  # 'sector1'
             r = subprocess.run(['make', f'codegen/{sname}.done'],
-                cwd=integral_dir, capture_output=True, text=True, timeout=300)
+                cwd=integral_dir, capture_output=True, text=True, timeout=TIMEOUT)
             if r.returncode != 0:
                 print(f'FORM step failed for {sname}:', file=sys.stderr)
                 print(r.stderr[-1000:], file=sys.stderr); sys.exit(2)
@@ -6383,7 +6601,7 @@ def main():
             r = subprocess.run(['c++', '-c', '-fPIC', '-std=c++17', '-O3',
                 '-funsafe-math-optimizations', '-I', disteval_inc,
                 '-o', o, f],
-                capture_output=True, text=True, timeout=300)
+                capture_output=True, text=True, timeout=TIMEOUT)
             if r.returncode != 0:
                 print(f'sector compile failed: {f}', file=sys.stderr)
                 print(r.stderr[-1000:], file=sys.stderr); sys.exit(2)
@@ -6503,6 +6721,7 @@ stParseDistevalMathematica[s_String, requestedOrder_Integer] := Module[
 stPySecDecFromQuadruple[{pref_, integrand_, xvars_List, coeffs_},
     limits_List, checkpointId_, opts___] := Module[
     {order, verbose, kinPoint, integrator, maxeval, accuracy, cacheDir,
+     maxTime,
      decompositionMethod,
      polysDecompose, remainder, prefactorStr, remainderStr,
      polyDecomposeStrs, intVarStrs, realParamStrs, kinLookup, kinValues,
@@ -6517,6 +6736,10 @@ stPySecDecFromQuadruple[{pref_, integrand_, xvars_List, coeffs_},
     maxeval    = "MaxEval"        /. {opts} /. "MaxEval"        -> 10^7;
     accuracy   = "Accuracy"       /. {opts} /. "Accuracy"       -> 1*^-4;
     cacheDir   = "CacheDirectory" /. {opts} /. "CacheDirectory" -> Automatic;
+    (* Same resolution as stPySecDecEvaluate: Automatic -> 3600 s legacy
+       default; Infinity -> Python None (no cap); explicit number wins. *)
+    maxTime    = "MaxTime"        /. {opts} /. "MaxTime"        -> Automatic;
+    If[maxTime === Automatic, maxTime = 3600];
     If[cacheDir === Automatic,
         cacheDir = FileNameJoin[{$SubTropicaInstallDir, "pySecDec"}]];
 
@@ -6562,7 +6785,7 @@ stPySecDecFromQuadruple[{pref_, integrand_, xvars_List, coeffs_},
     script = stBuildPySecDecQuadScript[pkgDir, pkgName, intVarStrs,
         polyDecomposeStrs, remainderStr, prefactorStr, realParamStrs,
         kinValues, order, N[accuracy], maxeval, verbose, integrator,
-        decompositionMethod];
+        decompositionMethod, maxTime];
 
     scriptPath = FileNameJoin[{pkgDir, "eval.py"}];
     Export[scriptPath, script, "Text"];
@@ -9524,7 +9747,7 @@ sortingFunction
 (*Interface to HyperInt*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Elementary Functions *)
 
 
@@ -9671,6 +9894,393 @@ If[rawResult === $Failed, $Failed, rawResult /. unflatten]
 
 
 (* ============================================================ *)
+(*  HyperLogProcedures backend (Schnetz, Maple, v0.8) \[LongDash] Phase 0 *)
+(* ============================================================ *)
+(*  STHyperLogProcedures[{edges, nodes}, opts] evaluates a       *)
+(*  Feynman period via Schnetz's HyperLogProcedures (Maple).     *)
+(*  Phase 0: graph translation, Maple shim, raw-output return.   *)
+(*  No parser; the Maple result is returned verbatim as a string *)
+(*  inside an Association.  Restrictions: massless internal edges,*)
+(*  no vertex-mass insertions, 3-pt completed graphs only.       *)
+(*  Phase 1 (deferred) will add a parser; Phase 2 (deferred)     *)
+(*  will route through STIntegrate's per-face integrand dispatch.*)
+
+STHyperLogProcedures::usage = "STHyperLogProcedures[{edges, nodes}, opts] is a standalone wrapper around Schnetz's HyperLogProcedures (Maple, v0.8).  It returns Schnetz's conformally-completed graphical function f_G(z, \[Conjugate]z) for the supplied graph -- a different mathematical object from STIntegrate's bare Symanzik Euler integral, so HLP is intentionally NOT wired into STIntegrate's \"Integrator\" option (which dispatches between HyperIntica/HyperInt/HyperFLINT, all of which integrate the same Symanzik integrand and ARE cross-checkable against each other).  Use STHyperLogProcedures directly when you want f_G natively (CFT, N=4 SYM, massless graphical-function contexts, high-loop \[CurlyPhi]^4 periods).  Returns an Association with keys \"raw\" (verbatim Maple-syntax string), \"result\" (parsed Mathematica expression in z/zz with Hlog/Zeta/mzv/Pi/Log/EulerGamma; $Failed if the parser bails), \"wall_s\", \"fixture\", \"D0\", \"eps_order\".  Parser handles f[k]/f[k1,...,kn] (single zetas / MZVs), I[z,...,0] (iterated integrals), gamma (EulerGamma), epsilon (renamed to eps).  Limitations: massless internal edges only, no vertex-mass insertions on internal vertices, \[CurlyPhi]^3 / \[CurlyPhi]^4 graphs, 3 external vertices.  Set $STHyperLogProceduresPath or use ConfigureSubTropica[HyperLogProceduresPath -> ...] to override the install location.";
+
+STHyperLogProcedures::installpath = "HyperLogProcedures install not found at `1`.  Install per notes/branch_H_hyperlogprocedures/findings.md (download HyperlogProcedures08small.zip from Schnetz's homepage and unzip to ~/Projects/HyperLogProcedures/), then call ConfigureSubTropica[HyperLogProceduresPath -> \"/absolute/path/to/HyperlogProcedures\"].";
+STHyperLogProcedures::edgemass    = "HyperLogProcedures does not support massive internal edges.  Edge `1` has mass `2` (\[NotEqual] 0).";
+STHyperLogProcedures::vertmass    = "HyperLogProcedures does not support vertex-mass insertions.  Vertex `1` has mass label `2` (\[NotEqual] 0).";
+STHyperLogProcedures::valence     = "HyperLogProcedures expects \[CurlyPhi]^3 (3-valent) or \[CurlyPhi]^4 (4-valent) graphs.  Vertex `1` has total (effective) valence `2`.";
+STHyperLogProcedures::extcount    = "Phase 0 of STHyperLogProcedures supports 3-point graphs only.  Got `1` external vertices.";
+STHyperLogProcedures::dimspec     = "STHyperLogProcedures could not extract an integer base dimension D0 from \"Dimension\" -> `1` (expected something of the form D0 - 2 eps with D0 a positive integer).";
+STHyperLogProcedures::mapleerror  = "HyperLogProcedures Maple call failed (exit code `1`).  Maple stdout/stderr are streamed to the active console; check there for the underlying message.  Script saved at `2`.";
+STHyperLogProcedures::emptyout    = "HyperLogProcedures returned no output to `1`.  This typically means the Maple call aborted before reaching the WriteString step (e.g. install path mis-configured, or GraphicalFunction raised an unhandled error).  Inspect the script at `2`.";
+
+(* Translate a SubTropica edge spec {{v1, v2}, mass} into the Maple
+   set-of-sets element {v1, v2}, validating that the mass slot is
+   exactly the integer/symbol 0 (HLP supports massless internal edges
+   only).  Returns the Mma list {v1, v2} on success and emits
+   STHyperLogProcedures::edgemass + Throws on failure.            *)
+stHLPEdgeToMaple[edge_, idx_Integer] := Module[{pair, mass},
+    pair = edge[[1]];
+    mass = edge[[2]];
+    If[mass =!= 0 && mass =!= 0.,
+        Message[STHyperLogProcedures::edgemass, idx, mass];
+        Throw[$Failed, "STHyperLogProcedures"]];
+    pair];
+
+(* Render a list/set of Mma 2-tuples as a Maple set-of-sets literal,
+   "{ {v1,v2}, {v3,v4}, ... }" using ToString[..., InputForm] for
+   reproducibility.  Maple parses {a, b} both as a list and as a set;
+   GraphicalFunction expects a set, so this string form works directly. *)
+stHLPEdgesToMapleSet[pairs_List] := Module[{inner},
+    inner = StringRiffle[
+        Map[Function[p,
+                "{" <> ToString[p[[1]], InputForm] <> ", " <>
+                       ToString[p[[2]], InputForm] <> "}"],
+            pairs],
+        ", "];
+    "{" <> inner <> "}"];
+
+(* Render a list of Mma symbols/integers as a Maple list literal. *)
+stHLPVextToMapleList[verts_List] := Module[{inner},
+    inner = StringRiffle[ToString[#, InputForm] & /@ verts, ", "];
+    "[" <> inner <> "]"];
+
+(* Extract the integer base dimension D0 from a "Dimension" expression
+   such as 6 - 2*eps.  Returns the integer on success or $Failed.   *)
+stHLPExtractDim[dimExpr_] := Module[{simp, d0},
+    simp = Together[dimExpr /. eps -> 0];
+    If[IntegerQ[simp] && simp > 0, simp, $Failed]];
+
+(* Main entry point.  Form-1 graph input: {edges, nodes} where
+     edges = {{{v1, v2}, mass}, ...}  (mass = 0 for massless),
+     nodes = {{v_ext, label}, ...}    (label = 0 for on-shell massless,
+                                       or symbolic external mass).
+   Phase 0: nodes labels MUST all be 0 (HLP doesn't model external
+   masses on completed graphs); future phases may relax this for
+   off-shell cases.  Returns an Association with keys "raw" (string),
+   "wall_s" (real), "fixture" (input graph) on success, or $Failed.
+
+   Options reused from STIntegrate:
+     "Dimension" (default 4 - 2 eps): used to derive HLP's integer D0.
+     "Order"     (default 0): used as HLP's eps_order argument.
+*)
+Options[STHyperLogProcedures] = {
+    "Dimension" -> 4 - 2 eps,
+    "Order"     -> 0,
+    "Verbose"   -> False
+};
+
+STHyperLogProcedures[g:{edges_List, nodes_List}, opts:OptionsPattern[]] :=
+Catch[Module[{
+        verbose, hlpFile, hlpDir, otherFiles, missing,
+        externalVerts, allVerts, valences,
+        edgeMmaPairs, dimExpr, d0, epsOrder,
+        edgesMaple, vextMaple, kinSpec, mapleScript, scriptFile, outFile,
+        wall, exitCode, rawResult, header},
+    verbose = TrueQ[OptionValue["Verbose"]];
+
+    (* ---- 1. Locate the install ---- *)
+    hlpFile = $STHyperLogProceduresPath;
+    If[!StringQ[hlpFile] || hlpFile === "" || !FileExistsQ[hlpFile],
+        Message[STHyperLogProcedures::installpath, hlpFile];
+        Throw[$Failed, "STHyperLogProcedures"]];
+    hlpDir = DirectoryName[hlpFile];
+    otherFiles = FileNameJoin[{hlpDir, #}] & /@
+        {"FastIsomorphism", "FastEvaluation", "Periods", "PeriodsPhi3"};
+    missing = Select[otherFiles, ! FileExistsQ[#] &];
+    If[missing =!= {},
+        Message[STHyperLogProcedures::installpath,
+            "missing companion files: " <> StringRiffle[missing, ", "]];
+        Throw[$Failed, "STHyperLogProcedures"]];
+
+    (* ---- 2. External-vertex labels: pass-through ----
+       SubTropica's Form-1 `nodes` lists external vertices and their
+       external-momentum invariants (e.g. {{1, M}, {2, 0}, {3, 0}} for
+       a 3-pt graph with one massive external).  HLP's `GraphicalFunction`
+       output is in cross-ratios [z, zz], which absorb the external
+       invariants generically \[LongDash] the labels are kinematic-class markers
+       and don't need to be rendered into the Maple call.  Internal
+       vertex-mass insertions are impossible in this format (`nodes`
+       lists only externals; internal vertices have no mass slot).
+       Verbose mode echoes any non-zero label so the user can confirm
+       the kinematic class HLP is solving. *)
+    If[verbose,
+        Do[
+            If[nodes[[i, 2]] =!= 0 && nodes[[i, 2]] =!= 0.,
+                Print["[STHyperLogProcedures] external vertex ",
+                      nodes[[i, 1]], " has invariant label ",
+                      nodes[[i, 2]],
+                      " \[LongDash] HLP returns the graphical function in cross-ratios [z, zz];",
+                      " specialize via Substitutions if you need a numeric value."]],
+            {i, Length[nodes]}]];
+
+    (* ---- 3. Validate external count (Phase 0: 3-pt only) ---- *)
+    externalVerts = nodes[[All, 1]];
+    If[Length[externalVerts] =!= 3,
+        Message[STHyperLogProcedures::extcount, Length[externalVerts]];
+        Throw[$Failed, "STHyperLogProcedures"]];
+
+    (* ---- 4. Translate edges, validate massless ---- *)
+    edgeMmaPairs = MapIndexed[stHLPEdgeToMaple[#1, First[#2]] &, edges];
+
+    (* ---- 5. Validate valences ----
+       HLP targets \[CurlyPhi]^3 / \[CurlyPhi]^4 completed graphs but
+       handles 2-valent internal subdivision points gracefully.  We
+       accept effective valences in {2, 3, 4}: 2 is allowed only for
+       internal vertices (edge subdivisions); externals must be \[GreaterEqual] 1 and
+       attaching the external leg promotes them to \[GreaterEqual] 2.  Anything
+       \[GreaterEqual] 5 or a 1-valent internal is rejected. *)
+    allVerts = DeleteDuplicates @ Flatten[edgeMmaPairs];
+    valences = AssociationThread[allVerts ->
+        Table[Count[Flatten[edgeMmaPairs], v], {v, allVerts}]];
+    Do[
+        Module[{v = allVerts[[i]], val = valences[allVerts[[i]]],
+                isExt = MemberQ[externalVerts, allVerts[[i]]], effVal},
+            effVal = If[isExt, val + 1, val];
+            If[!MemberQ[{2, 3, 4}, effVal] || (!isExt && val < 2),
+                Message[STHyperLogProcedures::valence, v, effVal];
+                Throw[$Failed, "STHyperLogProcedures"]]],
+        {i, Length[allVerts]}];
+
+    (* ---- 6. Dimension and eps order ---- *)
+    dimExpr = OptionValue["Dimension"];
+    d0 = stHLPExtractDim[dimExpr];
+    If[d0 === $Failed,
+        Message[STHyperLogProcedures::dimspec, dimExpr];
+        Throw[$Failed, "STHyperLogProcedures"]];
+    epsOrder = OptionValue["Order"];
+    If[!IntegerQ[epsOrder], epsOrder = 0];
+
+    (* ---- 7. Kinematic spec (3-pt: HLP's [z, zz] cross-ratio) ---- *)
+    kinSpec = "[z, zz]";
+
+    (* ---- 8. Build Maple script + outfile ---- *)
+    edgesMaple = stHLPEdgesToMapleSet[edgeMmaPairs];
+    vextMaple  = stHLPVextToMapleList[externalVerts];
+    outFile    = CreateFile[];
+    scriptFile = CreateFile[];
+
+    (* HLP's source files reference companion .m caches (e.g.
+       cachedatamine.m, ListOfGraphicalFunctionsP.m) by bare relative
+       filenames, so Maple must run with cwd == hlpDir.  Set currentdir
+       once at the top of the script. *)
+    Module[{hlpDirNoSlash = If[StringEndsQ[hlpDir, "/"],
+                                StringDrop[hlpDir, -1], hlpDir]},
+        header = StringJoin[
+            "kernelopts(numcpus=1):\n",
+            "currentdir(\"", hlpDirNoSlash, "\"):\n",
+            "read \"", hlpDir, "HyperlogProcedures\":\n",
+            "read \"", hlpDir, "FastIsomorphism\":\n",
+            "read \"", hlpDir, "FastEvaluation\":\n",
+            "read \"", hlpDir, "Periods\":\n",
+            "read \"", hlpDir, "PeriodsPhi3\":\n",
+            "hlogwarnings:=false:\n"]];
+
+    mapleScript = StringJoin[
+        header,
+        "fileRes := \"", outFile, "\":\n",
+        "if FileTools[Exists](fileRes) then FileTools[Remove](fileRes): end if:\n",
+        "res := GraphicalFunction(", edgesMaple, ", ", vextMaple,
+            ", ", ToString[d0], ", ", ToString[epsOrder], ", ", kinSpec, "):\n",
+        "FileTools[Text][Open](fileRes):\n",
+        "FileTools[Text][WriteString](fileRes, convert(res, string)):\n",
+        "FileTools[Text][Close](fileRes):\n",
+        "quit;\n"];
+
+    WriteString[scriptFile, mapleScript];
+    Close[scriptFile];
+
+    If[verbose,
+        Print["[STHyperLogProcedures] script: ", scriptFile];
+        Print["[STHyperLogProcedures] outfile: ", outFile];
+        Print["[STHyperLogProcedures] edges  : ", edgesMaple];
+        Print["[STHyperLogProcedures] vext   : ", vextMaple];
+        Print["[STHyperLogProcedures] D0     : ", d0, ",  eps_order: ", epsOrder]];
+
+    (* ---- 9. Run Maple ---- *)
+    {wall, exitCode} = AbsoluteTiming[
+        Run[$MapleCommand <> " -q " <> scriptFile]];
+
+    (* ---- 10. Read and return ---- *)
+    rawResult = If[FileExistsQ[outFile], ReadString[outFile], ""];
+    If[!StringQ[rawResult] || rawResult === "" || rawResult === EndOfFile,
+        Message[STHyperLogProcedures::emptyout, outFile, scriptFile];
+        (* Don't delete the script: the user needs it for diagnosis. *)
+        Quiet[DeleteFile[outFile]];
+        Throw[$Failed, "STHyperLogProcedures"]];
+
+    (* ---- 11. Cleanup ---- *)
+    Quiet[DeleteFile[scriptFile]];
+    Quiet[DeleteFile[outFile]];
+
+    <|
+        "raw"     -> rawResult,
+        "result"  -> Quiet @ STParseHyperLogProceduresOutput[rawResult],
+        "wall_s"  -> wall,
+        "fixture" -> g,
+        "D0"      -> d0,
+        "eps_order" -> epsOrder
+    |>
+], "STHyperLogProcedures"];
+
+
+(* ============================================================ *)
+(*  HLP raw-output parser (Phase 1)                             *)
+(* ============================================================ *)
+(*  STParseHyperLogProceduresOutput converts a Maple-syntax string *)
+(*  produced by `convert(GraphicalFunction(...), string)` into a   *)
+(*  Mathematica expression in SubTropica's STIntegrate convention. *)
+(*                                                                *)
+(*  Symbol-family handling:                                       *)
+(*    Pi              -> Pi             (passthrough)             *)
+(*    epsilon         -> eps            (SubTropica name)         *)
+(*    gamma           -> EulerGamma     (Schnetz f-alphabet uses  *)
+(*                                       lowercase gamma for      *)
+(*                                       Euler-Mascheroni)        *)
+(*    f[k]  (k odd)   -> Zeta[k]        (Schnetz f-alphabet,      *)
+(*                                       HyperlogProcedures.l1369)*)
+(*    f[k1,...,kn]    -> mzv[k1,...,kn] (multiple zeta value)     *)
+(*    I[z, w_, 0]     -> Hlog[z, {w}]   (drop trailing 0 base-pt; *)
+(*                                       see convertPtoI line 4801*)
+(*                                       and convertItoP line 4804)*)
+(*                                                                *)
+(*  Unsupported symbol families (B, P, P0, P1, L, LL, T1, Tloop,  *)
+(*  Tchain, Z1, Z2, gamma1, gamma2, pgamma, tgamma, f2, f3, f4,   *)
+(*  f6, f12, f23, f3d, f4d, f6d, f23b, zb, zeta, ...) trigger the *)
+(*  ::unsupportedSymbol message and the parser returns $Failed.   *)
+
+STParseHyperLogProceduresOutput::usage = "STParseHyperLogProceduresOutput[rawMapleString] converts a HyperLogProcedures Maple-syntax string into a Mathematica expression in SubTropica's STIntegrate convention (Hlog, Zeta, mzv, Pi, EulerGamma, eps, rationals in z, zz).  Returns the parsed expression on success, or $Failed (with a Message) on unsupported symbol families.  Workaround: use the \"raw\" field of the STHyperLogProcedures result and parse manually if a needed family is missing.";
+
+STParseHyperLogProceduresOutput::unsupportedSymbol = "HLP output contains symbol family `1` that the Phase 1 parser does not yet handle.  Raw output snippet: `2`.  Workaround: read `raw` from the STHyperLogProcedures Association and parse manually, or extend the parser at SubTropica.wl (see STParseHyperLogProceduresOutput).";
+
+STParseHyperLogProceduresOutput::tooLongOutput = "HLP raw output exceeds the parser size budget (`1` chars; budget `2`).  Use the `raw` field directly.";
+
+STParseHyperLogProceduresOutput::parseFailed = "ToExpression failed on the post-substituted HLP output.  Likely an unhandled Maple syntax token.  Raw snippet: `1`";
+
+(* Maximum raw-string size the parser will attempt.  Above this, return
+   $Failed without ToExpression to avoid a multi-second symbol explosion
+   on accidentally-large outputs.                                      *)
+$STHyperLogProceduresParserSizeBudget = 200000;
+
+(* Whitelist of allowed Maple identifiers in the post-substitution string.
+   Only these may appear as `[A-Za-z_][A-Za-z0-9_]*` tokens.  Note that
+   `gamma`, `epsilon`, `I` are still matched here -- they are renamed by
+   substitution to `EulerGamma`, `eps`, `hlpI` *before* the whitelist
+   check, so the renamed forms are present in the post-string.        *)
+$STHyperLogProceduresKnownSymbols =
+    {"z", "zz", "Pi", "EulerGamma", "eps", "hlpI", "hlpF",
+     (* a few well-formed function heads commonly emitted by Maple's
+        `convert(., string)` for convergent rational inputs:           *)
+     "sqrt", "ln"};
+
+(* Inverse rules applied after ToExpression to lift the renamed atoms
+   into SubTropica's STIntegrate convention.  Defined as a function so
+   the rules use Mma patterns (the rules can't be cached since they
+   reference local Module symbols).                                     *)
+stHLPPostExprRules[] := {
+    (* hlpI[z, w1, ..., wk, 0]  ->  Hlog[z, {w1, ..., wk}]
+       The Maple convention I[z, op(P), 0] strips the trailing 0
+       on conversion to P; SubTropica's Hlog absorbs the basepoint
+       in its definition (Hlog[z, {}] = 1).  We match the trailing 0
+       explicitly: an I[z, ..., k] with k != 0 would indicate a
+       non-default basepoint and we leave it as-is for the user.   *)
+    hlpI[z_, ws___, 0] :> Hlog[z, {ws}],
+    (* f[k_Integer]  ->  Zeta[k]   (Schnetz line 1369; even k
+       shouldn't occur in HLP graphical-function output by
+       convention, but handle defensively if it does)              *)
+    hlpF[k_Integer] :> Zeta[k],
+    (* f[k1, k2, ..., kn]  ->  mzv[k1, ..., kn]   (multiple zeta)    *)
+    hlpF[ks__Integer] :> mzv[ks]
+};
+
+(* Identify any unknown alphabetic identifiers in the post-substitution
+   string (after Maple-`->`-Mma symbol renaming).  Returns a list of
+   distinct unknown tokens or an empty list if all tokens are known. *)
+stHLPFindUnknownSymbols[s_String] := Module[{tokens, unknown},
+    tokens = DeleteDuplicates @ StringCases[s,
+        RegularExpression["[A-Za-z_][A-Za-z0-9_]*"]];
+    unknown = Complement[tokens, $STHyperLogProceduresKnownSymbols];
+    (* Drop any that consist entirely of digits -- shouldn't happen
+       with the regex above, but be defensive.                        *)
+    Select[unknown, !DigitQ[StringTake[#, 1]] &]
+];
+
+STParseHyperLogProceduresOutput[raw_String] := Module[
+    {trimmed, prepared, unknown, snippet, parsed, finalExpr, len},
+
+    trimmed = StringTrim[raw];
+    If[trimmed === "", Return[0]];  (* empty -> exact zero *)
+
+    len = StringLength[trimmed];
+    If[len > $STHyperLogProceduresParserSizeBudget,
+        Message[STParseHyperLogProceduresOutput::tooLongOutput,
+            len, $STHyperLogProceduresParserSizeBudget];
+        Return[$Failed]];
+
+    (* ---- 1. Maple-syntax -> Mma-friendly string substitutions ----
+       Order matters:
+         (a) Rename `I[`  ->  `hlpI[`   so Mma's imaginary unit doesn't
+             collide with the iterated-integral head when it appears as
+             a function call.  Use a word-boundary anchor so we don't
+             touch sub-strings (e.g. nothing else in HLP output starts
+             with capital-I followed by `[`).
+         (b) Rename `f[`  ->  `hlpF[`  so the bare `f` symbol doesn't
+             pollute the Global` namespace and stays distinguishable
+             for the post-ToExpression rule rewrite.
+         (c) Rewrite `gamma`  -> `EulerGamma`  (Schnetz convention).
+         (d) Rewrite `epsilon` -> `eps`        (SubTropica convention).
+
+       All four are word-boundary-anchored to avoid touching e.g. an
+       embedded substring "epsilon" inside a longer identifier (none
+       exists in HLP output, but defensive).
+    *)
+    prepared = StringReplace[trimmed,
+        {
+            RegularExpression["\\bI\\["]       -> "hlpI[",
+            RegularExpression["\\bf\\["]       -> "hlpF[",
+            RegularExpression["\\bgamma\\b"]   -> "EulerGamma",
+            RegularExpression["\\bepsilon\\b"] -> "eps"
+        }];
+
+    (* ---- 2. Whitelist check on alphabetic tokens ----
+       Anything not in $STHyperLogProceduresKnownSymbols is an
+       unsupported family.  Surface an actionable message before
+       handing to ToExpression (which would either silently leak a
+       Global` symbol or fail with a misleading Syntax::sntxf).      *)
+    unknown = stHLPFindUnknownSymbols[prepared];
+    If[unknown =!= {},
+        snippet = If[StringLength[trimmed] > 240,
+                     StringTake[trimmed, 240] <> "...",
+                     trimmed];
+        Message[STParseHyperLogProceduresOutput::unsupportedSymbol,
+            StringRiffle[unknown, ", "], snippet];
+        Return[$Failed]];
+
+    (* ---- 3. ToExpression with held semantics, then apply rules ---- *)
+    parsed = Quiet @ Check[ToExpression[prepared], $Failed];
+    If[parsed === $Failed,
+        snippet = If[StringLength[trimmed] > 240,
+                     StringTake[trimmed, 240] <> "...",
+                     trimmed];
+        Message[STParseHyperLogProceduresOutput::parseFailed, snippet];
+        Return[$Failed]];
+
+    (* ---- 4. Lift renamed atoms into the SubTropica convention ---- *)
+    finalExpr = parsed /. stHLPPostExprRules[];
+
+    finalExpr
+];
+
+(* Backwards-compat: also accept the EndOfFile sentinel that ReadString
+   returns on a missing/empty file, so users who call the parser
+   directly on a piped result don't hit a typecheck failure.          *)
+STParseHyperLogProceduresOutput[EndOfFile] := $Failed;
+STParseHyperLogProceduresOutput[$Failed]   := $Failed;
+
+
+(* ============================================================ *)
 (*  HyperFLINT CLI backend (analytic C++ integrator)            *)
 (* ============================================================ *)
 (*  STHyperFlint[integrand, {x1,...,xn}] is a drop-in replacement *)
@@ -9694,6 +10304,9 @@ STHyperFlint::badjson   = "HyperFLINT returned non-JSON output: ``";
 STHyperFlint::hferror   = "HyperFLINT error: ``";
 STHyperFlint::divergent = "HyperFLINT reports the integral is divergent (``).";
 STHyperFlint::hffailed  = "HyperFLINT integration failed: ``";
+STHyperFlint::narrowfallback = "HyperFLINT narrow ctx insufficient: ``";
+STHyperFlint::narrowfatal    = "HyperFLINT wide-ctx retry also returned narrow_ctx_insufficient -- MZV table is incomplete for this fixture; report to maintainer.  Vars=``";
+STHyperFlint::narrownobinary = "HyperFLINT narrow ctx insufficient via LibraryLink; CLI binary needed for retry but $STHyperFlintPath is not set or missing -- set ConfigureSubTropica[HyperFlintPath -> ...] or unset HF_NARROW_CTX to force wide ctx (was: ``).";
 STHyperFlint::regkey    = "HyperFLINT returned a non-empty regulator key (``); Phase 1 of the ST-backend integration only handles convergent results with empty keys.  Use \"Integrator\" -> \"HyperIntica\" for now.";
 STHyperFlint::algletter = "HyperFLINT emitted an algebraic letter token (``) in the coefficient without a matching entry in the returned `algebraic_letters` table.  This is a bug in the request wiring (FindRoots -> True flag missing or HF table emission failed).";
 
@@ -9724,7 +10337,7 @@ stMzvTokenToZeta[token_String] := Module[{parts, arg},
 
    The HF entry carries raw polynomial data (poly, var, lc, sum,
    product, disc); Mma derives WmValue/WpValue locally as
-   (-b ∓ √disc)/(2·lc), matching HyperIntica.wl:2921-2930.  An empty
+   (-b \[MinusPlus] \[Sqrt]disc)/(2\[CenterDot]lc), matching HyperIntica.wl:2921-2930.  An empty
    list returns an empty remap (no-op). *)
 stHyperFlintRegisterAlgLetters[alEntries_List] :=
 Module[{remap = <||>, entry, hfIdx, mmaIdx, polyExpr, varSym, lcExpr,
@@ -9740,7 +10353,7 @@ Module[{remap = <||>, entry, hfIdx, mmaIdx, polyExpr, varSym, lcExpr,
         discExpr = Quiet @ Check[ToExpression[Lookup[entry, "disc", "0"]], $Failed];
         If[!IntegerQ[hfIdx] || polyExpr === $Failed || varSym === $Failed,
             Continue[]];
-        (* sum = -b/lc → -b = sum*lc → root formulas as in HyperIntica.wl:2928 *)
+        (* sum = -b/lc \[RightArrow] -b = sum*lc \[RightArrow] root formulas as in HyperIntica.wl:2928 *)
         wmVal = Together[(sumExpr - Sqrt[discExpr]/lcExpr) / 2];
         wpVal = Together[(sumExpr + Sqrt[discExpr]/lcExpr) / 2];
         HyperIntica`$HyperAlgebraicLetterCounter++;
@@ -9805,7 +10418,7 @@ Module[{out = s, tokens, badPairs, needsMaping, lookupMma, lookupDisc},
             out = StringReplace[out,
                 "Wp_" <> tok -> "Wp[" <> ToString[mmaIdx] <> "]"]],
         {tok, tokens}];
-    (* sqrt_disc_<i> — substitute the discriminant literal, then Sqrt[]. *)
+    (* sqrt_disc_<i> \[LongDash] substitute the discriminant literal, then Sqrt[]. *)
     tokens = DeleteDuplicates @ StringCases[out,
         RegularExpression["\\bsqrt_disc_(\\d+)\\b"] :> "$1"];
     Do[Module[{discExpr = lookupDisc[tok]},
@@ -9842,7 +10455,7 @@ stHyperFlintFreeSymbols[integrand_, vars_List] := Module[{syms},
    in identifier names, so the integrand and variable names must be
    stripped to their short forms before emission.  This is safe because
    HF's PolyCtx is per-request and scoped to exactly the strings the
-   caller provides — uniqueness of short names is the caller's
+   caller provides \[LongDash] uniqueness of short names is the caller's
    responsibility.  The regex matches one or more
    `<IdentifierChar>+\\\`` groups at the start of an identifier. *)
 stHyperFlintStripContexts[s_String] :=
@@ -9882,15 +10495,18 @@ Module[{freeSyms, exprStr, varStrs, req},
 $STHyperFlintThreads = ToString[Max[1, $ProcessorCount - 1]];
 
 Options[STHyperFlint] = {
-    FindRoots -> Automatic  (* Phase 7-vi-b: when True, degree-2 factors
-                                in HF's LinearFactors equivalent become
-                                Wm/Wp algebraic-letter pairs; the
-                                returned table is merged into
-                                HyperIntica's $HyperAlgebraicLetterTable.
-                                Automatic (default) follows HyperIntica's
-                                own $HyperIntroduceAlgebraicLetters flag,
-                                which STIntegrate's FindRoots option
-                                sets on its way down to the integrator.  *)
+    FindRoots -> Automatic  (* True: degree-2 factors in HF's LinearFactors
+                                equivalent become Wm/Wp algebraic-letter pairs;
+                                the returned table is merged into HyperIntica's
+                                $HyperAlgebraicLetterTable.
+                                Automatic (default): defer to HyperIntica's
+                                $HyperIntroduceAlgebraicLetters flag.  Under the
+                                v1.1.8.10 per-face cascade, STEvaluateGraph
+                                arms this flag to True whenever the user-level
+                                FindRoots is True or Automatic (design choice
+                                (ii)(a) in the cascade discussion).  Under
+                                explicit FindRoots -> False the flag is
+                                cleared and Wm/Wp letters are not minted. *)
 };
 
 (* Diagnostic counters \[LongDash] same shape as the
@@ -9915,7 +10531,7 @@ STHyperFlint[integrand_, vars_List, opts:OptionsPattern[]] := Module[
     {requestJSON, procResult, stdout, stderr, exitCode, resp, resultList,
      terms, badKey, translatedTerms, mmaExpr, useLibLink, respStr,
      findRoots, alList, alRemap, alEntryMap,
-     origSymbols, contextRehydrate},
+     origSymbols, contextRehydrate, narrowVars},
     Module[{v = OptionValue[FindRoots]},
         findRoots = If[v === Automatic,
             TrueQ @ HyperIntica`$HyperIntroduceAlgebraicLetters,
@@ -9924,7 +10540,7 @@ STHyperFlint[integrand_, vars_List, opts:OptionsPattern[]] := Module[
     (* Phase 7-vi-b v2: context-stripping round-trip.  HF can't parse
        backticks, so we strip contexts on the way in.  To rehydrate on
        the way out, build a {"stripped-name" -> original-symbol} rule
-       list covering every non-System` symbol in (integrand ∪ vars).
+       list covering every non-System` symbol in (integrand \:222a vars).
        Applied post-ToExpression. *)
     origSymbols = DeleteDuplicates @ Join[
         Cases[integrand, _Symbol?(Context[#] =!= "System`" &), {0, Infinity}],
@@ -9937,14 +10553,25 @@ STHyperFlint[integrand_, vars_List, opts:OptionsPattern[]] := Module[
                     ToExpression[short] -> sym]]],
         origSymbols];
 
-    (* Phase γ.2: prefer the LibraryLink transport if loaded.  Fall back
-       to the CLI subprocess when the γ.2 integrator handle isn't
+    (* Phase \[Gamma].2: prefer the LibraryLink transport if loaded.  Fall back
+       to the CLI subprocess when the \[Gamma].2 integrator handle isn't
        available (build lag, Mma kernel without WolframLibrary, etc.).
-       Correctness is identical either way — both paths go through
-       hyperflint::handlers::hyperflint_sym on the same JSON body. *)
+       Correctness is identical either way \[LongDash] both paths go through
+       hyperflint::handlers::hyperflint_sym on the same JSON body.
+
+       v1.1.8.10 operational lever (R18/R20 RSS campaign): when called
+       inside a Parallelize context ($KernelID > 0), force the CLI path
+       so we can hand the subprocess OMP_NUM_THREADS=1 per call.  This
+       brings per-face HF RSS down from 2.5 GB to ~970 MB on the
+       parity-1 fixture, letting 13-way subkernel dispatch fit in
+       available RAM (13 \[Times] 970 MB = 12.6 GB). *)
     stHFLibraryEnsureLoaded[];
     useLibLink = TrueQ[$STHyperFlintUseLibraryLink] &&
-                 Head[$STHFLibHyperFlintSym] === LibraryFunction;
+                 Head[$STHFLibHyperFlintSym] === LibraryFunction &&
+                 !TrueQ[$KernelID > 0] &&
+                 !TrueQ[Environment["HF_FORCE_CLI"] =!= $Failed &&
+                        Environment["HF_FORCE_CLI"] =!= "0" &&
+                        StringQ[Environment["HF_FORCE_CLI"]]];
 
     (* Path + data-file sanity.
        The CLI and data paths are only strictly required for the
@@ -9967,7 +10594,7 @@ STHyperFlint[integrand_, vars_List, opts:OptionsPattern[]] := Module[
     requestJSON = stHyperFlintBuildRequest[integrand, vars, findRoots];
 
     If[useLibLink,
-        (* LibraryLink path (Phase γ.2).  Synchronous, in-process.  If
+        (* LibraryLink path (Phase \[Gamma].2).  Synchronous, in-process.  If
            the handler throws, we get either a JSON `"error"` field
            (exception caught inside the C++ wrapper) or LIBRARY_FUNCTION_ERROR
            (which LibraryFunction surfaces as a failed evaluation). *)
@@ -9978,11 +10605,37 @@ STHyperFlint[integrand_, vars_List, opts:OptionsPattern[]] := Module[
             Return[$Failed]];
         resp = Quiet @ Check[ImportString[respStr, "RawJSON"], $Failed],
         (* CLI path. *)
+        (* v1.1.8.10 operational lever: in a Parallelize subkernel,
+           pin OMP to 1 thread so each subkernel's HF call peaks at
+           ~970 MB instead of 2.5 GB. Master kernel keeps full
+           $STHyperFlintThreads. *)
         procResult = RunProcess[
             {$STHyperFlintPath, "eval-json"},
             All,
             requestJSON,
-            ProcessEnvironment -> <|"OMP_NUM_THREADS" -> ToString[$STHyperFlintThreads]|>];
+            ProcessEnvironment -> <|
+                "OMP_NUM_THREADS" -> Which[
+                    TrueQ[$KernelID > 0], "1",
+                    StringQ[Environment["HF_FORCE_CLI"]] &&
+                        Environment["HF_FORCE_CLI"] =!= "0", "1",
+                    True, ToString[$STHyperFlintThreads]],
+                "HF_PROBE_DUMP_DIR" -> Replace[Environment["HF_PROBE_DUMP_DIR"],
+                    {Except[_String] -> ""}],
+                "HF_NARROW_CTX" -> Replace[Environment["HF_NARROW_CTX"],
+                    {Except[_String] -> ""}],
+                (* R26 C2 -- ProcessEnvironment -> <|...|> REPLACES the
+                   subprocess env entirely; without this propagation the
+                   parent's HF_PARSE_TOLERANT=1 is stripped and the new
+                   tolerance branches in mzv_reduce.cpp / periods.cpp /
+                   integration_step.cpp's OMP iter-body try/catches are
+                   permanently dead code on the CLI subkernel path
+                   (which is the dominant transport for $KernelID>0
+                   subkernels via STBenchmark / Parallel calls). *)
+                "HF_PARSE_TOLERANT" -> Replace[Environment["HF_PARSE_TOLERANT"],
+                    {Except[_String] -> ""}],
+                "HF_MAX_THREADS_PER_CALL" -> Replace[
+                    Environment["HF_MAX_THREADS_PER_CALL"],
+                    {Except[_String] -> ""}]|>];
 
         If[!AssociationQ[procResult],
             Message[STHyperFlint::hffailed, "RunProcess returned " <> ToString[procResult]];
@@ -10006,6 +10659,76 @@ STHyperFlint[integrand_, vars_List, opts:OptionsPattern[]] := Module[
                 StringTake[ToString[respStr], UpTo[200]],
                 StringTake[stdout, UpTo[200]]]];
         Return[$Failed]];
+
+    (* R24 rev 2 / chain 17 -- narrow ctx fall-forward retry.  When the
+       handler emits {"narrow_ctx_insufficient": true}, re-issue the call
+       out-of-process with HF_NARROW_CTX="0" + HF_PARSE_TOLERANT="0".
+       Out-of-process retry by design: avoids in-process setenv + recurse
+       (MT-unsafe), avoids cache-pollution surface area, avoids any
+       recursion-cap concern.  Hard error if second response is also
+       narrow-ctx-insufficient (NO RECURSION).  Cost of retry: one
+       subprocess spawn (~200-400 ms wall) + the wide-ctx integration
+       (no cheaper than the un-narrowed baseline). *)
+    If[TrueQ[Lookup[resp, "narrow_ctx_insufficient", False]],
+        narrowVars = Lookup[resp, "vars", {}];
+        If[useLibLink,
+            (* LibraryLink-to-CLI fallback (R3 guard): the LibraryLink
+               handle has no environment-variable knob; the only way to
+               force HF_NARROW_CTX=0 is to spawn the CLI with the env
+               override.  Guard with FileExistsQ so a missing CLI binary
+               surfaces a clear error instead of an opaque RunProcess
+               failure. *)
+            If[!StringQ[$STHyperFlintPath] || $STHyperFlintPath === "" ||
+               !FileExistsQ[$STHyperFlintPath],
+                Message[STHyperFlint::narrownobinary,
+                    ToString[$STHyperFlintPath]];
+                Return[$Failed]]];
+        Message[STHyperFlint::narrowfallback,
+            "first call returned narrow_ctx_insufficient; retrying via "
+            <> "CLI subprocess with HF_NARROW_CTX=0 (override of caller's "
+            <> "request).  vars=" <> ToString[narrowVars]];
+        procResult = RunProcess[
+            {$STHyperFlintPath, "eval-json"},
+            All,
+            requestJSON,
+            ProcessEnvironment -> <|
+                "OMP_NUM_THREADS" -> Which[
+                    TrueQ[$KernelID > 0], "1",
+                    StringQ[Environment["HF_FORCE_CLI"]] &&
+                        Environment["HF_FORCE_CLI"] =!= "0", "1",
+                    True, ToString[$STHyperFlintThreads]],
+                "HF_PROBE_DUMP_DIR" -> Replace[Environment["HF_PROBE_DUMP_DIR"],
+                    {Except[_String] -> ""}],
+                "HF_NARROW_CTX" -> "0",
+                "HF_PARSE_TOLERANT" -> "0",
+                "HF_MAX_THREADS_PER_CALL" -> Replace[
+                    Environment["HF_MAX_THREADS_PER_CALL"],
+                    {Except[_String] -> ""}]|>];
+        If[!AssociationQ[procResult],
+            Message[STHyperFlint::hffailed,
+                "wide-ctx retry RunProcess returned " <> ToString[procResult]];
+            Return[$Failed]];
+        exitCode = Lookup[procResult, "ExitCode", -1];
+        stdout   = Lookup[procResult, "StandardOutput", ""];
+        stderr   = Lookup[procResult, "StandardError", ""];
+        If[exitCode =!= 0,
+            Message[STHyperFlint::hffailed,
+                "wide-ctx retry exit " <> ToString[exitCode] <>
+                If[StringLength[stderr] > 0,
+                    ": " <> StringTake[stderr, UpTo[400]], ""]];
+            Return[$Failed]];
+        resp = Quiet @ Check[
+            ImportString[Last[StringSplit[StringTrim[stdout], "\n"]],
+                          "RawJSON"], $Failed];
+        If[resp === $Failed || !AssociationQ[resp],
+            Message[STHyperFlint::badjson,
+                "wide-ctx retry: " <> StringTake[stdout, UpTo[200]]];
+            Return[$Failed]];
+        (* R25 C3 -- second-fall-forward is a hard error, NO RECURSION. *)
+        If[TrueQ[Lookup[resp, "narrow_ctx_insufficient", False]],
+            Message[STHyperFlint::narrowfatal,
+                ToString[Lookup[resp, "vars", {}]]];
+            Return[$Failed]]];
 
     If[TrueQ[Lookup[resp, "divergent", False]],
         Message[STHyperFlint::divergent, Lookup[resp, "reason", "<no reason>"]];
@@ -10034,8 +10757,8 @@ STHyperFlint[integrand_, vars_List, opts:OptionsPattern[]] := Module[
          key = []                contributes coef directly.
          key = [[w]]              contributes coef * ZeroInfPeriod[<w>].
          key = [[w1], [w2], ...]  shuffle product of the ZeroInfPeriods:
-                                  coef * ∏ᵢ ZeroInfPeriod[<wᵢ>].
-       Boundary-period values (integration from 0 to ∞) are commutative,
+                                  coef * \[Product]\:1d62 ZeroInfPeriod[<w\:1d62>].
+       Boundary-period values (integration from 0 to \[Infinity]) are commutative,
        so the shuffle product collapses to ordinary multiplication. *)
 
     (* Phase 7-vi-b: if FindRoots was on, register HF's algebraic-letter
@@ -10112,26 +10835,73 @@ STHyperFlint[integrand_, vars_List, opts:OptionsPattern[]] := Module[
 ];
 
 (* ============================================================ *)
-(*  HyperFLINT LR-order search backend (Phase β.2)              *)
+(*  HyperFLINT LR-order search backend (Phase \[Beta].2)              *)
 (* ============================================================ *)
-(*  STFindLROrdersHF[polys, xvars] — drop-in alternative to     *)
+(*  STFindLROrdersHF[polys, xvars] \[LongDash] drop-in alternative to     *)
 (*  STFasterFubini2[{polys}, xvars, FindRoots -> False] that    *)
 (*  shells out to HF's `find_lr_orders` CLI op.  Single-group,  *)
 (*  LeafCountLinear heuristic, FindRoots=False MVP.             *)
 (*                                                                *)
 (*  On the 1-mass planar double box this was ~1.5x Mma; on      *)
-(*  smaller topologies (≤ 1 s in Mma) HF returns in < 0.1 s.    *)
-(*  Score may differ from Mma by a constant factor — HF uses a  *)
+(*  smaller topologies (\[LessEqual] 1 s in Mma) HF returns in < 0.1 s.    *)
+(*  Score may differ from Mma by a constant factor \[LongDash] HF uses a  *)
 (*  FLINT-native atom-count proxy for LeafCount that is within  *)
 (*  a factor of ~2 on typical Symanzik inputs, sufficient for   *)
 (*  the MinimalBy tie-break to agree.                           *)
 
 STFindLROrdersHF::usage = "STFindLROrdersHF[groupPolys, xvars] finds the linearly reducible integration order via HF's C++ find_lr_orders op.  `groupPolys` is a list-of-lists (matching STFasterFubini2's convention: one sub-list per polynomial group).  Single-group form `STFindLROrdersHF[polys, xvars]` where `polys` is a flat list is accepted as a convenience.  Remaining symbols auto-detected as kinematic parameters.  Returns {order, score} matching STFasterFubini2; {NOLR, Infinity} if no LR order.";
 
+(* Track 8.1 (iter-43): versioned eval-json schema constants.
+   $STHFSchemaVersionExpected is the minimum schema_version that the
+   Mma side accepts in eval-json responses without warning.  Bump in
+   lockstep with HF's handlers.cpp::kSchemaVersion when adding,
+   renaming, or removing fields in the response envelope.
+   $SubTropicaHFVersionExpected is the HF binary version string that
+   Mma will *not* warn about.  Default tracks $SubTropicaVersion (the
+   library-load gate at L258-263 already enforces strict equality on
+   the LibraryLink path; this is the parallel CLI-path warn). *)
+$STHFSchemaVersionExpected = 1;
+If[!ValueQ[$SubTropicaHFVersionExpected],
+    $SubTropicaHFVersionExpected = If[StringQ[$SubTropicaVersion],
+        $SubTropicaVersion, "unspecified"]];
+(* One-shot guards so a long benchmark run does not flood the journal
+   with the same warning on every find_lr_orders call. *)
+$stHFSchemaWarnOnce  = False;
+$stHFVersionWarnOnce = False;
+
 STFindLROrdersHF::notfound = "HyperFLINT binary not found at ``.  Build with `cd ~/Projects/SubTropica-branchSM/HyperFLINT && cmake --build build-release -j`.";
 STFindLROrdersHF::hferror  = "HyperFLINT error: ``";
 STFindLROrdersHF::timedout = "HyperFLINT find_lr_orders timed out after `` s.";
 STFindLROrdersHF::badjson  = "HyperFLINT returned non-JSON: ``";
+(* iter-41 Track 6.5 full PASS: contract-check warning fires when the
+   HF-reported strategy enum (response field "strategy", emitted by
+   handlers.cpp::find_lr_orders since iter-40) is inconsistent with
+   what the Mma side requested.  Catches HF/Mma drift: e.g. an HF
+   refactor that silently changes the LR-vs-LROpt routing rule will
+   trip this gate on the very next benchmark run. *)
+STFindLROrdersHF::strategymismatch =
+    "HyperFLINT strategy contract violation: ``";
+(* Track 8.1 (iter-43): versioned eval-json gate.  Two messages, both
+   *warnings* (return value unchanged), because dispatching on an
+   older HF binary is preferable to hard-failing a benchmark run.
+   - schemamismatch fires once when resp["schema_version"] is missing
+     or strictly less than $STHFSchemaVersionExpected (= 1 today).
+   - versionmismatch fires once when resp["hf_version"] is missing or
+     != $SubTropicaHFVersionExpected (default $SubTropicaVersion).
+   Both are silenceable via Off[STFindLROrdersHF::schemamismatch] and
+   Off[STFindLROrdersHF::versionmismatch], and emit at most one
+   Message per kernel session per kind via stHFSchemaWarnOnce /
+   stHFVersionWarnOnce flags below. *)
+STFindLROrdersHF::schemamismatch =
+    "HyperFLINT eval-json schema_version=`` (binary `` ) is < Mma-side expected (``).  \
+A binary rebuild may be required; benchmark dispatch continues but \
+new schema_version=`` fields are unavailable in this kernel session.  \
+Silence: Off[STFindLROrdersHF::schemamismatch].";
+STFindLROrdersHF::versionmismatch =
+    "HyperFLINT eval-json hf_version=`` disagrees with Mma-side expected (``).  \
+Either rebuild HF (cmake --build ... --target hyperflint-cli hyperflint_librarylink), \
+or update $SubTropicaHFVersionExpected if the bump is intentional.  \
+Silence: Off[STFindLROrdersHF::versionmismatch].";
 
 Options[STFindLROrdersHF] = {
     "TimeConstraint" -> 1800,   (* 30 min ceiling *)
@@ -10173,6 +10943,16 @@ Module[{coeffVars, req, procResult, resp, bestOrder, score, respStr,
 
     req = ExportString[Join[<|
         "op"         -> "find_lr_orders",
+        (* Track 8.1 (iter-43): request-side gate — assert the binary
+           supports at least our expected schema.  Older HF binaries
+           (pre-iter-43) silently ignore the field and the response
+           lacks "schema_version"; the response-side gate below then
+           warns once and continues.  Newer HF binaries serving a
+           higher schema_version still accept us (binary's
+           kSchemaVersion >= our schema_version_min).  Only a
+           hypothetical binary that DROPPED schema support below 1
+           would fast-fail here, which is the correct contract. *)
+        "schema_version_min" -> $STHFSchemaVersionExpected,
         "groups"     -> ((ToString[#, InputForm] & /@ #) & /@ groupPolys),
         "xvars"      -> (ToString /@ xvars),
         "coeff_vars" -> (ToString /@ coeffVars)
@@ -10180,11 +10960,11 @@ Module[{coeffVars, req, procResult, resp, bestOrder, score, respStr,
         <|"algebraic_letters" -> True|>, <||>]],
         "JSON", "Compact" -> True];
 
-    (* Phase γ.1: LibraryLink transport if available (in-process,
+    (* Phase \[Gamma].1: LibraryLink transport if available (in-process,
        eliminates RunProcess spawn overhead), CLI subprocess otherwise.
        TimeConstraint applies to both paths. *)
     If[useLibLink,
-        (* LibraryLink path — synchronous, in-process. *)
+        (* LibraryLink path \[LongDash] synchronous, in-process. *)
         respStr = Quiet @ Check[
             TimeConstrained[$STHFLibFindLROrders[req], timeout, $TimedOut],
             $Failed];
@@ -10220,16 +11000,82 @@ Module[{coeffVars, req, procResult, resp, bestOrder, score, respStr,
                 StringTake[procResult["StandardOutput"], UpTo[200]]]];
         Return[$Failed]];
 
+    (* Track 8.1 (iter-43): versioned eval-json response-side gate.
+       Both checks are *warnings* — return value unchanged — so an
+       older HF binary still serves the benchmark.  Fires *before* the
+       error check so a binary that fast-fails on schema_version_min
+       (carrying schema_version + hf_version in the error payload)
+       still surfaces the *root cause* before the generic hferror.
+       Each warning fires at most once per kernel session via the
+       $stHF*WarnOnce package-level flags. *)
+    With[{respSchema = Lookup[resp, "schema_version", Missing[]],
+          respHFver  = Lookup[resp, "hf_version", Missing[]]},
+        If[!$stHFSchemaWarnOnce &&
+           (!IntegerQ[respSchema] ||
+                respSchema < $STHFSchemaVersionExpected),
+            $stHFSchemaWarnOnce = True;
+            Message[STFindLROrdersHF::schemamismatch,
+                respSchema,
+                If[StringQ[respHFver], respHFver, "<absent>"],
+                $STHFSchemaVersionExpected,
+                $STHFSchemaVersionExpected]];
+        If[!$stHFVersionWarnOnce &&
+           StringQ[$SubTropicaHFVersionExpected] &&
+           $SubTropicaHFVersionExpected =!= "unspecified" &&
+           (!StringQ[respHFver] ||
+                respHFver =!= $SubTropicaHFVersionExpected),
+            $stHFVersionWarnOnce = True;
+            Message[STFindLROrdersHF::versionmismatch,
+                If[StringQ[respHFver], respHFver, "<absent>"],
+                $SubTropicaHFVersionExpected]]];
+
     If[KeyExistsQ[resp, "error"],
         Message[STFindLROrdersHF::hferror, resp["error"]];
         Return[$Failed]];
+
+    (* iter-41 Track 6.5 full PASS \[LongDash] consume resp["strategy"].
+       The "strategy" field was added iter-40 by HF
+       src/bridge/handlers.cpp::find_lr_orders, emitted by
+       hyperflint::integrator::pick_step_strategy.  Three load-bearing
+       consumers on the Mma side close out the iter-35 rec 3 BINDING:
+         (1) $STHFStrategyCounters histogram (per-strategy call counts);
+         (2) $STHFLastStrategy global, picked up by stDispatchFubini2 to
+             extend $STDispatchProfileLog's per-call record;
+         (3) contract-check warning on Mma/HF strategy disagreement \[LongDash]
+             fires if a future HF refactor silently changes the
+             algebraic_letters-vs-default routing rule.
+       Mma currently only sends `algebraic_letters` (no `method_lr_hint`),
+       so the contract is:
+         FindRoots=False  \[Implies] strategy == "LR_NoOpt"
+         FindRoots=True   \[Implies] strategy == "LR_OptOrdered"
+       Fubini_* strategies should not appear from Mma callers; if they
+       do, an HF-side default changed without Mma being updated. *)
+    With[{stratStr = Lookup[resp, "strategy", Missing[]],
+          reqFindRoots = TrueQ[OptionValue[FindRoots]]},
+        If[StringQ[stratStr],
+            $STHFStrategyCounters =
+                Merge[{$STHFStrategyCounters, <|stratStr -> 1|>}, Total];
+            $STHFLastStrategy = stratStr;
+            Which[
+                reqFindRoots && stratStr =!= "LR_OptOrdered",
+                    Message[STFindLROrdersHF::strategymismatch,
+                        "FindRoots=True but HF reported strategy=" <>
+                        stratStr <> " (expected LR_OptOrdered)"],
+                !reqFindRoots && stratStr =!= "LR_NoOpt",
+                    Message[STFindLROrdersHF::strategymismatch,
+                        "FindRoots=False but HF reported strategy=" <>
+                        stratStr <> " (expected LR_NoOpt)"]],
+            (* Missing or non-string strategy field: pre-iter-40 HF
+               binary, or LibraryLink path before relink.  Record once
+               for inspection; do not warn (older binaries are valid). *)
+            $STHFLastStrategy = Missing["StrategyFieldAbsent"]]];
 
     (* Result-shape contract (matches Mma's STFasterFubini2):
          FindRoots=False : {bestOrder, score} | {NOLR, Infinity}
          FindRoots=True  : {{bestOrder, score}, rootPolys} |
                            {{NOLR, Infinity}, {} or rootPolys}
        The FindRoots=True branch's `rootPolys` is the list of deg-2
-       polynomials accepted during the LR walk — the consumer
+       polynomials accepted during the LR walk \[LongDash] the consumer
        (STApplyRootFactoring) uses this to introduce Wm/Wp atoms at
        integration time. *)
     Module[{wantRoots = TrueQ @ OptionValue[FindRoots],
@@ -10260,13 +11106,13 @@ STIntegrateHF::usage = "STIntegrateHF[args...] is a convenience alias for STInte
 (* The alias forwards all positional arguments and options verbatim,
    then appends the two backend rules.  STIntegrate's OptionsPattern[]
    resolves per-option via OptionValue, which takes the first matching
-   rule — so anything the caller explicitly set on their side wins. *)
+   rule \[LongDash] so anything the caller explicitly set on their side wins. *)
 STIntegrateHF[args___] := STIntegrate[args,
     "LROrderBackend" -> "HyperFLINT",
     "Integrator"     -> "HyperFLINT"];
 
 (* ============================================================ *)
-(*  Phase β.3: stDispatchFubini2 wrapper + backend globals      *)
+(*  Phase \[Beta].3: stDispatchFubini2 wrapper + backend globals      *)
 (* ============================================================ *)
 (*  STEvaluateGraph / STIntegrate sets $STLROrderBackend via    *)
 (*  Block; every STFasterFubini2 call site is replaced with     *)
@@ -10287,7 +11133,7 @@ $STHFFallbackWarned = False;
    Useful for adversarial-review-style "is HF really exercised on this
    diagram, and how much wall-time does it spend?".  Each entry of
    $STDispatchProfileLog is {backend, wall_time_seconds, n_xvars,
-   findRootsQ}.  Accumulated counters give Σ time + N calls split by
+   findRootsQ}.  Accumulated counters give \[CapitalSigma] time + N calls split by
    backend.  Reset by STResetKernelCaches[] and at the entry of
    STEvaluateGraph. *)
 $STDispatchProfile        = False;
@@ -10296,6 +11142,33 @@ $STDispatchHFCount        = 0;
 $STDispatchHICount        = 0;
 $STDispatchHFTime         = 0.;
 $STDispatchHITime         = 0.;
+(* iter-41 Track 6.5 full PASS: per-strategy histogram of HF LR-search
+   responses, indexed by the enum-string returned in resp["strategy"]
+   (e.g. "LR_NoOpt", "LR_OptOrdered", "Fubini_Lungo", "Fubini_Espresso").
+   Incremented inside STFindLROrdersHF on every successful HF call.
+   Reset by STResetKernelCaches[] alongside the dispatch counters.
+
+   iter-41 reviewer Q1+Q6 stamp (lesson dormant_abstraction_letter_vs_spirit,
+   two-axis form): this is ACKNOWLEDGED WRITE-ONLY DIAGNOSTIC.  No
+   downstream code reads $STHFStrategyCounters; the reader is human-eyeball
+   inspection at the REPL (e.g. `?$STHFStrategyCounters` after an
+   STIntegrate run) and adversarial review.  The load-bearing consumer
+   of resp["strategy"] is the contract-check Message
+   STFindLROrdersHF::strategymismatch one block below; the histogram
+   is a supporting diagnostic, not the gate.  Adding a reader-of-record
+   (e.g. an end-of-STIntegrate print) is iter-43+ ADVISORY. *)
+$STHFStrategyCounters     = <||>;
+(* iter-41 Track 6.5 full PASS: transient set by the last successful
+   STFindLROrdersHF call so stDispatchFubini2 can fold the strategy
+   into its $STDispatchProfileLog entry without changing
+   STFindLROrdersHF's public return shape.
+
+   iter-41 reviewer Q1+Q6 stamp: like $STHFStrategyCounters, this is
+   ACKNOWLEDGED WRITE-ONLY DIAGNOSTIC -- the per-call profile log it
+   feeds has no downstream automated consumer either; the chain
+   terminates in $STDispatchProfileLog awaiting human inspection or a
+   future $STDispatchProfile-gated reporter. *)
+$STHFLastStrategy         = Missing["NotYetCalled"];
 (* Setup-directory Put-I/O probe counters (used by HF speedup campaign
    to decide whether per-face Put bundling is worth a multi-site refactor).
    Reset by STResetKernelCaches[]. *)
@@ -10306,6 +11179,33 @@ stDispatchFubini2::hffall =
     "HyperFLINT LR-search returned $Failed on a face; falling back to HyperIntica STFasterFubini2.  Further silent fallbacks will be counted (see $STHFFallbackCount).";
 
 Options[stDispatchFubini2] = Options[STFasterFubini2];
+
+(* Per-face FindRoots -> Automatic cascade.  Try FindRoots -> False first;
+   if the LR search returns NOLR, retry with FindRoots -> True so the
+   algebraic-letter (Wm/Wp) alphabet is allowed.  Backend-agnostic: the
+   recursion goes through this same dispatcher, so HF and HyperIntica
+   experience the cascade identically.
+   Result shape under Automatic is always normalized to the FindRoots=True
+   form {{order, score}, rootPolys} (with rootPolys = {} when the False
+   leg succeeded), so consumers downstream can read espResult[[1]] and
+   espResult[[2]] uniformly. *)
+stDispatchFubini2[groupPoly_, xvars_, opts:OptionsPattern[]] /;
+        (FindRoots /. {opts} /. {FindRoots -> False}) === Automatic :=
+Module[{restOpts, falseResult, falseNOLR},
+    restOpts = FilterRules[{opts}, Except[FindRoots]];
+    falseResult = stDispatchFubini2[groupPoly, xvars,
+        Sequence @@ restOpts, FindRoots -> False];
+    falseNOLR = (falseResult === $Failed) ||
+        (ListQ[falseResult] && Length[falseResult] >= 1 &&
+         First[falseResult] === NOLR);
+    If[falseNOLR,
+        (* Escalate to True leg; returns wrapped shape directly. *)
+        stDispatchFubini2[groupPoly, xvars,
+            Sequence @@ restOpts, FindRoots -> True],
+        (* False succeeded; normalize flat shape into wrapped form. *)
+        {falseResult, {}}]
+];
+
 stDispatchFubini2[groupPoly_, xvars_, opts:OptionsPattern[]] :=
 Module[{backend = $STLROrderBackend, findRoots, hfResult, t0, dt, ret,
         nxv = Length[xvars]},
@@ -10329,7 +11229,17 @@ Module[{backend = $STLROrderBackend, findRoots, hfResult, t0, dt, ret,
         $STDispatchHFCount += 1; $STDispatchHFTime += dt,
         $STDispatchHICount += 1; $STDispatchHITime += dt];
     If[TrueQ[$STDispatchProfile],
-        AppendTo[$STDispatchProfileLog, {backend, N[dt], nxv, findRoots}]];
+        (* iter-41 Track 6.5 full PASS: extend per-call record with the
+           HF strategy enum picked up from STFindLROrdersHF via
+           $STHFLastStrategy.  For HyperFLINT backend this is one of
+           {"LR_NoOpt","LR_OptOrdered","Fubini_Lungo","Fubini_Espresso"}
+           (post-iter-40 HF binaries) or Missing["StrategyFieldAbsent"]
+           (older HF binaries).  For non-HF backends the value is
+           Missing["NotApplicable"]. *)
+        AppendTo[$STDispatchProfileLog,
+            {backend, N[dt], nxv, findRoots,
+             If[backend === "HyperFLINT", $STHFLastStrategy,
+                Missing["NotApplicable"]]}]];
     ret];
 
 (* Look for linearly reducible orders for given polynomial lists *)
@@ -10406,7 +11316,7 @@ oldDirectory
 (*(**)*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Evaluate Subtractions*)
 
 
@@ -10432,7 +11342,7 @@ oldDirectory
 (**)
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Basic Functions*)
 
 
@@ -10494,7 +11404,7 @@ prefix
 ]
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Setup directory for single subtraction*)
 
 
@@ -10607,7 +11517,7 @@ fromSetToList}
 ]
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Launch HyperInt for single subtraction*)
 
 
@@ -10656,7 +11566,7 @@ STlaunchHyperIntMaple[id_,order_, mode_:"All", startOrder_:1]:=Module[
 
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Read Results for single subtraction*)
 
 
@@ -10692,7 +11602,7 @@ prefix,origDirectory,results
 ]
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Assemble Results*)
 
 
@@ -10936,7 +11846,7 @@ STEvaluateFeynmanG[graph_ , kinematics_, dim_,  order_:0 , mode_:"All", startOrd
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Clean Up *)
 
 
@@ -11247,10 +12157,10 @@ ProportionalPolynomialsQLR[poly1_, poly2_, checks_ : 3] :=
 (*                                                                  *)
 (*  Edge cases:                                                     *)
 (*    stCanonicalPolyForm[0]       = 0                               *)
-(*    stCanonicalPolyForm[<numeric c>] = Sign[c] (±1 or 0)           *)
+(*    stCanonicalPolyForm[<numeric c>] = Sign[c] (\[PlusMinus]1 or 0)           *)
 (*                                                                  *)
-(*  See HyperFLINT/docs/lr_order_search_residual_profile.md §"Phase *)
-(*  α.2 null result" for the empirical finding.                     *)
+(*  See HyperFLINT/docs/lr_order_search_residual_profile.md \[Section]"Phase *)
+(*  \[Alpha].2 null result" for the empirical finding.                     *)
 stCanonicalPolyForm[p_] := Module[{ex, rules, leadCoef},
     ex = Expand[p];
     If[ex === 0, Return[0]];
@@ -11261,26 +12171,26 @@ stCanonicalPolyForm[p_] := Module[{ex, rules, leadCoef},
     If[leadCoef === 0, Return[0]];
     Expand[p / leadCoef]];
 
-(* $STUseFastProportionalDedup: feature flag for the Phase-α.2 dedup
+(* $STUseFastProportionalDedup: feature flag for the Phase-\[Alpha].2 dedup
    optimization.  Gates stCanonicalPolyForm-based dedup in STFubiniLR
    and STFasterFubini2's Intersection step.
    Default: False (legacy PPQ SameTest path).
    Reason: on warm-kernel production workloads the PPQ memoization
-   cache achieves ≈ 99 % hit rate, making per-call PPQ ≈ 4 µs while
-   stCanonicalPolyForm stays ≈ 150 µs per call.  Net: fast path is
-   ≈ 0.9× on box-massless, sunrise-3mass (slight LOSS).  The
-   Phase-α.1 profile that motivated this change had the opposite
+   cache achieves \[TildeTilde] 99 % hit rate, making per-call PPQ \[TildeTilde] 4 \[Micro]s while
+   stCanonicalPolyForm stays \[TildeTilde] 150 \[Micro]s per call.  Net: fast path is
+   \[TildeTilde] 0.9\[Times] on box-massless, sunrise-3mass (slight LOSS).  The
+   Phase-\[Alpha].1 profile that motivated this change had the opposite
    conclusion because the timing wrapper's DownValues save/restore
-   cleared PPQ's self-memo, inflating apparent PPQ cost by 3-5×.
+   cleared PPQ's self-memo, inflating apparent PPQ cost by 3-5\[Times].
    Flag kept (set to True) for scenarios where PPQ memoization is
    not primed (e.g. cold-start tests, CI regression suites).
-   See HyperFLINT/docs/lr_order_search_residual_profile.md §"Phase
-   α.2 null result" for the post-mortem. *)
+   See HyperFLINT/docs/lr_order_search_residual_profile.md \[Section]"Phase
+   \[Alpha].2 null result" for the post-mortem. *)
 $STUseFastProportionalDedup = False;
 
 (* stDedupProportional[list] chooses the dedup path based on the flag.
    Result set is the same (up to representative choice within each
-   equivalence class, which may differ across paths — caller must not
+   equivalence class, which may differ across paths \[LongDash] caller must not
    depend on which specific element survives dedup).  *)
 stDedupProportional[list_List] := If[TrueQ[$STUseFastProportionalDedup],
     DeleteDuplicatesBy[list, stCanonicalPolyForm],
@@ -11289,7 +12199,7 @@ stDedupProportional[list_List] := If[TrueQ[$STUseFastProportionalDedup],
 (* stIntersectProportional[lists]: N-way intersection under
    proportionality equivalence.  Replaces
      Apply[Intersection[##, SameTest -> PPQ] &, lists]
-   which is O(n²) per pairwise.  Fast version canonicalizes once per
+   which is O(n\.b2) per pairwise.  Fast version canonicalizes once per
    element, intersects the canonical-form sets, then pulls one
    representative from each equivalence class back to the original
    form (taking the first member from the first list to match).  *)
@@ -11547,8 +12457,8 @@ STFubiniLR[polynomials_List, var_, OptionsPattern[]] := Module[
     , {poly, combined}];
     combined =.;
 
-    (* Phase α.2: hash-based dedup via stCanonicalPolyForm is O(n log n)
-       vs the legacy O(n²) SameTest path.  Gated by $STUseFastProportionalDedup
+    (* Phase \[Alpha].2: hash-based dedup via stCanonicalPolyForm is O(n log n)
+       vs the legacy O(n\.b2) SameTest path.  Gated by $STUseFastProportionalDedup
        (default True).  See HyperFLINT/docs/lr_order_search_residual_profile.md. *)
     temp = stDedupProportional[temp];
     Snew = Select[temp, Not[NumericQ[#]] &];
@@ -11739,6 +12649,28 @@ Options[STEspressoFubini] = {
     ScreeningLR -> False
 };
 
+(* Per-face FindRoots -> Automatic cascade.  Mirrors stDispatchFubini2.
+   Try FindRoots -> False first; if NOLR, retry with FindRoots -> True.
+   Result shape under Automatic is normalized to the True form
+   {{order, score}, rootPolys}. *)
+STEspressoFubini[
+    groupPolynomialsRaw_List,
+    variables_List,
+    opts : OptionsPattern[]
+] /; (FindRoots /. {opts} /. {FindRoots -> False}) === Automatic :=
+Module[{restOpts, falseResult, falseNOLR},
+    restOpts = FilterRules[{opts}, Except[FindRoots]];
+    falseResult = STEspressoFubini[groupPolynomialsRaw, variables,
+        Sequence @@ restOpts, FindRoots -> False];
+    falseNOLR = (falseResult === $Failed) ||
+        (ListQ[falseResult] && Length[falseResult] >= 1 &&
+         First[falseResult] === NOLR);
+    If[falseNOLR,
+        STEspressoFubini[groupPolynomialsRaw, variables,
+            Sequence @@ restOpts, FindRoots -> True],
+        {falseResult, {}}]
+];
+
 STEspressoFubini[
     groupPolynomialsRaw_List,
     variables_List,
@@ -11797,7 +12729,7 @@ STEspressoFubini[
 
                 (* Use the LR-strict intersection predicate (ProportionalPolynomialsQLR)
                    to avoid over-aggressive dedup that loses higher-degree info.
-                   Phase α.2 note: NOT gated by $STUseFastProportionalDedup;
+                   Phase \[Alpha].2 note: NOT gated by $STUseFastProportionalDedup;
                    only the active STFasterFubini2/STFubiniLR call sites are.
                    Migrate via stIntersectProportional if the flag default flips. *)
                 intersectionResult = Apply[
@@ -11931,7 +12863,7 @@ STFasterFubini[
             ];
             STFubiniLR[polys, v, FilterRules[{opts}, Options[STFubiniLR]]]
         , {v, vars}];
-        (* Phase α.2 note: NOT gated by $STUseFastProportionalDedup — only
+        (* Phase \[Alpha].2 note: NOT gated by $STUseFastProportionalDedup \[LongDash] only
            the active STFasterFubini2:~11096 Intersection is gated.  Match
            via stIntersectProportional[preSTable[g]] if the flag's default
            ever flips and callers of STFasterFubini (this legacy path) need
@@ -12039,9 +12971,9 @@ STFasterFubini2[
                     fubiniResult
                 , {v, vars}];
 
-                (* Phase α.2: stIntersectProportional uses hash-based
+                (* Phase \[Alpha].2: stIntersectProportional uses hash-based
                    canonical-form dedup (O(n log n)) vs the legacy
-                   O(n²) SameTest path.  Gated by
+                   O(n\.b2) SameTest path.  Gated by
                    $STUseFastProportionalDedup (default True). *)
                 intersectionResult = stIntersectProportional[preSTable[g]];
                 set[g][Sort[vars]] = intersectionResult;
@@ -12223,7 +13155,7 @@ STEspressoFubiniFast[
 
                 (* Use the LR-strict intersection predicate (ProportionalPolynomialsQLR)
                    to avoid over-aggressive dedup that loses higher-degree info.
-                   Phase α.2 note: NOT gated by $STUseFastProportionalDedup;
+                   Phase \[Alpha].2 note: NOT gated by $STUseFastProportionalDedup;
                    only the active STFasterFubini2/STFubiniLR call sites are.
                    Migrate via stIntersectProportional if the flag default flips. *)
                 intersectionResult = Apply[
@@ -12477,7 +13409,7 @@ sortingFunction
 
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Hyper-Integrate (directory structure)*)
 
 
@@ -12546,7 +13478,7 @@ prefix
 ]
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Setup directories (GS)*)
 
 
@@ -12968,7 +13900,7 @@ STfindLinearlyReducibleOrdersHighestEpsOrder[id_:"NP", OptionsPattern[]] := Modu
         ,
         Module[{espResult, rootPolys = {}},
           espResult = STEspressoFubini[Join[#, xvars] & /@ (polysAndPairs[[;; , 1]]), xvars, Heuristic -> OptionValue[Heuristic], FindRoots -> OptionValue[FindRoots]];
-          If[OptionValue[FindRoots],
+          If[OptionValue[FindRoots] =!= False,
             {bestOrder, score} = espResult[[1]];
             rootPolys = espResult[[2]];,
             {bestOrder, score} = espResult;
@@ -13092,7 +14024,7 @@ STfindLinearlyReducibleOrdersHighestEpsOrder2[id_:"NP", opts:OptionsPattern[]] :
                 (* When FindRoots is True, don't skip \[LongDash] the main-kernel must run
                    the full FindRoots + integrand rewriting pass (sub-kernels from
                    gauge scoring don't modify integrands reliably). *)
-                If[allEpsOrdersHaveBestOrder && !OptionValue[FindRoots],
+                If[allEpsOrdersHaveBestOrder && OptionValue[FindRoots] === False,
                     If[Not[OptionValue["ScanGauges"]],
                         Print["Skipping ", fileUpToEps, " - bestOrder.m already exists for all eps-orders"]
                     ];
@@ -13126,7 +14058,10 @@ STfindLinearlyReducibleOrdersHighestEpsOrder2[id_:"NP", opts:OptionsPattern[]] :
                           FindRoots -> OptionValue[FindRoots]
                       ]
                   ];
-                  If[OptionValue[FindRoots],
+                  (* FindRoots-truthy (True or Automatic) returns the wrapped
+                     shape {{order, score}, rootPolys}; explicit False returns
+                     the flat shape {order, score}. *)
+                  If[OptionValue[FindRoots] =!= False,
                     {bestOrder, score} = espResult[[1]];
                     rootPolys = espResult[[2]];,
                     {bestOrder, score} = espResult;
@@ -13145,7 +14080,7 @@ STfindLinearlyReducibleOrdersHighestEpsOrder2[id_:"NP", opts:OptionsPattern[]] :
 
                   (* deg-3 NOLR detection only (main-kernel pass); HyperInt
                      introduces Wm[i]/Wp[i] on demand. *)
-                  If[OptionValue[FindRoots] && rootPolys =!= {} && !OptionValue["ScanGauges"],
+                  If[OptionValue[FindRoots] =!= False && rootPolys =!= {} && !OptionValue["ScanGauges"],
                     STApplyRootFactoring[polysAndPairs, rootPolys, xvars, bestOrder];
                     Print["  [FindRoots] Identified ", Length[DeleteDuplicates[rootPolys]],
                       " root polynomial(s) (HyperInt will introduce Wm/Wp letters)"];
@@ -13211,7 +14146,7 @@ STfindLinearlyReducibleOrdersBruteForce[id_:"NP", OptionsPattern[]] := Module[
 
         Module[{espResult, rootPolys = {}},
           espResult = STEspressoFubini[Join[#, xvars] & /@ (polysAndPairs[[;; , 1]]), xvars, Heuristic -> OptionValue[Heuristic], FindRoots -> OptionValue[FindRoots]];
-          If[OptionValue[FindRoots],
+          If[OptionValue[FindRoots] =!= False,
             {bestOrder, score} = espResult[[1]];
             rootPolys = espResult[[2]];,
             {bestOrder, score} = espResult;
@@ -13267,20 +14202,34 @@ Options[STLaunchHyperIntica] = {
 };
 
 STLaunchHyperIntica::nokernel = "Parallelization -> \"PartialIntegrands\" requires subkernels, but KernelsAvailable was set to 0 or 1 (serial mode). Use Parallelization -> All or increase KernelsAvailable.";
+STLaunchHyperIntica::badstrategy = "Strategy `1` not recognised (valid: All, \"BruteForce\", \"PartialIntegrands\"). Coercing to \"BruteForce\" (serial-by-face). To silence this, set Parallelization -> \"BruteForce\" explicitly.";
+STLaunchHyperIntica::hfpartial = "Parallelization -> \"PartialIntegrands\" is HyperIntica-only (works with one-step IntegrationStep[] which is HyperIntica-internal); Integrator -> \"HyperFLINT\" requires Parallelization -> All or \"BruteForce\". Coercing to \"BruteForce\".";
 
 STLaunchHyperIntica[id_:"NP", OptionsPattern[]] := Module[
 {NPfilenames, polysAndPairs, xvars, linearlyReducibleOrders,
-successQ, failed = {}},
-    If[OptionValue["Strategy"] === "PartialIntegrands" && Length[Kernels[]] === 0,
+successQ, failed = {}, strategy},
+    strategy = OptionValue["Strategy"];
+    If[strategy === "PartialIntegrands" && Length[Kernels[]] === 0,
         Message[STLaunchHyperIntica::nokernel]; Abort[];
     ];
-    Switch[OptionValue["Strategy"],
+    (* 2026-04-30: previously `Switch[strategy, "BruteForce", ..., "PartialIntegrands", ..., All, ...]` had no `_` default, so any other Strategy value (e.g. None, which the user can reach via `Parallelization -> None`) would match no case and silently no-op. Coerce unknown values to "BruteForce" with a warning Message so the user gets a real integration plus a clear signal. *)
+    If[!MatchQ[strategy, "BruteForce" | "PartialIntegrands" | All],
+        Message[STLaunchHyperIntica::badstrategy, strategy];
+        strategy = "BruteForce"
+    ];
+    (* R21 dispatch-correctness fix: PartialIntegrands cannot route HF
+       (its inner loop calls HyperIntica's IntegrationStep[]). *)
+    If[strategy === "PartialIntegrands" && OptionValue["Integrator"] === "HyperFLINT",
+        Message[STLaunchHyperIntica::hfpartial];
+        strategy = "BruteForce"];
+    Switch[strategy,
     "BruteForce",
         failed = STLaunchHyperInticaBruteForce[id,
             "LevelParallelism"     -> OptionValue["LevelParallelism"],
             "ShowIntegrands"       -> OptionValue["ShowIntegrands"],
             "SelectFaces"          -> OptionValue["SelectFaces"],
-            "ReuseExistingResults" -> OptionValue["ReuseExistingResults"]
+            "ReuseExistingResults" -> OptionValue["ReuseExistingResults"],
+            "Integrator"           -> OptionValue["Integrator"]  (* R21 fix *)
         ],
     "PartialIntegrands",
         failed = STLaunchHyperInticaPartialIntegrands[id,
@@ -13364,6 +14313,12 @@ STResetKernelCaches[] := (
         $STDispatchHFCount = 0; $STDispatchHICount = 0;
         $STDispatchHFTime  = 0.; $STDispatchHITime  = 0.;
         $STDispatchProfileLog = {};
+        (* iter-41 Track 6.5 full PASS: reset HF strategy histogram so
+           STResetKernelCaches mirrors a fresh kernel for the strategy
+           counters too.  Without this the counters bleed across
+           STIntegrate calls and adversarial review reads stale totals. *)
+        $STHFStrategyCounters = <||>;
+        $STHFLastStrategy = Missing["NotYetCalled"];
         $STHyperFlintCallCount = 0; $STHyperFlintTotalTime = 0.;
         $STSetupDirCallCount = 0; $STSetupDirPutTime = 0.;
         ClearSystemCache[];
@@ -13393,6 +14348,10 @@ STResetKernelCaches[] := (
             $STDispatchHFCount = 0; $STDispatchHICount = 0;
             $STDispatchHFTime  = 0.; $STDispatchHITime  = 0.;
             $STDispatchProfileLog = {};
+            (* iter-41 Track 6.5: mirror the master-side strategy
+               counter reset on every subkernel. *)
+            $STHFStrategyCounters = <||>;
+            $STHFLastStrategy = Missing["NotYetCalled"];
             $STHyperFlintCallCount = 0; $STHyperFlintTotalTime = 0.;
             $STSetupDirCallCount = 0; $STSetupDirPutTime = 0.;
             ClearSystemCache[];
@@ -13542,6 +14501,7 @@ stSetupKernelImpl[nkernels_Integer] := Module[{currentDir, kernelsAlreadyOk,
               hyperIntPath = $SThyperIntPath,
               hfPath       = $STHyperFlintPath,
               hfDataPath   = $STHyperFlintDataPath,
+              hlpPath      = $STHyperLogProceduresPath,
               pythonCmd    = $PythonCommand,
               polymakeFrac = $PolymakeConcurrencyFraction,
               fiestaPath   = $FIESTAPath,
@@ -13562,6 +14522,7 @@ stSetupKernelImpl[nkernels_Integer] := Module[{currentDir, kernelsAlreadyOk,
                 $SThyperIntPath                 = hyperIntPath;
                 $STHyperFlintPath               = hfPath;
                 $STHyperFlintDataPath           = hfDataPath;
+                $STHyperLogProceduresPath       = hlpPath;
                 $PythonCommand                  = pythonCmd;
                 $PolymakeConcurrencyFraction    = polymakeFrac;
                 $FIESTAPath                     = fiestaPath;
@@ -14002,7 +14963,8 @@ Options[STLaunchHyperInticaBruteForce] = {
     "LevelParallelism" -> "Face",
     "ShowIntegrands" -> False,
     "SelectFaces" -> All,
-    "ReuseExistingResults" -> True
+    "ReuseExistingResults" -> True,
+    "Integrator" -> "HyperIntica"  (* R21 dispatch-correctness fix: thread Integrator through *)
 };
 
 STLaunchHyperInticaBruteForce[id_:"NP", OptionsPattern[]] := Module[
@@ -14050,9 +15012,10 @@ successQ, failed = {}},
     Print["Launching HyperIntica on " <> ToString[NPfilenames // Length] <> " face integrands"];
     Do[
         Print[" Working on ", file, " ... "];
-        successQ = STLaunchHyperInticaFace[file, 
+        successQ = STLaunchHyperInticaFace[file,
             "LevelParallelism" -> OptionValue["LevelParallelism"],
-            "ShowIntegrands" -> OptionValue["ShowIntegrands"]
+            "ShowIntegrands" -> OptionValue["ShowIntegrands"],
+            "Integrator" -> OptionValue["Integrator"]  (* R21 dispatch fix *)
         ];
         If[Not[successQ], 
             failed = Join[failed, {file}]
@@ -14067,7 +15030,8 @@ successQ, failed = {}},
 
 Options[STLaunchHyperInticaFace] = {
     "LevelParallelism" -> "Face",
-    "ShowIntegrands" -> False 
+    "ShowIntegrands" -> False,
+    "Integrator" -> "HyperIntica"  (* R21: dispatch-correctness fix *)
 };
 
 STLaunchHyperInticaFace[faceDirectory_, OptionsPattern[]] := Module[
@@ -14084,16 +15048,47 @@ result},
         hyperInticaIntegrator = HyperInt;
         tableFunction = ParallelTable,
         "Terms",
-        hyperInticaIntegrator = HyperIntParallel;
+        (* R21: HyperIntParallel is undefined in current HyperIntica; alias to HyperInt and warn once. *)
+        hyperInticaIntegrator = HyperInt;
         tableFunction = Table,
         "None",
         hyperInticaIntegrator = HyperInt;
         tableFunction = Table
     ];
-    
-    Print["STLaunchHyperInticaFace, LevelParallelism -> ", OptionValue["LevelParallelism"]];
-    
-    orders = Get[faceDirectory <> "/orders.m"];
+
+    (* R21 dispatch-correctness fix: override the LevelParallelism-driven
+       Switch with the user's Integrator choice.  HyperFLINT and HyperInt
+       (Maple) replace HyperIntica entirely; the LevelParallelism Switch
+       only matters for the HyperIntica-default branch. *)
+    Switch[OptionValue["Integrator"],
+        "HyperFLINT", hyperInticaIntegrator = stTimedHyperFlint,
+        "HyperInt",   hyperInticaIntegrator = SThyperIntMaple,
+        _,            Null  (* keep the LevelParallelism-driven HyperIntica setting *)
+    ];
+
+    (* R21 C.1: distribute HF helpers to subkernels when ParallelTable
+       will dispatch into stTimedHyperFlint.  Without this, subkernels
+       see undefined SubTropica`Private`stTimedHyperFlint and the call
+       returns unevaluated, miscounting as success. *)
+    If[OptionValue["LevelParallelism"] =!= "None" &&
+       OptionValue["Integrator"] === "HyperFLINT",
+        DistributeDefinitions[stTimedHyperFlint, STHyperFlint,
+            $STHyperFlintPath, $STHyperFlintDataPath,
+            $STHyperFlintThreads, $STHyperFlintUseLibraryLink,
+            $STHFLibHyperFlintSym]];
+
+    Print["STLaunchHyperInticaFace, LevelParallelism -> ", OptionValue["LevelParallelism"],
+          ", Integrator -> ", OptionValue["Integrator"]];
+
+    (* 2026-04-30: orders.m is only written by the LR-finder for the
+       no_integration_required case (line ~13207). Normal cases write
+       only bestOrder.m. So Get["orders.m"] fails on the BruteForce
+       path with LROrderBackend in {Espresso, Lungo, HyperFLINT}.
+       Fall back to {bestOrder} when orders.m is absent. *)
+    orders = If[FileExistsQ[faceDirectory <> "/orders.m"],
+        Get[faceDirectory <> "/orders.m"],
+        {Get[faceDirectory <> "/bestOrder.m"]}
+    ];
     integrands = Get[faceDirectory <> "/counter_terms_integrands.m"];
     vars = Get[faceDirectory <> "/vars.m"];
     
@@ -14126,7 +15121,7 @@ result},
                     $STCurrentIntegrand = int;
                     $STCurrentOrder = currentOrder;
                 ];
-                HyperInt[int, currentOrder]
+                hyperInticaIntegrator[int, currentOrder]  (* R21: was hard-coded HyperInt *)
             ),
             {int, integrands}
         ];
@@ -14392,10 +15387,12 @@ STLaunchHyperInticaPartialIntegrandsEpsOrder[faceDirectories_, OptionsPattern[]]
     DistributeDefinitions[showIntegrands];
     
     (* Database containing per-face: LR-orders, initial CT-integrands, LR-order currently being attempted *)
+    (* 2026-04-30: orders.m is only written for no_integration_required cases; normal LR finders only write bestOrder.m. The previous Get["orders.m"] returned $Failed on most faces, leaving an unevaluated Join expression that happened to pass the [[1]] access by accident. Use FileExistsQ to fall back cleanly to {bestOrder} when orders.m is absent. *)
     faceData = Association @@ Table[
-        LRordersThisFace = Join[
-            {Get[face[[3]] <> "/bestOrder.m"]},
-            DeleteCases[Get[face[[3]] <> "/orders.m"], Get[face[[3]] <> "/bestOrder.m"]]
+        Module[{best = Get[face[[3]] <> "/bestOrder.m"]},
+            LRordersThisFace = If[FileExistsQ[face[[3]] <> "/orders.m"],
+                Join[{best}, DeleteCases[Get[face[[3]] <> "/orders.m"], best]],
+                {best}]
         ];
         face[[1]] -> <|
             "CurrentOrderId" -> 1,
@@ -15203,7 +16200,7 @@ STGenerateIntegrand::vacuumPeriod = "The F polynomial vanishes but the superfici
 (*Wrapper Function *)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Main Wrapper*)
 
 
@@ -15575,48 +16572,24 @@ Options[STEvaluateGraph] = Join[
         "AutoRationalize"         -> False,  (* When True, try the M1/M2/M3 rationalization dispatcher (single/double Cheng-Wu, FKV, Kallen, BoxFKV) before falling through to the normal pipeline.  Off by default because the dispatcher may pick a substitution for cases the normal pipeline already handles correctly, producing a DIFFERENTLY-parameterized (FKV-variable) result.  Users who want unlocks should set this True explicitly. *)
         "MethodLR"                -> "Lungo",  (* "Lungo" (default, OLD algorithm: discriminant/resultant + global dedup) or "Espresso" *)
         "MethodPolysAndPairs"     -> "Fast",   (* "Fast" (default) = extract polys directly from STtoCoeffMonPols; "Standard" = sum renormalized integrands per eps-order and call STpreparePolysAndPairs *)
-        "LROrderBackend"          -> "HyperIntica"  (* "HyperIntica" (default, in-process Mma STFasterFubini2) or "HyperFLINT" (C++ HF find_lr_orders via stDispatchFubini2).  HF requires FindRoots -> False.  Tie-break-equivalent orders to Mma on 22/26 of a real-face sweep (Phase β.3 validation); 4/26 pick a different valid LR order but all are mathematically equivalent (Fubini guarantees integration-order independence). *)
+        "LROrderBackend"          -> "HyperIntica",  (* "HyperIntica" (default, in-process Mma STFasterFubini2) or "HyperFLINT" (C++ HF find_lr_orders via stDispatchFubini2).  HF requires FindRoots -> False.  Tie-break-equivalent orders to Mma on 22/26 of a real-face sweep (Phase \[Beta].3 validation); 4/26 pick a different valid LR order but all are mathematically equivalent (Fubini guarantees integration-order independence). *)
+        "ScoreProgress"           -> False  (* When True, print per-gauge LR status and wall time as each (sub)kernel finishes *)
     },
     Options[STGenerateIntegrand]
 ];
 
 
-(* B17: FindRoots -> Automatic dispatch (cheap-then-expensive retry).
-   When the resolved FindRoots option is Automatic, run the body with
-   FindRoots -> False; if every gauge fails to find a linearly reducible
-   order (STEvaluateGraph::nolr fires inside the gauge-scoring loop),
-   retry with FindRoots -> True so HyperIntica's LinearFactors path
-   introduces Wm[i]/Wp[i] algebraic letters.  The False trial's
-   STEvaluateGraph::nolr message is suppressed via Quiet+HandlerBlock
-   so the user only sees messages from the retry's full message stream.
-   Other failure modes (STEvaluateGraph::timebound, polymake errors,
-   scaleless fallbacks) propagate from the False trial unchanged \[LongDash]   FindRoots wouldn't fix them.  The recursive call passes
-   FindRoots -> True | False explicitly, which wins via OptionValue's
-   first-rule ordering and prevents infinite dispatch.  Caveats:
-   \[Bullet] Genuinely non-LR cases (e.g. equal-mass 2-loop sunrise / elliptic
-     integrals) pay the cost of both trials before failing.
-   \[Bullet] The False trial's gauge-scoring still emits its own Echo prints;
-     only the NOLR Message is silenced.  A retry shows two scoring
-     reports back-to-back, prefixed by a banner. *)
-STEvaluateGraph[g_, opts : OptionsPattern[]] /;
-    OptionValue[STEvaluateGraph, {opts}, FindRoots] === Automatic :=
-Module[{gotNolr = False, falseResult, verbose},
-    verbose = TrueQ[OptionValue[STEvaluateGraph, {opts}, "Verbose"]];
-    If[verbose,
-        Print["[STEvaluateGraph] FindRoots -> Automatic: trying FindRoots -> False first"]];
-    falseResult = Internal`HandlerBlock[
-        {"Message", Function[capturedMsg,
-            If[MatchQ[capturedMsg,
-                Hold[Message[MessageName[STEvaluateGraph, "nolr"], ___], _]],
-                gotNolr = True]]},
-        Quiet[
-            STEvaluateGraph[g, FindRoots -> False, opts],
-            {STEvaluateGraph::nolr}]];
-    If[gotNolr,
-        Print["[STEvaluateGraph] FindRoots -> False: NOLR for every gauge; retrying with FindRoots -> True"];
-        STEvaluateGraph[g, FindRoots -> True, opts],
-        falseResult]
-];
+(* Whole-integration FindRoots -> Automatic cascade was previously here
+   (B17 / v1.0.398-era).  Removed in v1.1.8.10: the cascade now runs at
+   per-face granularity inside the LR-search dispatchers
+   (stDispatchFubini2, STEspressoFubini), which is finer-grained and lets
+   the integrator side run with $HyperIntroduceAlgebraicLetters = True
+   (per design choice (ii)(a)) regardless of which leg of the per-face
+   cascade succeeded.  The whole-integration retry was too coarse: it
+   only escalated when STEvaluateGraph::nolr fired (every gauge NOLR at
+   LR-search time), missing the common case where LR succeeds on the
+   post-expansion factored polynomials but the integrator hits a deg-2
+   Schwinger-dependent factor and refuses via the parity guard. *)
 
 STEvaluateGraph[g_, opts : OptionsPattern[]] :=
 Catch[
@@ -15630,8 +16603,9 @@ Module[{
     var,
     outputOrder, poleGamma, effectiveOrder, scanScoreInterval,
     scoreInParallel, timeUpperBound,
-    memPercentCutOff, scoringMemoryFraction, setupInParallel,
-    findRootsValue, methodLRValue, methodPolysAndPairs, lrBackendValue,
+    memPercentCutOff, scoringMemoryFraction, setupInParallel, scoreProgress,
+    findRootsValue, frOrig, methodLRValue, methodPolysAndPairs, mppOrig, lrBackendValue,
+    frLegs, chosenFrLeg, frPass,
     includeGauges, gaugesToConsider, invalidGauges, bestGaugeIdx,
     stopAt, startAt, resumeFrom,
     uiComms, isScanPath,
@@ -15660,7 +16634,7 @@ Module[{
            share `integrands/<id>*` per-face caches. The UI's handleIntegrate
            passes SetProblemID equal to the sanitized topology nickel
            (e.g. "e12_e2_e_"), which is identical across every coloring
-           — without the hash, ReuseExistingResults -> True returns cached
+           \[LongDash] without the hash, ReuseExistingResults -> True returns cached
            result.m files from whichever coloring was integrated first.
            Caches from before this hash extension stay on disk; they are
            simply not matched by the new id wildcard. *)
@@ -15678,7 +16652,9 @@ Module[{
     timeUpperBound = OptionValue["TimeUpperBound"];
     memPercentCutOff = OptionValue["MemoryPercentCutOff"];
     scoringMemoryFraction = Clip[OptionValue["ScoringMemoryFraction"], {0.01, 1.0}];
+    scoreProgress         = TrueQ[OptionValue["ScoreProgress"]];
     findRootsValue        = OptionValue[FindRoots];
+    frOrig                = findRootsValue;  (* preserved across the FR cascade for the post-LR escalation guard *)
     methodLRValue         = OptionValue["MethodLR"];
     methodPolysAndPairs   = OptionValue["MethodPolysAndPairs"];
     setupInParallel       = OptionValue["SetupInParallel"];
@@ -15686,7 +16662,7 @@ Module[{
     stopAt        = OptionValue["StopAt"];
     startAt       = OptionValue["StartAt"];
 
-    (* Phase β.3: LR-order-search backend.  "HyperFLINT" routes every
+    (* Phase \[Beta].3: LR-order-search backend.  "HyperFLINT" routes every
        stDispatchFubini2 call site through HF's C++ find_lr_orders op;
        "HyperIntica" (default) keeps the in-process Mma STFasterFubini2
        path.  As of Phase 7-vii, HF's find_lr_orders accepts deg-2
@@ -15724,21 +16700,24 @@ Module[{
        incompatible combination \[LongDash] warn loudly and stop.  (The Maple side's
        STformatHyperIntMapleOut also guards against `Root(` in the returned
        string for belt-and-suspenders safety.) *)
-    If[TrueQ[findRootsValue] && OptionValue["Integrator"] === "HyperInt",
+    If[findRootsValue === True && OptionValue["Integrator"] === "HyperInt",
         Message[STEvaluateGraph::findRootsHyperInt];
         Return[$Failed]];
 
-    If[TrueQ[findRootsValue],
+    (* FindRoots resolution under per-face cascade:
+         - True or Automatic: arm $HyperIntroduceAlgebraicLetters so the
+           integrator can mint Wm/Wp letters when a face's LR search escalated
+           to True. (Automatic \[DoubleRightArrow] True per design choice (ii)(a): letters armed
+           globally, faces that don't need them simply don't trigger them.)
+         - False: integrator must not introduce letters; reset the flag
+           explicitly (it is sticky across runs). *)
+    If[findRootsValue =!= False,
         $NoAlgebraicRootsContributions = False;
         $HyperIntroduceAlgebraicLetters = True;
         ClearAlgebraicLetters[];
         If[Length[Kernels[]] > 0, ParallelEvaluate[ClearAlgebraicLetters[]]];
         $stRootSubstitutions = {}
     ,
-        (* Explicit reset: the flag is sticky if a prior FindRoots->True
-           call left it set; without this, a subsequent FindRoots->False
-           call would see a stale True and trigger the legacy serial
-           force in STSetupKernel when $STFindRootsParallelSafe is off. *)
         $HyperIntroduceAlgebraicLetters = False;
         ClearAlgebraicLetters[];
         If[Length[Kernels[]] > 0, ParallelEvaluate[ClearAlgebraicLetters[]]];
@@ -16053,7 +17032,7 @@ Module[{
                               {Join[polysAndPairs, xvarsAll]},
                               xvarsAll, ScreeningLR -> True, Heuristic -> heuristicValue, FindRoots -> findRootsValue]
                       ]];
-                      If[findRootsValue, {bestOrder, score} = espResult[[1]], {bestOrder, score} = espResult];
+                      If[findRootsValue =!= False, {bestOrder, score} = espResult[[1]], {bestOrder, score} = espResult];
                     ];
                     If[bestOrder === NOLR,
                         Return[<|
@@ -16107,7 +17086,7 @@ Module[{
                                   {Join[polysAndPairs, xv]},
                                   xv, Heuristic -> heuristicValue, FindRoots -> findRootsValue]
                           ]];
-                          If[findRootsValue, {bestOrder, score} = espResult[[1]], {bestOrder, score} = espResult];
+                          If[findRootsValue =!= False, {bestOrder, score} = espResult[[1]], {bestOrder, score} = espResult];
                         ];
                         <|"Gauge" -> xvarsAll[[gi]],
                           "IsLR" -> (bestOrder =!= NOLR),
@@ -16221,6 +17200,21 @@ Module[{
                 Return[<|"CheckpointID" -> problemId, "Result" -> allExpansions|>]
             ];
 
+            (* FindRoots -> Automatic cascade: run the entire gauge-scoring
+               pass with FindRoots -> False; if every gauge NOLRs, retry the
+               whole pass with FindRoots -> True.  Resolves Automatic to a
+               single FindRoots value before any integrator call begins, so
+               Integrator -> "HyperInt" never receives Wm/Wp letters from a
+               gauge that needed True unless every gauge needs True (in which
+               case the post-cascade guard below kills the run with the
+               findRootsHyperInt message). *)
+            mppOrig = methodPolysAndPairs;
+            frLegs  = If[findRootsValue === Automatic, {False, True}, {findRootsValue}];
+            chosenFrLeg = First[frLegs];
+            Do[
+                chosenFrLeg = frPass;
+                methodPolysAndPairs = mppOrig;  (* fresh Fast/Standard for new FR leg *)
+
             (* NOLR fallback: rerun setup+scoring with "Standard" if "Fast" yielded all-NOLR.
                On pass 1 all-NOLR + Fast, loop runs pass 2 with Standard; the existing NOLR
                abort below fires only if pass 2 also fails. *)
@@ -16233,6 +17227,16 @@ Module[{
                    chunks and distribute only one slice at a time to limit peak memory. *)
                 Module[{nv, numChunks, chunkSize, chunks, sip = setupInParallel, ov = effectiveOrder},
                     nv = Length[gaugesToConsider];
+                    (* 2026-04-30: Bug #3 fix. KernelsAvailable<=1 closes
+                       the SubTropica subkernel pool, but downstream
+                       ParallelDo can auto-launch fresh kernels lacking
+                       SubTropica` definitions, leaving the gauge
+                       directories empty. Force the serial-setup branch
+                       below by treating sip as if it were 1 whenever
+                       the user requested no parallel pool. *)
+                    If[NumericQ[$STRequestedKernelCount] && $STRequestedKernelCount <= 1,
+                        sip = 1
+                    ];
                     If[sip === 1,
                         (* Serial path: main kernel only, no subkernel traffic *)
                         runQuiet[
@@ -16293,7 +17297,7 @@ Module[{
             scores =  conditionalEchoTiming[With[{
                 tub = timeUpperBound,
                 hv = heuristicValue,
-                frv = findRootsValue,
+                frv = chosenFrLeg,
                 mlr = methodLRValue,
                 ssi = scanScoreInterval,
                 pids = problemIds,
@@ -16301,7 +17305,8 @@ Module[{
                 gtc = gaugesToConsider,
                 sipValue = scoreInParallel,
                 mpc = memPercentCutOff,
-                vb = verbose
+                vb = verbose,
+                scp = scoreProgress
             },
                 Module[{numChunks, chunkSize, chunks, results, chunkIdx, useParallel},
                     
@@ -16330,6 +17335,23 @@ Module[{
                             1
                     ];
                     
+                    (* 2026-04-30: Bug #3 fix. When the user runs with
+                       KernelsAvailable<=1, STSetupKernel closes the pool,
+                       but Mma's ParallelEvaluate (e.g. line 16307,
+                       $HistoryLength = 0) auto-launches a fresh
+                       $ProcessorCount-wide pool that lacks SubTropica
+                       definitions. The downstream parallel scoring then
+                       runs STfindLinearlyReducibleOrders2 on those
+                       definitionless subkernels, getting 0 for every
+                       gauge and leading to a silent integrate-phase
+                       no-op. Check the INTENDED count
+                       ($STRequestedKernelCount, set by stSetupKernelImpl)
+                       rather than Length[Kernels[]] (which may have
+                       grown via auto-launch); force serial when the
+                       user asked for serial. *)
+                    If[NumericQ[$STRequestedKernelCount] && $STRequestedKernelCount <= 1,
+                        numChunks = nv
+                    ];
                     useParallel = numChunks < nv;
                     (* DistributeDefinitions of the LR-search helper functions
                        was previously fired here on every STIntegrate call.
@@ -16359,69 +17381,79 @@ Module[{
                                   "-", gtc[[Last[chunks[[chunkIdx]]]]], ")"]
                         ];
                         
-                        AppendTo[results,
-                            runQuiet[
-                                If[useParallel,
-                                    ParallelTable[
-                                        Module[{memLimit, score},
-                                            memLimit = If[NumericQ[mpc] && 0 < mpc < 1,
-                                                Floor[mpc * MemoryAvailable[]],
-                                                Infinity
-                                            ];
-
-                                            score = If[memLimit === Infinity,
-                                                TimeConstrained[
-                                                    STfindLinearlyReducibleOrders2[pids[[idx]],
-                                                        Heuristic -> hv,
-                                                        FindRoots -> frv,
-                                                        "MethodLR" -> mlr,
-                                                        "ScanGauges" -> True,
-                                                        "ScanScoreInterval" -> ssi
-                                                    ] // Quiet,
-                                                    tub,
-                                                    10^500
-                                                ],
-                                                MemoryConstrained[
-                                                    TimeConstrained[
-                                                        STfindLinearlyReducibleOrders2[pids[[idx]],
-                                                            Heuristic -> hv,
-                                                            FindRoots -> frv,
-                                                            "MethodLR" -> mlr,
-                                                            "ScanGauges" -> True,
-                                                            "ScanScoreInterval" -> ssi
-                                                        ] // Quiet,
-                                                        tub,
-                                                        10^500
-                                                    ],
-                                                    memLimit,
-                                                    10^501
-                                                ]
-                                            ];
-
-                                            score
-                                        ],
-                                        {idx, chunks[[chunkIdx]]}
+                        If[useParallel,
+                            Module[{evalObjs, remaining, result, proc, chunkScores},
+                                evalObjs = Table[
+                                    With[{pidx = pids[[idx]], gidx = idx},
+                                        ParallelSubmit[
+                                            Module[{memLimit, score, dt},
+                                                memLimit = If[NumericQ[mpc] && 0 < mpc < 1,
+                                                    Floor[mpc * MemoryAvailable[]],
+                                                    Infinity
+                                                ];
+                                                {dt, score} = AbsoluteTiming[
+                                                    Block[{Print = (Null &)},
+                                                        If[memLimit === Infinity,
+                                                            TimeConstrained[
+                                                                STfindLinearlyReducibleOrders2[pidx,
+                                                                    Heuristic -> hv,
+                                                                    FindRoots -> frv,
+                                                                    "MethodLR" -> mlr,
+                                                                    "ScanGauges" -> True,
+                                                                    "ScanScoreInterval" -> ssi
+                                                                ] // Quiet,
+                                                                tub,
+                                                                10^500
+                                                            ],
+                                                            MemoryConstrained[
+                                                                TimeConstrained[
+                                                                    STfindLinearlyReducibleOrders2[pidx,
+                                                                        Heuristic -> hv,
+                                                                        FindRoots -> frv,
+                                                                        "MethodLR" -> mlr,
+                                                                        "ScanGauges" -> True,
+                                                                        "ScanScoreInterval" -> ssi
+                                                                    ] // Quiet,
+                                                                    tub,
+                                                                    10^500
+                                                                ],
+                                                                memLimit,
+                                                                10^501
+                                                            ]
+                                                        ]
+                                                    ]
+                                                ];
+                                                {gidx, score, dt}
+                                            ]
+                                        ]
                                     ],
-                                    Table[
-                                        Module[{memLimit, score},
-                                            memLimit = If[NumericQ[mpc] && 0 < mpc < 1,
-                                                Floor[mpc * MemoryAvailable[]],
-                                                Infinity
-                                            ];
-
-                                            score = If[memLimit === Infinity,
-                                                TimeConstrained[
-                                                    STfindLinearlyReducibleOrders2[pids[[idx]],
-                                                        Heuristic -> hv,
-                                                        FindRoots -> frv,
-                                                        "MethodLR" -> mlr,
-                                                        "ScanGauges" -> True,
-                                                        "ScanScoreInterval" -> ssi
-                                                    ] // Quiet,
-                                                    tub,
-                                                    10^500
-                                                ],
-                                                MemoryConstrained[
+                                    {idx, chunks[[chunkIdx]]}
+                                ];
+                                chunkScores = ConstantArray[Null, Length[chunks[[chunkIdx]]]];
+                                remaining = evalObjs;
+                                While[remaining =!= {},
+                                    {result, proc, remaining} = WaitNext[remaining];
+                                    chunkScores[[Position[chunks[[chunkIdx]], result[[1]]][[1, 1]]]] = result[[2]];
+                                    If[scp, WriteString["stdout",
+                                        ToString[gtc[[result[[1]]]]] <> " -> " <>
+                                        Which[result[[2]] === Infinity, "non-LR",
+                                              result[[2]] >= 10^400, "timeout",
+                                              True, "LR (score "<>ToString[result[[2]]]<>")"] <>
+                                        "  ("<>ToString[NumberForm[result[[3]], {4, 2}]]<>" s)\n"]]
+                                ];
+                                AppendTo[results, chunkScores]
+                            ],
+                            Module[{chunkScores},
+                                chunkScores = {};
+                                Do[
+                                    Module[{memLimit, score, dt},
+                                        memLimit = If[NumericQ[mpc] && 0 < mpc < 1,
+                                            Floor[mpc * MemoryAvailable[]],
+                                            Infinity
+                                        ];
+                                        {dt, score} = AbsoluteTiming[
+                                            Block[{Print = (Null &)},
+                                                If[memLimit === Infinity,
                                                     TimeConstrained[
                                                         STfindLinearlyReducibleOrders2[pids[[idx]],
                                                             Heuristic -> hv,
@@ -16433,20 +17465,38 @@ Module[{
                                                         tub,
                                                         10^500
                                                     ],
-                                                    memLimit,
-                                                    10^501
+                                                    MemoryConstrained[
+                                                        TimeConstrained[
+                                                            STfindLinearlyReducibleOrders2[pids[[idx]],
+                                                                Heuristic -> hv,
+                                                                FindRoots -> frv,
+                                                                "MethodLR" -> mlr,
+                                                                "ScanGauges" -> True,
+                                                                "ScanScoreInterval" -> ssi
+                                                            ] // Quiet,
+                                                            tub,
+                                                            10^500
+                                                        ],
+                                                        memLimit,
+                                                        10^501
+                                                    ]
                                                 ]
-                                            ];
-                                            
-                                            score
-                                        ],
-                                        {idx, chunks[[chunkIdx]]}
-                                    ]
-                                ],
-                                vb
+                                            ]
+                                        ];
+                                        AppendTo[chunkScores, score];
+                                        If[scp, WriteString["stdout",
+                                            ToString[gtc[[idx]]] <> " -> " <>
+                                            Which[score === Infinity, "non-LR",
+                                                  score >= 10^400, "timeout",
+                                                  True, "LR (score "<>ToString[score]<>")"] <>
+                                            "  ("<>ToString[NumberForm[dt, {4, 2}]]<>" s)\n"]]
+                                    ],
+                                    {idx, chunks[[chunkIdx]]}
+                                ];
+                                AppendTo[results, chunkScores]
                             ]
                         ];
-                        
+
                         If[Length[chunks] > 1 && chunkIdx < Length[chunks],
                             ClearSystemCache[];
                             If[useParallel, ParallelEvaluate[ClearSystemCache[]]];
@@ -16487,6 +17537,23 @@ Module[{
                 Break[]
             ];
             , {pass, 1, 2}];
+
+                (* If FR cascade has another leg to try and current pass scored
+                   all NOLR, advance to the next FR leg. *)
+                If[chosenFrLeg =!= Last[frLegs] && AllTrue[scores, # === Infinity &],
+                    Continue[]];
+                Break[];
+            , {frPass, frLegs}];
+            findRootsValue = chosenFrLeg;  (* resolve Automatic to whichever leg was used *)
+
+            (* Post-cascade guard: if Automatic resolved to True but the user
+               requested Integrator -> "HyperInt", abort with the
+               findRootsHyperInt message rather than feeding Wm/Wp letters
+               to a Maple integrator that can't roundtrip Root(...). *)
+            If[chosenFrLeg === True && OptionValue["Integrator"] === "HyperInt",
+                Message[STEvaluateGraph::findRootsHyperInt];
+                Throw[$Failed, "stEvalGraphExit"];
+            ];
 
             (* v1.0.420: Throw[$Failed, ...] to the Catch at the top of
                STEvaluateGraph so callers (STIntegrate, test harnesses)
@@ -16568,6 +17635,47 @@ Module[{
             ForgetProportionalPolynomialsQ[];
             STEchoLinearOrders[problemId];
 
+            (* FindRoots False -> True per-face escalation: gauge scoring
+               only sampled ScanScoreInterval={1,3} faces, so a gauge that
+               passed under False at sample-time may still NOLR on a
+               non-sampled face during the full post-bestGauge LR search.
+               When that happens AND the user requested Automatic AND the
+               gauge cascade picked False, retry the NOLR faces with
+               FindRoots -> True (algebraic-letter alphabet allowed) \[LongDash]
+               keeping the False-success faces' orders untouched.
+               Integrator -> "HyperInt" cannot consume Wm/Wp letters, so
+               the escalation aborts cleanly with the standard
+               findRootsHyperInt message in that case. *)
+            If[chosenFrLeg === False && frOrig === Automatic && stAnyFaceNOLR[problemId],
+                Print["[FR fallback] Some face NOLR with FindRoots -> False after gauge x", bestGauge, " selection; escalating laggard faces to True."];
+                If[OptionValue["Integrator"] === "HyperInt",
+                    Message[STEvaluateGraph::findRootsHyperInt];
+                    Throw[$Failed, "stEvalGraphExit"]];
+                findRootsValue = True;
+                chosenFrLeg    = True;
+                $NoAlgebraicRootsContributions  = False;
+                $HyperIntroduceAlgebraicLetters = True;
+                ClearAlgebraicLetters[];
+                If[Length[Kernels[]] > 0, ParallelEvaluate[ClearAlgebraicLetters[]]];
+                $stRootSubstitutions = {};
+                Monitor[
+                    runQuietTimed[
+                        STfindLinearlyReducibleOrders2[problemId,
+                            Heuristic -> heuristicValue,
+                            FindRoots -> True,
+                            "MethodLR" -> methodLRValue,
+                            "ScanGauges" -> False,
+                            "SkipExistingOrders" -> True,
+                            "UIComms" -> uiComms
+                        ],
+                        verbose, showTimings, "Time taken to find the linear orderings (FR -> True fallback):"
+                    ],
+                    "Working on linear orders (FR -> True fallback)..."
+                ];
+                ForgetProportionalPolynomialsQ[];
+                STEchoLinearOrders[problemId];
+            ];
+
             (* MethodPolysAndPairs: "Fast" -> "Standard" fallback if simple LR hit NOLR *)
             If[methodPolysAndPairs === "Fast" && stAnyFaceNOLR[problemId],
                 Print["[NOLR fallback] No linearly-reducible order found for all epsilon orders \[LongDash] truncating to the requested Order..."];
@@ -16606,6 +17714,16 @@ Module[{
         ,
             (* Non-automatic gauge case *)
             stUpdateUIComms[uiComms, "StageCount", 7];
+
+            (* Resolve FindRoots -> Automatic to False at the top of the
+               explicit-gauge branch so the LR search runs in pure
+               whole-pass-False mode (no per-face cascade mixing).  If any
+               face NOLRs after this pass, the post-LR escalation block
+               below retries the whole LR search under True. *)
+            If[findRootsValue === Automatic,
+                findRootsValue = False;
+                chosenFrLeg    = False
+            ];
 
             (* Early LR check  - generate integrand and return before expansion/directories *)
             If[stopAt === "AfterMinimalLRCheck" || stopAt === "AfterMinimalLRCheckOneShot",
@@ -16714,6 +17832,42 @@ Module[{
 
             ForgetProportionalPolynomialsQ[];
             STEchoLinearOrders[problemId];
+
+            (* FindRoots False -> True whole-pass escalation (explicit-
+               gauge branch).  Symmetric to the gauge-scanning branch
+               escalation: if user gave Automatic, the False-pass LR
+               search above NOLR'd on at least one face, retry the
+               whole pass with True (algebraic-letter alphabet).
+               Integrator -> "HyperInt" cannot consume Wm/Wp letters,
+               so the escalation aborts cleanly with the standard
+               findRootsHyperInt message. *)
+            If[chosenFrLeg === False && frOrig === Automatic && stAnyFaceNOLR[problemId],
+                Print["[FR fallback] Some face NOLR with FindRoots -> False on user-supplied gauge ", OptionValue["Gauge"], "; escalating laggard faces to True."];
+                If[OptionValue["Integrator"] === "HyperInt",
+                    Message[STEvaluateGraph::findRootsHyperInt];
+                    Throw[$Failed, "stEvalGraphExit"]];
+                findRootsValue = True;
+                chosenFrLeg    = True;
+                $NoAlgebraicRootsContributions  = False;
+                $HyperIntroduceAlgebraicLetters = True;
+                ClearAlgebraicLetters[];
+                If[Length[Kernels[]] > 0, ParallelEvaluate[ClearAlgebraicLetters[]]];
+                $stRootSubstitutions = {};
+                Monitor[
+                    runQuietTimed[
+                        STfindLinearlyReducibleOrders2[problemId,
+                            Heuristic -> heuristicValue,
+                            FindRoots -> True,
+                            "MethodLR" -> methodLRValue,
+                            "SkipExistingOrders" -> True,
+                            "UIComms" -> uiComms],
+                        verbose, showTimings, "Time taken to find the linear orderings (FR -> True fallback):"
+                    ],
+                    "Working on linear orders (FR -> True fallback)..."
+                ];
+                ForgetProportionalPolynomialsQ[];
+                STEchoLinearOrders[problemId];
+            ];
 
             (* MethodPolysAndPairs: "Fast" -> "Standard" fallback if simple LR hit NOLR *)
             If[methodPolysAndPairs === "Fast" && stAnyFaceNOLR[problemId],
@@ -16873,7 +18027,7 @@ Module[{
 ], "stEvalGraphExit"]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Variant: Euler integrand*)
 
 
@@ -16945,7 +18099,8 @@ Options[STEvaluateEulerIntegral] = Join[
         "ContourHandling"        -> "Abort", (* "Abort" = abort on undetermined contour direction; "Continue" = leave Hlog[Infinity,...] unevaluated *)
         FindRoots                -> True,   (* Default True as of v1.0.398; see Options[STEvaluateGraph] for rationale. *)
         "MethodLR"               -> "Lungo",  (* "Lungo" (default, OLD algorithm: discriminant/resultant + global dedup) or "Espresso" *)
-        "MethodPolysAndPairs"    -> "Fast"   (* "Fast" (default) = extract polys directly from STtoCoeffMonPols; "Standard" = sum renormalized integrands per eps-order and call STpreparePolysAndPairs *)
+        "MethodPolysAndPairs"    -> "Fast",  (* "Fast" (default) = extract polys directly from STtoCoeffMonPols; "Standard" = sum renormalized integrands per eps-order and call STpreparePolysAndPairs *)
+        "ScoreProgress"          -> True     (* When True, Echo per-gauge LR status and wall time as each (sub)kernel finishes *)
     },
     Options[STGenerateIntegrand]
 ];
@@ -16965,7 +18120,7 @@ Module[{
     numberOfVars, includeGauges, gaugesToConsider, invalidGauges,
     problemIds, allIntegrands, allTrData, allExpansions,
     scores, bestGaugeIdx, bestGauge,
-    timeUpperBound, memPercentCutOff, scoringMemoryFraction, setupInParallel,
+    timeUpperBound, memPercentCutOff, scoringMemoryFraction, setupInParallel, scoreProgress,
     findRootsValue, methodLRValue, methodPolysAndPairs,
     scanScoreInterval, scoreInParallel,
     uiComms,
@@ -17020,6 +18175,7 @@ Module[{
     timeUpperBound        = OptionValue["TimeUpperBound"];
     memPercentCutOff      = OptionValue["MemoryPercentCutOff"];
     scoringMemoryFraction = Clip[OptionValue["ScoringMemoryFraction"], {0.01, 1.0}];
+    scoreProgress         = TrueQ[OptionValue["ScoreProgress"]];
     findRootsValue        = OptionValue[FindRoots];
     methodLRValue         = OptionValue["MethodLR"];
     methodPolysAndPairs   = OptionValue["MethodPolysAndPairs"];
@@ -17029,7 +18185,10 @@ Module[{
     startAt               = OptionValue["StartAt"];
     resumeFrom            = None;
 
-    If[TrueQ[findRootsValue],
+    (* Mirrors the auto-gauge branch above: True or Automatic \[DoubleRightArrow] arm letters;
+       False \[DoubleRightArrow] disarm.  Per-face cascade (in stDispatchFubini2 / STEspressoFubini)
+       handles the actual False\[RightArrow]True escalation per LR-search call. *)
+    If[findRootsValue =!= False,
         $NoAlgebraicRootsContributions = False;
         $HyperIntroduceAlgebraicLetters = True;
         ClearAlgebraicLetters[];
@@ -17210,7 +18369,7 @@ Module[{
                       {Join[polysAndPairs, xvars]},
                       xvars, ScreeningLR -> True, Heuristic -> heuristicValue, FindRoots -> findRootsValue]
               ]];
-              If[findRootsValue, {bestOrder, score} = espResult[[1]], {bestOrder, score} = espResult];
+              If[findRootsValue =!= False, {bestOrder, score} = espResult[[1]], {bestOrder, score} = espResult];
             ];
             If[bestOrder === NOLR,
                 Return[<|
@@ -17261,7 +18420,7 @@ Module[{
                       {Join[polysAndPairs, xvFixed]},
                       xvFixed, Heuristic -> heuristicValue, FindRoots -> findRootsValue]
               ]];
-              If[findRootsValue, {bestOrder, score} = espResult[[1]], {bestOrder, score} = espResult];
+              If[findRootsValue =!= False, {bestOrder, score} = espResult[[1]], {bestOrder, score} = espResult];
             ];
             <|"Gauge" -> xvars[[gi]],
               "IsLR" -> (bestOrder =!= NOLR),
@@ -17417,6 +18576,16 @@ Module[{
                    chunks and distribute only one slice at a time to limit peak memory. *)
                 Module[{nv, numChunks, chunkSize, chunks, sip = setupInParallel, ov = effectiveOrder},
                     nv = Length[gaugesToConsider];
+                    (* 2026-04-30: Bug #3 fix. KernelsAvailable<=1 closes
+                       the SubTropica subkernel pool, but downstream
+                       ParallelDo can auto-launch fresh kernels lacking
+                       SubTropica` definitions, leaving the gauge
+                       directories empty. Force the serial-setup branch
+                       below by treating sip as if it were 1 whenever
+                       the user requested no parallel pool. *)
+                    If[NumericQ[$STRequestedKernelCount] && $STRequestedKernelCount <= 1,
+                        sip = 1
+                    ];
                     If[sip === 1,
                         (* Serial path: main kernel only, no subkernel traffic *)
                         runQuiet[
@@ -17485,7 +18654,8 @@ Module[{
                 gtc      = gaugesToConsider,
                 sipValue = scoreInParallel,
                 mpc      = memPercentCutOff,
-                vb       = verbose
+                vb       = verbose,
+                scp      = scoreProgress
             },
                 Module[{numChunks, chunkSize, chunks, results, chunkIdx, useParallel},
                     numChunks = Which[
@@ -17508,6 +18678,14 @@ Module[{
                             1
                     ];
 
+                    (* 2026-04-30: Bug #3 fix (mirror of the
+                       Schwinger+Automatic-Gauge branch above): force
+                       serial when the user asked for KernelsAvailable<=1
+                       even if Mma's ParallelEvaluate auto-launched a
+                       fresh pool. *)
+                    If[NumericQ[$STRequestedKernelCount] && $STRequestedKernelCount <= 1,
+                        numChunks = nv
+                    ];
                     useParallel = numChunks < nv;
                     (* Same hoist as the Schwinger+Automatic-Gauge branch:
                        static LR-search helpers are populated on subkernels
@@ -17528,65 +18706,119 @@ Module[{
                                   " (gauge indices ", gtc[[First[chunks[[chunkIdx]]]]],
                                   "-", gtc[[Last[chunks[[chunkIdx]]]]], ")"]
                         ];
-                        AppendTo[results,
-                            runQuiet[
-                                If[useParallel,
-                                    ParallelTable[
-                                        Module[{memLimit, score},
-                                            memLimit = If[NumericQ[mpc] && 0 < mpc < 1,
-                                                Floor[mpc * MemoryAvailable[]], Infinity];
-                                            score = If[memLimit === Infinity,
-                                                TimeConstrained[
-                                                    STfindLinearlyReducibleOrders2[pids[[idx]],
-                                                        Heuristic -> hv,
-                                                        FindRoots -> frv,
-                                                        "MethodLR" -> mlr,
-                                                        "ScanGauges" -> True,
-                                                        "ScanScoreInterval" -> ssi
-                                                    ] // Quiet, tub, 10^500],
-                                                MemoryConstrained[TimeConstrained[
-                                                    STfindLinearlyReducibleOrders2[pids[[idx]],
-                                                        Heuristic -> hv,
-                                                        FindRoots -> frv,
-                                                        "MethodLR" -> mlr,
-                                                        "ScanGauges" -> True,
-                                                        "ScanScoreInterval" -> ssi
-                                                    ] // Quiet, tub, 10^500],
-                                                    memLimit, 10^501]
-                                            ];
-                                            score
-                                        ],
-                                        {idx, chunks[[chunkIdx]]}
+                        If[useParallel,
+                            Module[{evalObjs, remaining, result, proc, chunkScores},
+                                evalObjs = Table[
+                                    With[{pidx = pids[[idx]], gidx = idx},
+                                        ParallelSubmit[
+                                            Module[{memLimit, score, dt},
+                                                memLimit = If[NumericQ[mpc] && 0 < mpc < 1,
+                                                    Floor[mpc * MemoryAvailable[]],
+                                                    Infinity
+                                                ];
+                                                {dt, score} = AbsoluteTiming[
+                                                    Block[{Print = (Null &)},
+                                                        If[memLimit === Infinity,
+                                                            TimeConstrained[
+                                                                STfindLinearlyReducibleOrders2[pidx,
+                                                                    Heuristic -> hv,
+                                                                    FindRoots -> frv,
+                                                                    "MethodLR" -> mlr,
+                                                                    "ScanGauges" -> True,
+                                                                    "ScanScoreInterval" -> ssi
+                                                                ] // Quiet,
+                                                                tub,
+                                                                10^500
+                                                            ],
+                                                            MemoryConstrained[
+                                                                TimeConstrained[
+                                                                    STfindLinearlyReducibleOrders2[pidx,
+                                                                        Heuristic -> hv,
+                                                                        FindRoots -> frv,
+                                                                        "MethodLR" -> mlr,
+                                                                        "ScanGauges" -> True,
+                                                                        "ScanScoreInterval" -> ssi
+                                                                    ] // Quiet,
+                                                                    tub,
+                                                                    10^500
+                                                                ],
+                                                                memLimit,
+                                                                10^501
+                                                            ]
+                                                        ]
+                                                    ]
+                                                ];
+                                                {gidx, score, dt}
+                                            ]
+                                        ]
                                     ],
-                                    Table[
-                                        Module[{memLimit, score},
-                                            memLimit = If[NumericQ[mpc] && 0 < mpc < 1,
-                                                Floor[mpc * MemoryAvailable[]], Infinity];
-                                            score = If[memLimit === Infinity,
-                                                TimeConstrained[
-                                                    STfindLinearlyReducibleOrders2[pids[[idx]],
-                                                        Heuristic -> hv,
-                                                        FindRoots -> frv,
-                                                        "MethodLR" -> mlr,
-                                                        "ScanGauges" -> True,
-                                                        "ScanScoreInterval" -> ssi
-                                                    ] // Quiet, tub, 10^500],
-                                                MemoryConstrained[TimeConstrained[
-                                                    STfindLinearlyReducibleOrders2[pids[[idx]],
-                                                        Heuristic -> hv,
-                                                        FindRoots -> frv,
-                                                        "MethodLR" -> mlr,
-                                                        "ScanGauges" -> True,
-                                                        "ScanScoreInterval" -> ssi
-                                                    ] // Quiet, tub, 10^500],
-                                                    memLimit, 10^501]
-                                            ];
-                                            score
-                                        ],
-                                        {idx, chunks[[chunkIdx]]}
-                                    ]
-                                ],
-                                vb
+                                    {idx, chunks[[chunkIdx]]}
+                                ];
+                                chunkScores = ConstantArray[Null, Length[chunks[[chunkIdx]]]];
+                                remaining = evalObjs;
+                                While[remaining =!= {},
+                                    {result, proc, remaining} = WaitNext[remaining];
+                                    chunkScores[[Position[chunks[[chunkIdx]], result[[1]]][[1, 1]]]] = result[[2]];
+                                    If[scp, WriteString["stdout",
+                                        ToString[gtc[[result[[1]]]]] <> " -> " <>
+                                        Which[result[[2]] === Infinity, "non-LR",
+                                              result[[2]] >= 10^400, "timeout",
+                                              True, "LR (score "<>ToString[result[[2]]]<>")"] <>
+                                        "  ("<>ToString[NumberForm[result[[3]], {4, 2}]]<>" s)\n"]]
+                                ];
+                                AppendTo[results, chunkScores]
+                            ],
+                            Module[{chunkScores},
+                                chunkScores = {};
+                                Do[
+                                    Module[{memLimit, score, dt},
+                                        memLimit = If[NumericQ[mpc] && 0 < mpc < 1,
+                                            Floor[mpc * MemoryAvailable[]],
+                                            Infinity
+                                        ];
+                                        {dt, score} = AbsoluteTiming[
+                                            Block[{Print = (Null &)},
+                                                If[memLimit === Infinity,
+                                                    TimeConstrained[
+                                                        STfindLinearlyReducibleOrders2[pids[[idx]],
+                                                            Heuristic -> hv,
+                                                            FindRoots -> frv,
+                                                            "MethodLR" -> mlr,
+                                                            "ScanGauges" -> True,
+                                                            "ScanScoreInterval" -> ssi
+                                                        ] // Quiet,
+                                                        tub,
+                                                        10^500
+                                                    ],
+                                                    MemoryConstrained[
+                                                        TimeConstrained[
+                                                            STfindLinearlyReducibleOrders2[pids[[idx]],
+                                                                Heuristic -> hv,
+                                                                FindRoots -> frv,
+                                                                "MethodLR" -> mlr,
+                                                                "ScanGauges" -> True,
+                                                                "ScanScoreInterval" -> ssi
+                                                            ] // Quiet,
+                                                            tub,
+                                                            10^500
+                                                        ],
+                                                        memLimit,
+                                                        10^501
+                                                    ]
+                                                ]
+                                            ]
+                                        ];
+                                        AppendTo[chunkScores, score];
+                                        If[scp, WriteString["stdout",
+                                            ToString[gtc[[idx]]] <> " -> " <>
+                                            Which[score === Infinity, "non-LR",
+                                                  score >= 10^400, "timeout",
+                                                  True, "LR (score "<>ToString[score]<>")"] <>
+                                            "  ("<>ToString[NumberForm[dt, {4, 2}]]<>" s)\n"]]
+                                    ],
+                                    {idx, chunks[[chunkIdx]]}
+                                ];
+                                AppendTo[results, chunkScores]
                             ]
                         ];
                         If[Length[chunks] > 1 && chunkIdx < Length[chunks],
@@ -17933,7 +19165,7 @@ Module[{
 ], "stEvalEulerExit"]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Variant: Propagators*)
 
 
@@ -17988,7 +19220,7 @@ STEvaluateGraphFromPropagators[propagators_List, opts:OptionsPattern[]] :=
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Global*)
 
 
@@ -18126,6 +19358,7 @@ $STOptionValues = <|
     "ClearCachesPerIntegrand"-> {True, False},
     "Integrator"             -> {"HyperIntica", "HyperInt", "HyperFLINT"},
     "LROrderBackend"         -> {"HyperIntica", "HyperFLINT (requires FindRoots -> False)"},
+    "ScoreProgress"          -> {True, False},
     "CleanOutput"            -> {True, False},
     "SelectFaces"            -> {All, "integer", "{i1, i2, ...}", "epsOrder -> face", "Except[{...}]"},
     "ReuseExistingResults"   -> {True, False},
@@ -18432,7 +19665,7 @@ STIntegrate[g:{_List, _List}, opts:OptionsPattern[]] :=
            "Numerator" option for non-standard powers).  If the user
            passes a non-trivial Exponents list to the graph form, the
            FilterRules call silently drops it and the integral comes out
-           as if powers were {1,...,1} — same symbolic answer regardless
+           as if powers were {1,...,1} \[LongDash] same symbolic answer regardless
            of user input, which confused downstream verification.  Emit
            a message and fail cleanly. *)
         Module[{expsOpt = "Exponents" /. {opts} /. "Exponents" -> Automatic},
@@ -19111,7 +20344,7 @@ stBenchmarkRunOneInKernel[record_Association] := Module[
        * "HyperFLINT" routes every LR-search step through HF.  Phase 7-vii
          (deg-2 polynomials accepted during the LR walk, with letter
          allocation deferred to integration time) means FindRoots -> True
-         cases now run cleanly under HF — no skip, no FindRoots override.
+         cases now run cleanly under HF \[LongDash] no skip, no FindRoots override.
        * "HyperIntica" forces the Mma path (overrides case defaults).
        * Automatic is a no-op (honor the case's own options).         *)
   If[dispatcher === SubTropica`STIntegrate &&
@@ -19123,8 +20356,8 @@ stBenchmarkRunOneInKernel[record_Association] := Module[
         input = Join[input, {"LROrderBackend" -> "HyperIntica"}],
       True, Null]];
 
-  (* Phase β.3 + Integrator extension: inject the integrator backend.
-     Phase 7-vi-b unlocked FindRoots -> True for "HyperFLINT" — HF now
+  (* Phase \[Beta].3 + Integrator extension: inject the integrator backend.
+     Phase 7-vi-b unlocked FindRoots -> True for "HyperFLINT" \[LongDash] HF now
      emits its algebraic-letter table and SubTropica merges it into
      HyperIntica`$HyperAlgebraicLetterTable.  FindRoots is left alone
      if explicitly set on the case; otherwise the case default applies. *)
@@ -20292,9 +21525,16 @@ STCNickelToGraph[cni_String] := Module[
     {{edges[[i, 1]] + 1, edges[[i, 2]] + 1}, massMap[edges[[i, 3]]]},
     {i, Length[edges]}];
 
+  (* 2-leg (self-energy): all external legs share a single on-shell scale
+     by momentum conservation (p_1 = -p_2 \[Rule] p_1\.b2 = p_2\.b2), so a single
+     mass symbol M is sufficient \[LongDash] *provided* the CNI color is non-zero.
+     If the CNI color for an external leg is 0, the leg is genuinely
+     massless (off-shell free variable or massless on-shell) and must
+     stay massless. The pre-2026-05-14 unconditional `M` assignment
+     produced nodes that disagreed with the CNI color string (\[LongDash]> validator
+     finding N: n=2 mass conservation). *)
   nodesOut = If[nLegs == 2,
-    (* 2-leg (self-energy): all external legs get M *)
-    Table[{legs[[i, 1]] + 1, M}, {i, nLegs}],
+    Table[{legs[[i, 1]] + 1, If[legs[[i, 2]] == 0, 0, M]}, {i, nLegs}],
     (* General case: leg i gets mass M[i] (position-indexed) for external-only,
        or m/m[d] (class-indexed) for shared/internal.  Single external mass \[RightArrow] M. *)
     Table[{legs[[i, 1]] + 1,
@@ -25820,9 +27060,9 @@ $STRawBaseURL = "https://raw.githubusercontent.com/SubTropica/SubTropica/main/li
    automatically \[LongDash] a different numerical backend may succeed where
    the default fails (shared mass, non-Euclidean, etc.). Returns the
    verification Association on success or $Failed on failure. *)
-stGateVerification[ir_Association] := Module[
+stGateVerification[ir_Association, opts___] := Module[
     {cachedV, result, config, edges, nodes, order, vResult, method, tol,
-     rec},
+     numSamples, fwdOpts, rec},
     result = ir["result"];
     config = ir["uiResult"];
 
@@ -25850,12 +27090,19 @@ stGateVerification[ir_Association] := Module[
             "submitting (pass is cached on $integrationResult)."];
         Return[$Failed]];
 
-    order  = Lookup[config, "Order", 0];
-    method = "pySecDec";
-    tol    = 10^-3;
+    order      = Lookup[config, "Order", 0];
+    method     = Lookup[{opts}, "Method", "pySecDec"];
+    numSamples = Lookup[{opts}, "NumSamples", 1];
+    tol        = 10^-3;
+    (* Forward only options that don't weaken or desync the gate (see
+       Options[STSubmitResult]).  Order and Tolerance are inlined below
+       and locked; Method and NumSamples are user-overridable but always
+       inlined so the cache record reports the actual values used. *)
+    fwdOpts    = FilterRules[{opts}, Options[STSubmitResult]];
 
     stLog["[SubTropica] STSubmitResult: verification required. ",
-        "Running STVerify (1 sample, ", method, ", Tolerance ", tol, ")..."];
+        "Running STVerify (", numSamples, " sample",
+        If[numSamples > 1, "s", ""], ", ", method, ", Tolerance ", tol, ")..."];
     (* B7: surface the real cause on failure.  See note on
        Internal`HandlerBlock at the verify-handler call site above. *)
     vResult = Module[{captured = {}, r, msgs},
@@ -25863,10 +27110,11 @@ stGateVerification[ir_Association] := Module[
         {"Message", Function[m, AppendTo[captured, m]]},
         r = CheckAbort[
           STVerify[{edges, nodes}, result,
-            "NumSamples" -> 1,
             "Order"      -> order,
-            "Method"     -> method,
-            "Tolerance"  -> tol],
+            "Tolerance"  -> tol,
+            Sequence @@ fwdOpts,
+            "NumSamples" -> numSamples,
+            "Method"     -> method],
           $Aborted]];
       msgs = stCleanupCapturedMessages[captured];
       Which[
@@ -25898,6 +27146,7 @@ stGateVerification[ir_Association] := Module[
         "pass"       -> True,
         "method"     -> method,
         "tolerance"  -> tol,
+        "numSamples" -> numSamples,
         "maxRelErr"  -> N[Lookup[vResult, "maxRelErr", -1]],
         "kinPoint"   -> Lookup[vResult, "kinPoint",
                             Lookup[vResult, "kinematicPoint", {}]],
@@ -25916,9 +27165,21 @@ stGateVerification[ir_Association] := Module[
     rec
 ];
 
-STSubmitResult[] := STSubmitResult[$integrationResult];
+(* User-overridable subset of Options[STVerify].  Excluded options either
+   weaken the gate (Tolerance lowers the bar; Substitutions lets the user
+   hand-pick a passing kinematic point) or must equal what the result is
+   recorded as (Order / Dimension / Exponents).  ResultIndex / LibraryPath
+   are cni-string-form-only and meaningless for the graph-form verification
+   used here. *)
+Options[STSubmitResult] = FilterRules[
+    Options[STVerify],
+    Except[{"Tolerance", "Substitutions", "Order", "Dimension",
+            "Exponents", "ResultIndex", "LibraryPath"}]];
 
-STSubmitResult[ir_Association] := Module[
+STSubmitResult[opts:OptionsPattern[]] :=
+    STSubmitResult[$integrationResult, opts];
+
+STSubmitResult[ir_Association, opts:OptionsPattern[]] := Module[
     {config, result, nickel, topoNickel, massNickel,
      entryPath, existingEntry, existingResults,
      payload, jsonStr, tmpFile, curlResult, resp,
@@ -26001,7 +27262,7 @@ STSubmitResult[ir_Association] := Module[
        See stGateVerification above. Aborts on failure with a hint to
        try an alternate backend. Placed after local dedup so we don't
        pay for verification on an already-submitted result. *)
-    verification = stGateVerification[ir];
+    verification = stGateVerification[ir, opts];
     If[verification === $Failed, Return[$Failed]];
 
     (* Stringify kinematic-point rules for JSON transport (symbols on LHS

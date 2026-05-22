@@ -1,0 +1,43 @@
+{
+  "CNickelIndex": "e111|e|:0112|0|",
+  "MassScales": 2,
+  "FunctionClass": "elliptic",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:2305.14090"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2305.14090",
+      "authors": "",
+      "description": "Two-loop sunrise graph with two equal masses m2 and one different mass m1, in d=2-2eps. Elliptic curve geometry. A new function G defined as an integral over the holomorphic period is required for epsilon-factorisation; G is related to an elliptic integral of the third kind. The GM connection involves varpi_0 and G but not derivatives of periods.",
+      "epsOrders": "",
+      "familyName": "two-loop sunrise (two equal + one different mass)",
+      "method": "DE",
+      "tools": [],
+      "ancillaryFiles": true,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 5,
+      "dimScheme": "d=2-2*eps",
+      "computationLevel": "DE_only",
+      "location": "Section 2.2 (Sec2.2_Sunrise.tex), eq. (2.53)-(2.81)",
+      "recordId": "bx_5adf7abcd515",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "two-loop sunrise (two equal + one different mass)"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 2,
+  "NumPropagators": 3,
+  "Results": [],
+  "edges": "{{{1, 2}, m[1]}, {{1, 2}, m[1]}, {{1, 2}, m[2]}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless sunrise",
+  "Genus": 1
+}

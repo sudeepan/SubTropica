@@ -3955,6 +3955,35 @@ body.dark .badge-purple { background: #271230; color: #bc8cff; }
   border-left-width: 4px;
 }
 .browser-toast.browser-toast-waitlisted:hover { border-color: var(--royalblue); }
+/* "Don't see your paper? Request analysis" — always appears at the end of
+   the library list (and is the only card when filters yield no matches).
+   Visually muted to read as a hint, not a result. */
+.browser-toast.browser-toast-request {
+  background: color-mix(in srgb, var(--text-muted) 8%, var(--surface));
+  border: 1px dashed var(--text-muted);
+  border-left: 3px dashed var(--text-muted);
+  color: var(--text-muted);
+}
+.browser-toast.browser-toast-request:hover {
+  background: color-mix(in srgb, var(--text-muted) 14%, var(--surface));
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+.browser-toast-request .notif-thumb {
+  border: 1px dashed var(--text-muted);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--text-muted);
+}
+.browser-toast-request .notif-title { font-weight: 500; }
+.browser-toast-request .notif-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
 .browser-toast-subtitle {
   font-size: 11px;
   color: var(--text-muted);

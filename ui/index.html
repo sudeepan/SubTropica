@@ -755,6 +755,40 @@
     </div>
   </div>
 
+  <!-- ═══════════ REQUEST-PAPER MODAL ═══════════ -->
+  <div class="modal-overlay" id="papreq-overlay">
+    <div class="modal-panel correction-panel">
+      <button class="detail-close" id="papreq-close">&times;</button>
+      <div class="correction-body">
+        <h3 class="correction-title">Request paper analysis</h3>
+        <div class="correction-subtitle">Don't see your paper in the library? File a request and a maintainer will review and add it to the library.</div>
+        <div class="correction-row">
+          <label class="correction-label" for="papreq-arxiv">arXiv ID <span class="correction-required">*</span></label>
+          <input type="text" id="papreq-arxiv" class="correction-input" placeholder="e.g. 2406.15549 or hep-ph/9905323" maxlength="40" />
+          <div class="correction-counter" id="papreq-arxiv-hint" style="color: var(--text-muted)">New-style (YYMM.NNNNN) or old-style category prefix</div>
+        </div>
+        <div class="correction-row">
+          <label class="correction-label" for="papreq-reason">Why this paper? <span class="correction-optional">(optional)</span></label>
+          <textarea id="papreq-reason" class="correction-textarea" rows="3" maxlength="2000" placeholder="Which diagrams matter, why current SubTropica can't handle them (elliptic, hyperelliptic, …), or anything else worth flagging."></textarea>
+          <div class="correction-counter"><span id="papreq-reason-count">0</span> / 2000</div>
+        </div>
+        <div class="correction-row">
+          <label class="correction-label" for="papreq-name">Your name <span class="correction-optional">(optional — appears in the issue)</span></label>
+          <input type="text" id="papreq-name" class="correction-input" placeholder="" maxlength="200" />
+        </div>
+        <div class="correction-row">
+          <label class="correction-label" for="papreq-email">Email <span class="correction-optional">(optional — for the maintainer to follow up)</span></label>
+          <input type="email" id="papreq-email" class="correction-input" placeholder="" maxlength="320" />
+        </div>
+        <div class="correction-actions">
+          <button class="correction-btn correction-btn-cancel" id="papreq-cancel">Cancel</button>
+          <button class="correction-btn correction-btn-submit" id="papreq-submit" disabled>Submit</button>
+        </div>
+        <div class="correction-status" id="papreq-status"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══════════ HELP MODAL ═══════════ -->
   <div class="modal-overlay" id="help-overlay">
     <div class="modal-panel help-panel">

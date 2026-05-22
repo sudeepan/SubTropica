@@ -926,7 +926,7 @@
     "same-mass elliptic sunrise",
     "sunrise equal mass (4d)",
     "sunrise equal mass (2d)",
-    "equal-mass two-loop sunrise I_{nu1 nu2 nu3}",
+    "$equal-mass two-loop sunrise I_{nu1 nu2 nu3}$",
     "Two-Loop Equal-Mass Massive Sunrise",
     "two-loop equal-mass sunrise self-energy",
     "Two-loop fully-massive sunset (three internal masses)",
@@ -967,5 +967,6 @@
   "Subsectors": [],
   "ParentSectors": [
     "112|e2|e|:111|21|2|"
-  ]
+  ],
+  "Genus": 1
 }

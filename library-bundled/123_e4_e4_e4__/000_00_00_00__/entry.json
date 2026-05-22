@@ -10,28 +10,10 @@
     "arXiv:1901.07808 (Comput.Phys.Commun. 247  (), 2020)",
     "arXiv:1412.2296 (J.Phys.A 48 (), 2015)",
     "arXiv:2311.02370",
-    "arXiv:hep-ph/0304028 (Nucl.Phys.B 668 (3), 2003)"
+    "arXiv:hep-ph/0304028 (Nucl.Phys.B 668 (3), 2003)",
+    "arXiv:2512.13794"
   ],
   "Records": [
-    {
-      "dimScheme": "d=4-2*eps",
-      "recordId": "bf_777d7e9430db",
-      "verified": false,
-      "verifiedAt": "",
-      "authors": "Bern, Zvi, Enciso, Michael, Ita, Harald, Zeng, Mao",
-      "texkey": "Bern:2017gdk",
-      "computationLevel": "IBP_only",
-      "masterCount": 0,
-      "reference": "arXiv:1709.06055, Phys.Rev.D 96, 2017",
-      "ancillaryFiles": [],
-      "description": "Two-loop nonplanar crossed triangle-box with 6 propagators and one ISP. Nonplanar dual conformal symmetry constructed. No integral evaluation.",
-      "familyName": "crossed triangle-box",
-      "location": "Section 6.1, Eqs. (6.1)-(6.14), Figs. 9-10",
-      "method": [],
-      "epsOrders": "",
-      "tools": [],
-      "doi": "10.1103/PhysRevD.96.096017"
-    },
     {
       "reference": "arXiv:hep-ph/9307327",
       "authors": [
@@ -207,6 +189,25 @@
       "recordId": "bx_14cc85a45667",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{**}_{2,2,2}$ two-loop topology with three internal paths of lengths a=2, b=2, c=2 (neither v_L nor v_R carries external legs); 3-point integral, non-planar (b=>=2). Geometry: 1 ISP; max cut ∫dz/√P_4(z); elliptic curve (§3.4 Type 1.2)",
+      "epsOrders": "",
+      "familyName": "I^{**}_{2,2,2}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 Type 1.2",
+      "recordId": "bx_64379643e434",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
@@ -215,7 +216,8 @@
     "2-loop 3-point HQET web with 3-gluon vertex (one-leg IR regulator)",
     "v2",
     "two-loop non-planar massless form factor (crossed ladder) family",
-    "massless non-planar 2-loop 3-point crossed double-box (form factor)"
+    "massless non-planar 2-loop 3-point crossed double-box (form factor)",
+    "$I^{**}_{2,2,2}$"
   ],
   "Source": [
     "arXiv"

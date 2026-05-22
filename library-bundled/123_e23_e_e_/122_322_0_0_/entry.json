@@ -64,5 +64,6 @@
     "extLegSignature": "M00"
   },
   "Subsectors": [],
-  "ParentSectors": []
+  "ParentSectors": [],
+  "Genus": 1
 }

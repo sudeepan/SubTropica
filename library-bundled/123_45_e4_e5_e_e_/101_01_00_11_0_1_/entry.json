@@ -28,28 +28,6 @@
       "dimScheme": "D=4-2eps",
       "location": "Eq. below Fig. 3, Sec. IV.C",
       "familyName": "I_C"
-    },
-    {
-      "reference": "arXiv:1508.02512 (Chin.Phys.C 40 (), 2016)",
-      "authors": "Li, Zhao, Wang, Jian, Yan, Qi-Shu, Zhao, Xiaoran",
-      "description": "Two-loop planar double box master integral for Higgs pair production via gluon fusion (gg -> HH) with finite top quark mass. Three massless and four massive (Mt) internal propagators. Contains IR divergences with poles up to 1/eps^2. Evaluated in the physical kinematic region via QMC sector decomposition with contour deformation.",
-      "epsOrders": "-2",
-      "familyName": "I_C",
-      "method": "sector_decomposition",
-      "tools": [
-        "MIRACLE",
-        "FIESTA3"
-      ],
-      "ancillaryFiles": true,
-      "doi": "10.1088/1674-1137/40/3/033103",
-      "texkey": "Li:2015foa",
-      "masterCount": 0,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "numerical",
-      "location": "Eq. below Fig. 3, Sec. IV.C",
-      "recordId": "bx_2a2a19a8efe2",
-      "verified": false,
-      "verifiedAt": ""
     }
   ],
   "Names": [

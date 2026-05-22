@@ -1,0 +1,44 @@
+{
+  "CNickelIndex": "e111|e|:0011|0|",
+  "MassScales": 1,
+  "FunctionClass": "unknown",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:2008.04823 (JHEP 03 (027), 2021)"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2008.04823 (JHEP 03 (027), 2021)",
+      "authors": "Frellesvig, Hjalte, Gasparotto, Federico, Laporta, Stefano, Mandal, Manoj K., Mastrolia, Pierpaolo, Mattiazzi, Luca et al.",
+      "description": "Two-loop sunrise with two massive and one massless line. DE derived via bottom-up multivariate intersection numbers. 4 master integrals.",
+      "epsOrders": "",
+      "familyName": "two-loop QED sunrise",
+      "method": "intersection, IBP",
+      "tools": [
+        "LiteRed"
+      ],
+      "ancillaryFiles": false,
+      "doi": "10.1007/JHEP03(2021)027",
+      "texkey": "Frellesvig:2020qot",
+      "masterCount": 4,
+      "dimScheme": "d=D",
+      "computationLevel": "DE_only",
+      "location": "Section 5.3",
+      "recordId": "bx_f3b637cd2c02",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "two-loop QED sunrise"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 2,
+  "NumPropagators": 3,
+  "Results": [],
+  "edges": "{{{1, 2}, 0}, {{1, 2}, m}, {{1, 2}, m}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless sunrise"
+}

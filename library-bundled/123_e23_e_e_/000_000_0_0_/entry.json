@@ -6,7 +6,8 @@
   "References": [
     "arXiv:hep-ph/9402223 (Phys.Lett.B 332 (159), 1994)",
     "arXiv:2507.17815 (Missing[\"KeyAbsent\", \"journal\"] Missing[\"KeyAbsent\", \"volume\"] (Missing[\"KeyAbsent\", \"pages\"]), Missing[\"KeyAbsent\", \"year\"])",
-    "arXiv:2507.17815"
+    "arXiv:2507.17815",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -53,11 +54,31 @@
       "recordId": "bx_78b8ee0888e6",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{*}_{2,1,2}$ two-loop topology with three internal paths of lengths a=2, b=1, c=2 (only one of v_L/v_R carries external legs); 3-point integral, planar (b=1). Geometry: 1 ISP; max cut ∫dz/√P_2(z); algebraic, dlog (§3.4 Type 1.1)",
+      "epsOrders": "",
+      "familyName": "I^{*}_{2,1,2}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 Type 1.1",
+      "recordId": "bx_d1de7ffbceb8",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
     "planar with internal vertex (fig.1c)",
-    "2-loop triangle with 5 propagators"
+    "2-loop triangle with 5 propagators",
+    "$I^{*}_{2,1,2}$"
   ],
   "Source": [
     "arXiv"

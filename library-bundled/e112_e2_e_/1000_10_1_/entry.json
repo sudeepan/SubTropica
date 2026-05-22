@@ -107,25 +107,6 @@
       "recordId": "bx_cc7062f1b4ba",
       "verified": false,
       "verifiedAt": ""
-    },
-    {
-      "reference": "arXiv:hep-ph/9402223 (Phys.Lett.B 332 (159), 1994)",
-      "authors": "Usyukina, Natalia I., Davydychev, Andrei I.",
-      "description": "Two-loop three-point diagram: triangle with a one-loop bubble (two parallel propagators) replacing one internal edge. UV divergent with 1/eps pole. The effective propagator power after bubble integration is eps. Result involves Phi^{(1)} only.",
-      "epsOrders": "1",
-      "familyName": "triangle with bubble on edge (fig.1f)",
-      "method": "IBP, direct_integration",
-      "tools": [],
-      "ancillaryFiles": true,
-      "doi": "10.1016/0370-2693(94)90874-5",
-      "texkey": "Usyukina:1994iw",
-      "masterCount": 0,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "",
-      "location": "eq.(33)-(34), sec.5",
-      "recordId": "bx_d060206cbd9c",
-      "verified": false,
-      "verifiedAt": ""
     }
   ],
   "Names": [

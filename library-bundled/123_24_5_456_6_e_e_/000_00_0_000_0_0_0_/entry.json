@@ -1,0 +1,47 @@
+{
+  "CNickelIndex": "123|24|5|456|6|e|e|:000|00|0|000|0|0|0|",
+  "MassScales": 0,
+  "FunctionClass": "MPL",
+  "EpsilonOrder": "3",
+  "References": [
+    "arXiv:1902.05076"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:1902.05076",
+      "authors": "",
+      "description": "Four-loop HQET integral topology 5 for the matter-dependent cusp anomalous dimension at small angle. Defined via 16 propagators D_k with G(a1,...,a16) = e^{4 eps gamma_E} int prod D_k^{-a_k}, restricting a1=a3=0 and a4,a5,a10,a11>=0. Contains 3 HQET (Wilson line) propagators linear in v.k_i combinations and 7 standard massless quadratic propagators. Two of the three new master integrals belong to this topology. Computed via Feynman parametrization and HyperInt, checked with FIESTA4. Topologies 1-3 are defined in the companion paper arXiv:1708.01221.",
+      "epsOrders": "3",
+      "familyName": "Topology 5",
+      "method": "IBP, direct_integration",
+      "tools": [
+        "FIRE",
+        "LiteRed",
+        "HyperInt",
+        "FIESTA"
+      ],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 46,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "full",
+      "location": "Eqs. (3.5)-(3.6), Section 3.3, restrictions in Eq. (3.8), topology shown in Figure 2",
+      "recordId": "bx_746bf1a28af9",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "Topology 5"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 4,
+  "NumPropagators": 10,
+  "Results": [],
+  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 3}, 0}, {{2, 5}, 0}, {{3, 6}, 0}, {{4, 5}, 0}, {{4, 6}, 0}, {{4, 7}, 0}, {{5, 7}, 0}}",
+  "nodes": "{{6, 0}, {7, 0}}",
+  "CanonicalName": "Massless tetrahedral core (c)"
+}

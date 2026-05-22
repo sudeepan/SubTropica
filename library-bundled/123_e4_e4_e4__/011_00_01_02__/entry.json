@@ -30,30 +30,6 @@
       "recordId": "bx_644974469236",
       "verified": false,
       "verifiedAt": ""
-    },
-    {
-      "reference": "arXiv:1904.00382 (JHEP 05 (185), 2019)",
-      "authors": "Chaubey, Ekta, Weinzierl, Stefan",
-      "description": "Non-planar two-loop vertex topology C for mixed QCD-EW corrections to H→bb via Htt coupling. Crossed W-boson and gluon exchange.",
-      "epsOrders": "4",
-      "familyName": "non-planar top-W vertex",
-      "method": "IBP, DE",
-      "tools": [
-        "Reduze",
-        "Kira",
-        "FIRE",
-        "LiteRed"
-      ],
-      "ancillaryFiles": true,
-      "doi": "10.1007/JHEP05(2019)185",
-      "texkey": "Chaubey:2019lum",
-      "masterCount": 31,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "Fig. 2, Topology C",
-      "recordId": "bx_f0fd4a3e47d8",
-      "verified": false,
-      "verifiedAt": ""
     }
   ],
   "Names": [

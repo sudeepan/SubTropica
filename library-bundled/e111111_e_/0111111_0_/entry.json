@@ -1,0 +1,44 @@
+{
+  "CNickelIndex": "e111111|e|:0111111|0|",
+  "MassScales": 1,
+  "FunctionClass": "Calabi-Yau",
+  "EpsilonOrder": "2",
+  "References": [
+    "arXiv:2212.08908"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2212.08908",
+      "authors": "",
+      "description": "Five-loop equal-mass banana integral in D=2-2eps dimensions. Related to a Calabi-Yau 4-fold. First new result of this paper beyond the state of the art. Six master integrals M_0,...,M_5. The eps-expansion of M_1 starts at order eps^5: M_1^{(5,5)} = 288*zeta_5 + 480*zeta_3*I(1,Y_2) + I(1,Y_2,Y_2,1,f_{6,0}). Singular points at x in {4,16,36}. The special local normal form is theta_q^2 (1/Y_2) theta_q (1/Y_2) theta_q^2. Compared against pySecDec numerics with excellent agreement.",
+      "epsOrders": "2",
+      "familyName": "five-loop equal-mass banana",
+      "method": "DE",
+      "tools": [
+        "pySecDec"
+      ],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 6,
+      "dimScheme": "d=2-2*eps",
+      "computationLevel": "full",
+      "location": "Eq.(1), Section 6 (label sect:5_loops)",
+      "recordId": "bx_1b8a533fbe1f",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "five-loop equal-mass banana"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 5,
+  "NumPropagators": 6,
+  "Results": [],
+  "edges": "{{{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless banana"
+}

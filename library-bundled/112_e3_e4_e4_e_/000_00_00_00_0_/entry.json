@@ -4,7 +4,8 @@
   "FunctionClass": "MPL",
   "EpsilonOrder": "4",
   "References": [
-    "arXiv:2312.06773 (Eur.Phys.J.C 84 (495), 2024)"
+    "arXiv:2312.06773 (Eur.Phys.J.C 84 (495), 2024)",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -29,10 +30,30 @@
       "recordId": "bx_1506712b7534",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{*}_{4,1,1}$ two-loop topology with three internal paths of lengths a=4, b=1, c=1 (only one of v_L/v_R carries external legs); 4-point integral, planar (b=1). Geometry: 0 ISPs; algebraic leading singularity; dlog form (§3.4 zero-ISPs)",
+      "epsOrders": "",
+      "familyName": "I^{*}_{4,1,1}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with zero ISPs'",
+      "recordId": "bx_59f77fbfaaf2",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
-    "Box with fermion bubble, topology H (0, 0, 0)"
+    "Box with fermion bubble, topology H (0, 0, 0)",
+    "$I^{*}_{4,1,1}$"
   ],
   "Source": [
     "arXiv"

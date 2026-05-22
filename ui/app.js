@@ -5757,7 +5757,7 @@ function createTopoToast(topoKey, topo, cm) {
   body.className = 'notif-body';
   const noMatchBadge = hasConfigMatch ? '' : '<span class="badge badge-muted" style="margin-left:6px">No exact match</span>';
   body.innerHTML = `
-    <div class="notif-title">${name} topology${noMatchBadge}</div>
+    <div class="notif-title">${renderInlineMathString(name)} topology${noMatchBadge}</div>
     <div class="notif-stats">
       <span><span class="notif-stat-val">${loops}</span> loop${loops !== 1 ? 's' : ''}</span>
       <span><span class="notif-stat-val">${legs}</span> leg${legs !== 1 ? 's' : ''}</span>
@@ -6501,15 +6501,15 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
     const aliases = Array.isArray(cfgNames) ? cfgNames.filter(n => n && n !== primaryName) : [];
     const titleAttr = aliases.length > 0 ? ` title="Also known as: ${aliases.join(', ')}"` : '';
     const cNickel = cfg.CNickelIndex || cfg.CNickel || cfg.nickel || `${topoKey}:${configKey}`;
-    titleBlock.innerHTML = `<div class="popup-name"${titleAttr}>${primaryName}</div>`;
-    titleBlock.innerHTML += `<div class="popup-topo-line">${topoName} topology</div>`;
+    titleBlock.innerHTML = `<div class="popup-name"${titleAttr}>${renderInlineMathString(primaryName)}</div>`;
+    titleBlock.innerHTML += `<div class="popup-topo-line">${renderInlineMathString(topoName)} topology</div>`;
     titleBlock.innerHTML += `<div class="popup-nickel">${cNickel}</div>`;
-    $('detail-header-title').textContent = primaryName;
+    $('detail-header-title').innerHTML = renderInlineMathString(primaryName);
   } else {
     // Topology-only popup
-    titleBlock.innerHTML = `<div class="popup-name">${topoName}</div>`;
+    titleBlock.innerHTML = `<div class="popup-name">${renderInlineMathString(topoName)}</div>`;
     titleBlock.innerHTML += `<div class="popup-nickel">${topoKey}</div>`;
-    $('detail-header-title').textContent = topoName;
+    $('detail-header-title').innerHTML = renderInlineMathString(topoName);
   }
 
   // Badges
@@ -7723,7 +7723,7 @@ function openAbout() {
     }
   }
   // Read papersScanned from _meta (populated from _stats.json via library.json builder)
-  nRefs = (library && library._meta && library._meta.papersScanned) || 770;
+  nRefs = (library && library._meta && library._meta.papersScanned) || 1298;
   const coconuts = parseInt(localStorage.getItem('subtropica-coconuts') || '0');
 
   const isFull = backendMode === 'full';
@@ -8037,9 +8037,175 @@ async function submitCorrection() {
   }
 }
 
+// ─── Request-paper modal ─────────────────────────────────────────────
+//
+// Opened from the "Don't see your paper?" toast at the end of the
+// library list (or shown alone when filters yield no matches). Files a
+// public GitHub issue tagged `paper-request` on SubTropica/SubTropica
+// via the Cloudflare Worker (POST /request-paper), which dispatches the
+// paper-request.yml workflow.
+
+// New-style YYMM.NNNNN or old-style category/YYMMNNN. Mirrors the regex
+// in the Worker's /pdf and /request-paper handlers; kept in sync by
+// inspection.
+const _PAPREQ_ARXIV_RE = /^(\d{4}\.\d{4,5}|(?:hep-(?:ph|th|lat|ex)|astro-ph|gr-qc|cond-mat|math-ph|nucl-th|quant-ph|nlin|math)\/\d{7})$/;
+
+function _papreqValidArxiv(s) {
+  return _PAPREQ_ARXIV_RE.test((s || '').trim());
+}
+
+function openPaperRequestModal(prefillArxiv) {
+  const overlay = $('papreq-overlay');
+  if (!overlay) return;
+  overlay.classList.add('visible');
+  // Reset form state on each open so a stale "Submitted" doesn't linger.
+  const arxiv = $('papreq-arxiv');
+  if (arxiv) {
+    arxiv.value = (prefillArxiv || '').trim();
+  }
+  $('papreq-reason').value = '';
+  $('papreq-name').value   = '';
+  $('papreq-email').value  = '';
+  $('papreq-status').textContent = '';
+  $('papreq-status').className = 'correction-status';
+  $('papreq-reason-count').textContent = '0';
+  const btn = $('papreq-submit');
+  btn.disabled = !_papreqValidArxiv(arxiv?.value);
+  btn.textContent = 'Submit';
+  (arxiv || $('papreq-submit')).focus();
+}
+
+function closePaperRequestModal() {
+  $('papreq-overlay')?.classList.remove('visible');
+}
+
+function _papreqUpdateSubmitState() {
+  const v = $('papreq-arxiv').value.trim();
+  $('papreq-submit').disabled = !_papreqValidArxiv(v);
+  const hint = $('papreq-arxiv-hint');
+  if (hint) {
+    if (v && !_papreqValidArxiv(v)) {
+      hint.textContent = "Doesn't look like an arXiv ID — try e.g. 2406.15549";
+      hint.style.color = 'var(--red, #d73a4a)';
+    } else {
+      hint.textContent = 'New-style (YYMM.NNNNN) or old-style category prefix';
+      hint.style.color = 'var(--text-muted)';
+    }
+  }
+}
+
+async function submitPaperRequest() {
+  const btn = $('papreq-submit');
+  const status = $('papreq-status');
+  const arxivId = $('papreq-arxiv').value.trim();
+  const reason  = $('papreq-reason').value.trim();
+  const name    = $('papreq-name').value.trim();
+  const email   = $('papreq-email').value.trim();
+
+  if (!_papreqValidArxiv(arxivId)) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  status.textContent = '';
+  status.className = 'correction-status';
+
+  try {
+    const r = await fetch(SUBMIT_WORKER_BASE + '/request-paper', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ arxivId, reason, name, email }),
+    });
+    const data = await r.json();
+    if (r.ok && data.status === 'ok') {
+      status.textContent = 'Thanks — request filed. 🍹';
+      status.className = 'correction-status ok';
+      btn.textContent = '✓ Submitted';
+      setTimeout(closePaperRequestModal, 1400);
+    } else if (data.status === 'duplicate') {
+      status.textContent = 'A request for this paper was filed within the last 24 hours.';
+      status.className = 'correction-status ok';
+      btn.textContent = 'Already requested';
+      setTimeout(closePaperRequestModal, 1800);
+    } else {
+      status.textContent = 'Error: ' + (data.error || ('HTTP ' + r.status));
+      status.className = 'correction-status error';
+      btn.disabled = false;
+      btn.textContent = 'Submit';
+    }
+  } catch (e) {
+    status.textContent = 'Network error — please try again.';
+    status.className = 'correction-status error';
+    btn.disabled = false;
+    btn.textContent = 'Submit';
+  }
+}
+
+// One-time wiring on DOM ready.
+(function _wirePaperRequestModal() {
+  const init = () => {
+    const arxiv = $('papreq-arxiv');
+    const reason = $('papreq-reason');
+    if (!arxiv) return;
+    arxiv.addEventListener('input', _papreqUpdateSubmitState);
+    if (reason) reason.addEventListener('input', () => {
+      $('papreq-reason-count').textContent = String(reason.value.length);
+    });
+    $('papreq-cancel')?.addEventListener('click', closePaperRequestModal);
+    $('papreq-close')?.addEventListener('click', closePaperRequestModal);
+    $('papreq-submit')?.addEventListener('click', submitPaperRequest);
+    // Click on backdrop closes
+    $('papreq-overlay')?.addEventListener('click', e => {
+      if (e.target.id === 'papreq-overlay') closePaperRequestModal();
+    });
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
 // ─── Browser ─────────────────────────────────────────────────────────
 
 let _browserTab = localStorage.getItem('subtropica-browser-tab') || 'topos';
+
+// Build the always-visible "Don't see your paper? Request analysis →"
+// toast appended at the end of the library list. Returns a DOM node.
+function _buildRequestPaperToast(currentSearchText) {
+  const card = document.createElement('div');
+  card.className = 'browser-toast browser-toast-request';
+  card.setAttribute('role', 'button');
+  card.setAttribute('tabindex', '0');
+
+  const thumb = document.createElement('div');
+  thumb.className = 'notif-thumb';
+  thumb.textContent = '?';
+
+  const body = document.createElement('div');
+  body.className = 'notif-body';
+  body.innerHTML = `
+    <div class="notif-title">Don't see your paper? Request analysis →</div>
+    <div class="notif-subtitle">Files a public GitHub issue; a maintainer will review and add the paper to the library.</div>
+  `;
+
+  card.appendChild(thumb);
+  card.appendChild(body);
+
+  // Open the modal. If the user searched for something that looks like
+  // an arXiv ID, pre-fill the form — saves the most common case where
+  // they typed the ID into the library search and hit nothing.
+  const prefill = (currentSearchText && _papreqValidArxiv(currentSearchText.trim()))
+    ? currentSearchText.trim()
+    : '';
+  card.addEventListener('click', () => openPaperRequestModal(prefill));
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openPaperRequestModal(prefill);
+    }
+  });
+  return card;
+}
 
 function openBrowser() {
   if (!library || !library.topologies) return;
@@ -8315,7 +8481,16 @@ function populateBrowser() {
       $('browser-count').textContent = filtered.length + ' topolog' + (filtered.length!==1?'ies':'y');
       body.innerHTML = '';
       if (filtered.length === 0) {
-        body.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted)">No matches.</div>';
+        // Empty state: the "Request analysis" toast is the only thing
+        // shown. Top-line "No matches." is rendered above the toast as
+        // a soft message rather than in its own block.
+        const emptyMsg = document.createElement('div');
+        emptyMsg.style.cssText = 'padding:16px 8px;text-align:center;color:var(--text-muted);font-size:13px';
+        emptyMsg.textContent = 'No matches.';
+        const emptyList = document.createElement('div'); emptyList.className = 'browser-list';
+        emptyList.appendChild(_buildRequestPaperToast(search.value));
+        body.appendChild(emptyMsg);
+        body.appendChild(emptyList);
         return;
       }
       const list = document.createElement('div'); list.className = 'browser-list';
@@ -8329,7 +8504,7 @@ function populateBrowser() {
         cardBody.className = 'notif-body';
         const resultStar = t.hasResults ? '<span class="result-star" title="Result computed">\u2605</span> ' : '';
         cardBody.innerHTML = `
-          <div class="notif-title">${resultStar}${t.name}</div>
+          <div class="notif-title">${resultStar}${renderInlineMathString(t.name)}</div>
           <div class="notif-stats">
             <span><span class="notif-stat-val">${t.loops}</span> loop${t.loops !== 1 ? 's' : ''}</span>
             <span><span class="notif-stat-val">${t.legs}</span> leg${t.legs !== 1 ? 's' : ''}</span>
@@ -8350,6 +8525,8 @@ function populateBrowser() {
         list.appendChild(card);
         } catch (e) { console.warn('Thumbnail failed for', t.key, e); }
       });
+      // Always append the "Request paper" toast at the end of the list.
+      list.appendChild(_buildRequestPaperToast(search.value));
       body.appendChild(list);
     } else {
       // Diagrams tab
@@ -8368,7 +8545,13 @@ function populateBrowser() {
       $('browser-count').textContent = filtered.length + ' diagram' + (filtered.length!==1?'s':'');
       body.innerHTML = '';
       if (filtered.length === 0) {
-        body.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted)">No matches.</div>';
+        const emptyMsg = document.createElement('div');
+        emptyMsg.style.cssText = 'padding:16px 8px;text-align:center;color:var(--text-muted);font-size:13px';
+        emptyMsg.textContent = 'No matches.';
+        const emptyList = document.createElement('div'); emptyList.className = 'browser-list';
+        emptyList.appendChild(_buildRequestPaperToast(search.value));
+        body.appendChild(emptyMsg);
+        body.appendChild(emptyList);
         return;
       }
       const list = document.createElement('div'); list.className = 'browser-list';
@@ -8389,7 +8572,7 @@ function populateBrowser() {
         // Verified badge removed from toast — now per-result only.
         const dResultStar = d.hasResults ? '<span class="result-star" title="Result computed">\u2605</span> ' : '';
         cardBody.innerHTML = `
-          <div class="notif-title">${dResultStar}${d.name}${badges ? ' ' + badges : ''}</div>
+          <div class="notif-title">${dResultStar}${renderInlineMathString(d.name)}${badges ? ' ' + badges : ''}</div>
           <div class="notif-stats">
             <span><span class="notif-stat-val">${d.loops}</span> loop${d.loops !== 1 ? 's' : ''}</span>
             <span><span class="notif-stat-val">${d.legs}</span> leg${d.legs !== 1 ? 's' : ''}</span>
@@ -8404,6 +8587,8 @@ function populateBrowser() {
         list.appendChild(card);
         } catch (e) { console.warn('Thumbnail failed for', d.topoKey, d.configKey, e); }
       });
+      // Always append the "Request paper" toast at the end of the list.
+      list.appendChild(_buildRequestPaperToast(search.value));
       body.appendChild(list);
     }
   }

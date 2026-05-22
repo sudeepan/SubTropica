@@ -1,6 +1,6 @@
 # 🥥 SubTropica
 
-[![Version](https://img.shields.io/badge/version-1.1.8-blue)](https://github.com/SubTropica/SubTropica)
+[![Version](https://img.shields.io/badge/version-1.1.9-blue)](https://github.com/SubTropica/SubTropica)
 [![Mathematica](https://img.shields.io/badge/Mathematica-13.1%2B-red)](https://www.wolfram.com/mathematica/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Data: CC BY-NC-SA 4.0](https://img.shields.io/badge/data_license-CC_BY--NC--SA_4.0-orange)](LICENSE-DATA)
@@ -29,11 +29,11 @@ The library currently contains:
 
 |                         |       |
 | :---------------------- | ----: |
-| **Topologies**          |   329 |
-| **Mass configurations** | 737 |
-| **Literature records**  | 1,511 |
-| **Papers scanned**      | 1,283 |
-| **Computed results**    |   190 |
+| **Topologies**          | 373 |
+| **Mass configurations** | 871 |
+| **Literature records**  | 1,590 |
+| **Papers scanned**      | 1,298 |
+| **Computed results**    | 195 |
 
 The full library ships with the package under `library-bundled/` and is compiled into `ui/library.json` for the web interface.
 

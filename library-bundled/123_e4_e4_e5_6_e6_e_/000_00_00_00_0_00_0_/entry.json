@@ -11,7 +11,8 @@
     "arXiv:2009.07803 (JHEP 20 (167), 2020)",
     "arXiv:2209.06816",
     "arXiv:1809.06240",
-    "arXiv:1805.01873"
+    "arXiv:1805.01873",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -144,34 +145,6 @@
         "FIRE"
       ],
       "doi": "10.1007/JHEP01(2019)006"
-    },
-    {
-      "ancillaryPaths": [
-        "anc/H1.txt"
-      ],
-      "dimScheme": "d=4-2*eps",
-      "recordId": "bf_6ab60705ba97",
-      "familyName": "hexabox (b)",
-      "verified": false,
-      "verifiedAt": "",
-      "authors": "Caron-Huot, Simon, Chicherin, Dmitry, Henn, Johannes, Zhang, Yang, Zoia, Simone",
-      "texkey": "Caron-Huot:2020vlo",
-      "computationLevel": "full",
-      "masterCount": 73,
-      "transcendentalWeight": 4,
-      "location": "Fig. 1(b), Eqs. (3.4)-(3.5), Section 3.2",
-      "method": [],
-      "reference": "arXiv:2003.03120, JHEP 10 (188), 2020",
-      "ancillaryFiles": [],
-      "description": "Non-planar hexagon-box family for massless two-loop five-point scattering. 8 propagators, 73 MIs. Used for multi-Regge limit computation.",
-      "epsOrders": "-4,-3,-2,-1,0",
-      "tools": [
-        "FIRE",
-        "Kira",
-        "Reduze",
-        "GiNaC"
-      ],
-      "doi": "10.1007/JHEP10(2020)188"
     },
     {
       "reference": "arXiv:2009.07803 (JHEP 20 (167), 2020)",
@@ -386,6 +359,25 @@
       "recordId": "bx_7f74889b5429",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{**}_{4,2,2}$ two-loop topology with three internal paths of lengths a=4, b=2, c=2 (neither v_L nor v_R carries external legs); 5-point integral, non-planar (b=>=2). Geometry: 1 ISP; max cut ∫dz/√P_4(z); elliptic curve (§3.4 Type 1.2)",
+      "epsOrders": "",
+      "familyName": "I^{**}_{4,2,2}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 Type 1.2",
+      "recordId": "bx_385635723307",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
@@ -396,7 +388,8 @@
     "hb",
     "massless planar two-loop five-point hexa-box",
     "two-loop five-point massless hexa-box",
-    "non-planar hexagon-box"
+    "non-planar hexagon-box",
+    "$I^{**}_{4,2,2}$"
   ],
   "Source": [
     "arXiv"

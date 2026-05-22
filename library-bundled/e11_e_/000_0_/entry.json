@@ -1,0 +1,42 @@
+{
+  "CNickelIndex": "e11|e|:000|0|",
+  "MassScales": 0,
+  "FunctionClass": "hypergeometric",
+  "EpsilonOrder": "all_orders",
+  "References": [
+    "arXiv:1907.00507"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:1907.00507",
+      "authors": "",
+      "description": "One-loop massless bubble evaluated via GKZ/A-hypergeometric canonical series. Result in Gamma functions times power of s.",
+      "epsOrders": "all_orders",
+      "familyName": "massless_bubble",
+      "method": "direct_integration",
+      "tools": [
+        "Macaulay2"
+      ],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 0,
+      "dimScheme": "d=D",
+      "computationLevel": "full",
+      "location": "Section 3.3.1",
+      "recordId": "bx_6f01095848f1",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 1,
+  "NumPropagators": 2,
+  "Results": [],
+  "edges": "{{{1, 2}, 0}, {{1, 2}, 0}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless bubble"
+}

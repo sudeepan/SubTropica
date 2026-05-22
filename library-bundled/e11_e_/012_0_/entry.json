@@ -1,0 +1,42 @@
+{
+  "CNickelIndex": "e11|e|:012|0|",
+  "MassScales": 2,
+  "FunctionClass": "hypergeometric",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:1204.0694 (Eur.Phys.J.C 72 (2085), 2012)"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:1204.0694 (Eur.Phys.J.C 72 (2085), 2012)",
+      "authors": "Groote, S., Korner, J.G., Pivovarov, A.A.",
+      "description": "One-loop sunrise (bubble) self-energy with two arbitrary internal masses m1, m2 in D=2 Euclidean space-time, evaluated via configuration-space (Bessel-moment) representation S(1,1) = (1/2pi) int_0^infty J_0(p x) K_0(m1 x) K_0(m2 x) dx. The paper numerically verifies the IBP recurrence relation 2 m1^2 S(2,1) + (p^2+m1^2+m2^2) S(1,2) = S(1,1) + S(0,2) (Eq. recur12), Euler's homogeneity differential equation (Eq. euler), and Remiddi's second-order DE (Eq. remiddi1) for S(1,1). Higher-index integrals S(2,1), S(1,2) are obtained as mass derivatives of S(1,1) and expressed as Bessel-moment integrals.",
+      "epsOrders": "",
+      "familyName": "2-mass 1-loop sunrise (bubble)",
+      "method": "direct_integration, DE",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "10.1140/epjc/s10052-012-2085-z",
+      "texkey": "Groote:2012pa",
+      "masterCount": 2,
+      "dimScheme": "d=2",
+      "computationLevel": "full",
+      "location": "Section 3, Eqs. (10)-(20); recurrence relations Eqs. (recur1)-(recur3); differential equation Eqs. (euler), (remiddi1)",
+      "recordId": "bx_79ba0aeb046a",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "2-mass 1-loop sunrise (bubble)"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 1,
+  "NumPropagators": 2,
+  "Results": [],
+  "edges": "{{{1, 2}, m[1]}, {{1, 2}, m[2]}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless bubble"
+}

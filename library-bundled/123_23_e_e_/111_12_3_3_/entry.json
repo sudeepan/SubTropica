@@ -66,5 +66,6 @@
     "1122|e|e|:1111|2|2|",
     "112|e2|e|:111|21|2|"
   ],
-  "ParentSectors": []
+  "ParentSectors": [],
+  "Genus": 1
 }

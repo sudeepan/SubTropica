@@ -1108,7 +1108,7 @@
     "2-loop sunrise",
     "sunset",
     "unequal-mass sunrise",
-    "unequal-mass two-loop sunrise I_{nu1 nu2 nu3}",
+    "$unequal-mass two-loop sunrise I_{nu1 nu2 nu3}$",
     "two-loop sunset with three distinct masses in D=2",
     "unequal-mass two-loop sunrise",
     "two-loop sunrise with three generic masses",
@@ -1155,5 +1155,6 @@
   "Subsectors": [],
   "ParentSectors": [
     "112|e2|e|:123|45|4|"
-  ]
+  ],
+  "Genus": 1
 }

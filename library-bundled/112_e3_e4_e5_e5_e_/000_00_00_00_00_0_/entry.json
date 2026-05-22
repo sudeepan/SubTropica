@@ -4,7 +4,8 @@
   "FunctionClass": "MPL",
   "EpsilonOrder": "",
   "References": [
-    "arXiv:1511.05409 (Phys.Rev.Lett. 116 (), 2016)"
+    "arXiv:1511.05409 (Phys.Rev.Lett. 116 (), 2016)",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -28,10 +29,30 @@
       "recordId": "bx_2ca5f090a428",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{*}_{5,1,1}$ two-loop topology with three internal paths of lengths a=5, b=1, c=1 (only one of v_L/v_R carries external legs); 5-point integral, planar (b=1). Geometry: 0 ISPs; algebraic leading singularity; dlog form (§3.4 zero-ISPs)",
+      "epsOrders": "",
+      "familyName": "I^{*}_{5,1,1}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with zero ISPs'",
+      "recordId": "bx_d63607f522a0",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
-    "pentagon-triangle"
+    "pentagon-triangle",
+    "$I^{*}_{5,1,1}$"
   ],
   "Source": [
     "arXiv"

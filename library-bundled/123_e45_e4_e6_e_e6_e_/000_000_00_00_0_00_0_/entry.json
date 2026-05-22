@@ -4,7 +4,8 @@
   "FunctionClass": "MPL",
   "EpsilonOrder": "0",
   "References": [
-    "arXiv:2602.02783"
+    "arXiv:2602.02783",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -50,10 +51,30 @@
       "recordId": "bx_37aab4f13825",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{*}_{4,1,3}$ two-loop topology with three internal paths of lengths a=4, b=1, c=3 (only one of v_L/v_R carries external legs); 6-point integral, planar (b=1). Geometry: 1 ISP; max cut ∫dz/√P_2(z); algebraic, dlog (§3.4 Type 1.1)",
+      "epsOrders": "",
+      "familyName": "I^{*}_{4,1,3}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 Type 1.1",
+      "recordId": "bx_f70d8499a1bf",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
-    "massless 2-loop 6-point penta-box"
+    "massless 2-loop 6-point penta-box",
+    "$I^{*}_{4,1,3}$"
   ],
   "Source": [
     "arXiv"

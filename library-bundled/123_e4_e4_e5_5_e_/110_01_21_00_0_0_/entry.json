@@ -101,5 +101,6 @@
   "Subsectors": [
     "123|e4|e4|e4||:011|20|01|31||"
   ],
-  "ParentSectors": []
+  "ParentSectors": [],
+  "Genus": 1
 }

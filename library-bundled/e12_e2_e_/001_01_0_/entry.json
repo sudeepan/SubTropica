@@ -8,26 +8,6 @@
   ],
   "Records": [
     {
-      "dimScheme": "d=4-2*eps",
-      "recordId": "bf_be4e459d3a8c",
-      "familyName": "Q8g dipole triangle",
-      "verified": false,
-      "verifiedAt": "",
-      "authors": "Bell, Guido, Beneke, Martin, Huber, Tobias, Li, Xin-Qiang",
-      "texkey": "Bell:2020qus",
-      "computationLevel": "full",
-      "masterCount": 1,
-      "location": "Eq. (3.10)",
-      "transcendentalWeight": 2,
-      "method": [],
-      "reference": "arXiv:2002.03262, JHEP 04 (055), 2020",
-      "ancillaryFiles": [],
-      "description": "One-loop triangle from chromomagnetic dipole operator $Q_{8g}$. 3 propagators (2 massive with $m_b$). 1 MI, weight 2.",
-      "epsOrders": "-2,-1,0",
-      "tools": [],
-      "doi": "10.1007/JHEP04(2020)055"
-    },
-    {
       "reference": "arXiv:2002.03262 (JHEP 04 (055), 2020)",
       "authors": "Bell, Guido, Beneke, Martin, Huber, Tobias, Li, Xin-Qiang",
       "description": "One-loop triangle from chromomagnetic dipole operator Q_{8g}. 3 propagators (2 massive with m_b). 1 MI, weight 2.",

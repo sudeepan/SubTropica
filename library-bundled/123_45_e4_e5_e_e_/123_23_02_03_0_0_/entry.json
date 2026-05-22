@@ -28,28 +28,6 @@
       "dimScheme": "fixed-integer",
       "location": "section 3",
       "familyName": "massive-planar-double-box"
-    },
-    {
-      "reference": "arXiv:1507.06310 (JHEP 12 (086), 2015)",
-      "authors": "Georgoudis, Alessandro, Zhang, Yang",
-      "description": "Planar double box with 3 internal mass scales (m1, m2, m3) and massless external legs in D=4. Maximal unitarity cut defines an elliptic curve. 5 master integrals identified via algebraic curve analysis of exact meromorphic 1-forms. Doubled-propagator reduction also performed.",
-      "epsOrders": "",
-      "familyName": "massive-planar-double-box",
-      "method": "IBP",
-      "tools": [
-        "Mathematica",
-        "FIRE"
-      ],
-      "ancillaryFiles": true,
-      "doi": "10.1007/JHEP12(2015)086",
-      "texkey": "Georgoudis:2015hca",
-      "masterCount": 5,
-      "dimScheme": "",
-      "computationLevel": "IBP_only",
-      "location": "section 3",
-      "recordId": "bx_7cd0e3481982",
-      "verified": false,
-      "verifiedAt": ""
     }
   ],
   "Names": [
@@ -84,5 +62,6 @@
     "L2"
   ],
   "Subsectors": [],
-  "ParentSectors": []
+  "ParentSectors": [],
+  "Genus": 1
 }

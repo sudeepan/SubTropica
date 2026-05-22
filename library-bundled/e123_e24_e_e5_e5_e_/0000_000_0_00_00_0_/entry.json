@@ -4,7 +4,8 @@
   "FunctionClass": "MPL",
   "EpsilonOrder": "4",
   "References": [
-    "arXiv:2403.19742 (JHEP 08 (027), 2024)"
+    "arXiv:2403.19742 (JHEP 08 (027), 2024)",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -29,10 +30,30 @@
       "recordId": "bx_0d90e3c31e9b",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I_{4,1,2}$ two-loop topology with three internal paths of lengths a=4, b=1, c=2 (both v_L and v_R carry external legs); 6-point integral, planar (b=1). Geometry: 1 ISP; max cut ∫dz/√P_2(z); algebraic, dlog (§3.4 Type 1.1)",
+      "epsOrders": "",
+      "familyName": "I_{4,1,2}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 Type 1.1",
+      "recordId": "bx_992686450c19",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
-    "pentagon-triangle"
+    "pentagon-triangle",
+    "$I_{4,1,2}$"
   ],
   "Source": [
     "arXiv"

@@ -1,0 +1,44 @@
+{
+  "CNickelIndex": "e19|e28|e37|e46|e5|e6|e7|e8|e9|e|:000|000|000|000|00|00|00|00|00|0|",
+  "MassScales": 35,
+  "FunctionClass": "Calabi-Yau",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:1805.09326"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:1805.09326",
+      "authors": "",
+      "description": "4-loop traintrack integral involving a Calabi-Yau threefold. 4-loop traintrack with 13 massless propagators, 14 massless external legs grouped into 10 momenta. Finite and dual-conformally invariant in d=4. Involves weight-5 hyperlogarithms integrated over an irreducible smooth Calabi-Yau threefold, elliptically fibered over P^2. Weierstrass coefficients g_2(z1,z2) and g_3(z1,z2) have degrees specified in Eq. (13). Verified to have trivial canonical sheaf using Macaulay2.",
+      "epsOrders": "",
+      "familyName": "traintrack_4L_CY3",
+      "method": "direct_integration",
+      "tools": [
+        "Macaulay2"
+      ],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 0,
+      "dimScheme": "d=4",
+      "computationLevel": "basis",
+      "location": "Eq. (1), Sec. Calabi-Yaus at Higher Loops",
+      "recordId": "bx_3b1bf93b9c66",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "traintrack_4L_CY3"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 4,
+  "NumPropagators": 13,
+  "Results": [],
+  "edges": "{{{1, 2}, 0}, {{1, 10}, 0}, {{2, 3}, 0}, {{2, 9}, 0}, {{3, 4}, 0}, {{3, 8}, 0}, {{4, 5}, 0}, {{4, 7}, 0}, {{5, 6}, 0}, {{6, 7}, 0}, {{7, 8}, 0}, {{8, 9}, 0}, {{9, 10}, 0}}",
+  "nodes": "{{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}, {10, 0}}",
+  "CanonicalName": "4-loop 10-point (13 propagators)"
+}

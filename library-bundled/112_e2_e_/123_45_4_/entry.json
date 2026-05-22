@@ -97,7 +97,7 @@
   "Names": [
     "Sunrise-bubble (Tausk)",
     "Sunrise-bubble",
-    "T_{1234}",
+    "$T_{1234}$",
     "2-loop propagator",
     "2-loop 2-point 4-propagator benchmark family with auxiliary-vector numerators",
     "2-loop self-energy triangle with bubble (4-mass)"
@@ -138,5 +138,6 @@
   ],
   "ParentSectors": [
     "112|3|e3|e|:123|4|56|5|"
-  ]
+  ],
+  "Genus": 1
 }

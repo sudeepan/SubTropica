@@ -1,0 +1,44 @@
+{
+  "CNickelIndex": "267|e36|e4|58|58|7|8|e||:000|000|00|00|00|0|0|0||",
+  "MassScales": 0,
+  "FunctionClass": "unknown",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:2305.19768"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2305.19768",
+      "authors": "",
+      "description": "Four-loop three-point form factor integral with 12 internal edges (all massless) and 9 vertices. One external leg is massive (off-shell). Two propagators carry raised powers (dots). Previously existing pySecDec example benchmarked with the baker integral transformation. Contains a large number of sectors where Disteval has up to 20x less overhead than IntLib.",
+      "epsOrders": "",
+      "familyName": "formfactor4L",
+      "method": "sector_decomposition",
+      "tools": [
+        "pySecDec"
+      ],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "numerical",
+      "location": "Section 3.2, Figure 10(c), Table 3",
+      "recordId": "bx_8f5eda680653",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "formfactor4L"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 4,
+  "NumPropagators": 12,
+  "Results": [],
+  "edges": "{{{1, 3}, 0}, {{1, 7}, 0}, {{1, 8}, 0}, {{2, 4}, 0}, {{2, 7}, 0}, {{3, 5}, 0}, {{4, 6}, 0}, {{4, 9}, 0}, {{5, 6}, 0}, {{5, 9}, 0}, {{6, 8}, 0}, {{7, 9}, 0}}",
+  "nodes": "{{2, 0}, {3, 0}, {8, 0}}",
+  "CanonicalName": "Massless hexagonal core (b)"
+}

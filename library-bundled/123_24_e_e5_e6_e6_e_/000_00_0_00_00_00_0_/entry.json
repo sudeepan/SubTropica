@@ -4,7 +4,8 @@
   "FunctionClass": "unknown",
   "EpsilonOrder": "",
   "References": [
-    "arXiv:1912.09294"
+    "arXiv:1912.09294",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -42,12 +43,32 @@
       "recordId": "bx_c156ac40a01a",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I^{**}_{5,1,2}$ two-loop topology with three internal paths of lengths a=5, b=1, c=2 (neither v_L nor v_R carries external legs); 5-point integral, planar (b=1). Geometry: 0 ISPs; algebraic leading singularity; dlog form (§3.4 zero-ISPs)",
+      "epsOrders": "",
+      "familyName": "I^{**}_{5,1,2}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with zero ISPs'",
+      "recordId": "bx_fac99ffb2162",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
     "Hexa-triangle",
     "ht",
-    "two-loop five-point massless hexa-triangle"
+    "two-loop five-point massless hexa-triangle",
+    "$I^{**}_{5,1,2}$"
   ],
   "Source": [
     "arXiv"

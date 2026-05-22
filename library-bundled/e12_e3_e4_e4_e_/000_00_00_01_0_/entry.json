@@ -50,50 +50,6 @@
       "recordId": "bx_f9a9aa251dfa",
       "verified": false,
       "verifiedAt": ""
-    },
-    {
-      "reference": "arXiv:2107.02106 (JHEP 10 (041), 2021)",
-      "authors": "Syrrakos, Nikolaos",
-      "description": "One-loop pentagon with 1m4; all external massless; 1 massive internal propagator, labelled family F in the paper. 16 masters solved via SDE approach with x-parametrization rationalizing square roots; canonical DE; Goncharov polylogs up to weight 4. Called `F` in the paper.",
-      "epsOrders": "4",
-      "familyName": "Massless 1-internal-mass one-loop 5-point pentagon (5 propagators) - family F",
-      "method": "DE, IBP, direct_integration",
-      "tools": [
-        "Kira",
-        "FIESTA"
-      ],
-      "ancillaryFiles": true,
-      "doi": "10.1007/JHEP10(2021)041",
-      "texkey": "Syrrakos:2021nij",
-      "masterCount": 15,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "anc/F.m",
-      "recordId": "bx_0d427545de03",
-      "verified": false,
-      "verifiedAt": ""
-    },
-    {
-      "reference": "arXiv:2107.02106 (JHEP 10 (041), 2021)",
-      "authors": "Syrrakos, Nikolaos",
-      "description": "One-loop pentagon with 1m-ext 1m-int; 1 off-shell external leg + 1 massive internal propagator, labelled family G in the paper. 16 masters solved via SDE approach with x-parametrization rationalizing square roots; canonical DE; Goncharov polylogs up to weight 4. Called `G` in the paper.",
-      "epsOrders": "4",
-      "familyName": "1-off-shell-leg 1-internal-mass one-loop 5-point pentagon (5 propagators) - family G",
-      "method": "DE, IBP, direct_integration",
-      "tools": [
-        "Kira",
-        "FIESTA"
-      ],
-      "ancillaryFiles": true,
-      "doi": "10.1007/JHEP10(2021)041",
-      "texkey": "Syrrakos:2021nij",
-      "masterCount": 16,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "anc/G.m",
-      "recordId": "bx_155a73edeec8",
-      "verified": false,
-      "verifiedAt": ""
     }
   ],
   "Names": [

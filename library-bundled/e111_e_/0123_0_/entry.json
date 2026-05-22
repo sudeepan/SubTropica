@@ -1,0 +1,43 @@
+{
+  "CNickelIndex": "e111|e|:0123|0|",
+  "MassScales": 3,
+  "FunctionClass": "elliptic",
+  "EpsilonOrder": "",
+  "References": [
+    "arXiv:1204.0694 (Eur.Phys.J.C 72 (2085), 2012)"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:1204.0694 (Eur.Phys.J.C 72 (2085), 2012)",
+      "authors": "Groote, S., Korner, J.G., Pivovarov, A.A.",
+      "description": "Two-loop sunrise self-energy with three internal masses m1, m2, m3 in D=2 Euclidean space-time, evaluated via configuration-space representation S(1,1,1) = (1/(2pi)^2) int_0^infty J_0(p x) K_0(m1 x) K_0(m2 x) K_0(m3 x) x dx (Eq. S111). The paper numerically tests the second-order differential equation of Laporta-Remiddi for the equal-mass case (Eq. remiddi2, simplified in D=2 to Eq. remiddi22) at precision ~10^{-8}, and the Mueller-Stach-Weinzierl-Zayadeh DE for arbitrary masses (Section 5, with explicit polynomial coefficients p_0(t), p_1(t), p_2(t), p_3(t) and symmetric-monomial M_{lambda1 lambda2 lambda3} structure) at precision ~10^{-4}. Two typos in the c(t,m1,m2,m3) coefficients of the preprint MullerStach:2011ru were identified and corrected.",
+      "epsOrders": "",
+      "familyName": "3-mass 2-loop sunrise",
+      "method": "direct_integration, DE",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "10.1140/epjc/s10052-012-2085-z",
+      "texkey": "Groote:2012pa",
+      "masterCount": 0,
+      "dimScheme": "d=2",
+      "computationLevel": "full",
+      "location": "Sections 4-5, Eq. (S111) for S(1,1,1); equal-mass DE Eqs. (remiddi2)-(remiddi22); arbitrary-mass DE coefficients p_0..p_3 in Section 5",
+      "recordId": "bx_3d32911f1056",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "3-mass 2-loop sunrise"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 2,
+  "NumPropagators": 3,
+  "Results": [],
+  "edges": "{{{1, 2}, m[1]}, {{1, 2}, m[2]}, {{1, 2}, m[3]}}",
+  "nodes": "{{1, 0}, {2, 0}}",
+  "CanonicalName": "Massless sunrise",
+  "Genus": 1
+}

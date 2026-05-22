@@ -4,7 +4,8 @@
   "FunctionClass": "MPL",
   "EpsilonOrder": "4",
   "References": [
-    "arXiv:2403.19742 (JHEP 08 (027), 2024)"
+    "arXiv:2403.19742 (JHEP 08 (027), 2024)",
+    "arXiv:2512.13794"
   ],
   "Records": [
     {
@@ -29,10 +30,30 @@
       "recordId": "bx_f7d085cfc443",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2512.13794",
+      "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
+      "description": "$I_{5,1,1}$ two-loop topology with three internal paths of lengths a=5, b=1, c=1 (both v_L and v_R carry external legs); 6-point integral, planar (b=1). Geometry: 0 ISPs; algebraic leading singularity; dlog form (§3.4 zero-ISPs)",
+      "epsOrders": "",
+      "familyName": "I_{5,1,1}",
+      "method": "maximal_cut, Baikov",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "Bargiela:2025vwl",
+      "masterCount": 0,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "topology",
+      "location": "§3.4 'Integrals with zero ISPs'",
+      "recordId": "bx_97b88c7d77e1",
+      "verified": false,
+      "verifiedAt": ""
     }
   ],
   "Names": [
-    "hexagon-bubble"
+    "hexagon-bubble",
+    "$I_{5,1,1}$"
   ],
   "Source": [
     "arXiv"

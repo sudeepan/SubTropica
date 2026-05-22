@@ -8,25 +8,6 @@
   ],
   "Records": [
     {
-      "authors": "Correia, Miguel, Giroux, Mathieu, Mizera, Sebastian",
-      "ancillaryFiles": [],
-      "recordId": "bf_1343bfbe07b2",
-      "epsOrders": "",
-      "location": "Section 5.3",
-      "texkey": "Correia:2025wtb",
-      "verified": false,
-      "verifiedAt": "",
-      "reference": "arXiv:2503.16601, Comput.Phys.Commun. 320, 2026",
-      "masterCount": 0,
-      "computationLevel": "maximal_cut",
-      "doi": "10.1016/j.cpc.2025.109970",
-      "tools": [],
-      "description": "Four-loop graviton exchange diagram. 11 propagators (7 massless graviton, 4 massive). Eikonal limit reveals CY3 geometry.",
-      "method": [],
-      "dimScheme": "d=4",
-      "familyName": "4L graviton exchange"
-    },
-    {
       "reference": "arXiv:2503.16601 (Comput.Phys.Commun. 320 (), 2026)",
       "authors": "Correia, Miguel, Giroux, Mathieu, Mizera, Sebastian",
       "description": "Four-loop graviton exchange diagram. 11 propagators (7 massless graviton, 4 massive). Eikonal limit reveals CY3 geometry.",
