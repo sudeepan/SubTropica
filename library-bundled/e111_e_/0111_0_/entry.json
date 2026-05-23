@@ -238,7 +238,6 @@
     "$equal-mass two-loop sunrise I_{nu1 nu2 nu3}$",
     "sunrise_equal_mass",
     "Two-Loop Equal-Mass Massive Sunrise",
-    "equal mass sunrise",
     "2-loop equal-mass banana (sunrise)",
     "equal-mass sunrise graph",
     "two-loop sunrise (equal mass)",
@@ -253,6 +252,20 @@
   "Results": [],
   "edges": "{{{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}}",
   "nodes": "{{1, 0}, {2, 0}}",
-  "CanonicalName": "Massless sunrise",
-  "Genus": 1
+  "CanonicalName": "Equal-mass sunrise (a)",
+  "Genus": 1,
+  "MassConfig": {
+    "numEdges": 3,
+    "numMassiveEdges": 3,
+    "numMasslessEdges": 0,
+    "distinctInternalMasses": 1,
+    "internalMassLabels": [
+      "m"
+    ],
+    "edgeMassPattern": "111",
+    "numExtLegs": 2,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 2,
+    "extLegSignature": "00"
+  }
 }

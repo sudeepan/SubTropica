@@ -1,6 +1,7 @@
 {
 	"NickelIndex": "1122|33|e33|e|",
-	"Name": "",
+	"Name": "5-loop 2-pt 4-bubble cycle",
+	"PrimaryName": "Quadruple-bubble ring",
 	"Loops": 5,
 	"Legs": 2,
 	"Propagators": 8,

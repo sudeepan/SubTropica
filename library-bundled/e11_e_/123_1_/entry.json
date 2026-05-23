@@ -382,7 +382,7 @@
   "edges": "{{{1, 2}, m[1]}, {{1, 2}, m[2]}}",
   "nodes": "{{1, M}, {2, M}}",
   "quadruple": "{E^(eps*EulerGamma)*Gamma[eps], (x1 + x2)^(2*(-1 + eps))/(MM*x1*x2 - x1^2*mm[1] - x1*x2*mm[1] - x1*x2*mm[2] - x2^2*mm[2])^eps, {x1, x2}, {MM}}",
-  "CanonicalName": "2-mass bubble",
+  "CanonicalName": "2-mass bubble (b)",
   "MassConfig": {
     "numEdges": 2,
     "numMassiveEdges": 2,

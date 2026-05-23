@@ -1170,7 +1170,7 @@ Options[ConfigureSubTropica] = {
 With[{$SubTropicaDir = DirectoryName[$InputFileName]},
 
 $SubTropicaInstallDir = $SubTropicaDir;
-$SubTropicaVersion = "1.1.9";
+$SubTropicaVersion = "1.1.10";
 
 (* Init-order fix: line 109 set $STHyperFlintDataPath before
    $SubTropicaInstallDir was bound, so the install-dir-derived data
@@ -24502,6 +24502,17 @@ def build_library_json():
                 if nickel not in topologies:
                     topologies[nickel] = {
                         'name': topo_data.get('Name', ''),
+                        # PrimaryName is the curated UI-facing label (Tier-1
+                        # canonical name from data/topology_names.json,
+                        # synced to topology.json by apply_diagram_names.py).
+                        # The UI's title fallback chain is
+                        # `topo.primaryName || topo.name || topo.Name || key`,
+                        # so omitting primaryName here makes the UI fall back
+                        # to the raw `name` (which for I-family entries is
+                        # the paper's $I^{**}_{a,b,c}$ LaTeX, not the
+                        # descriptive label). Emit it now to stay in sync
+                        # with scripts/_build_library_json.py.
+                        'primaryName': topo_data.get('PrimaryName', ''),
                         'loops': topo_data.get('Loops', 0),
                         'legs': topo_data.get('Legs', 0),
                         'props': topo_data.get('Propagators', 0),

@@ -38,5 +38,17 @@
   "Results": [],
   "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{3, 5}, 0}, {{4, 6}, 0}, {{5, 7}, 0}, {{6, 8}, 0}, {{7, 8}, 0}}",
   "nodes": "{{2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}}",
-  "CanonicalName": "2-loop 7-point (9 propagators)"
+  "CanonicalName": "Massless non-planar box-heptagon",
+  "MassConfig": {
+    "numEdges": 9,
+    "numMassiveEdges": 0,
+    "numMasslessEdges": 9,
+    "distinctInternalMasses": 0,
+    "internalMassLabels": [],
+    "edgeMassPattern": "000000000",
+    "numExtLegs": 7,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 7,
+    "extLegSignature": "0000000"
+  }
 }

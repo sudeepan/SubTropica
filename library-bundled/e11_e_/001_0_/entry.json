@@ -41,5 +41,19 @@
   "Results": [],
   "edges": "{{{1, 2}, 0}, {{1, 2}, m}}",
   "nodes": "{{1, 0}, {2, 0}}",
-  "CanonicalName": "Massless bubble"
+  "CanonicalName": "Bubble, 1 massive propagator (a)",
+  "MassConfig": {
+    "numEdges": 2,
+    "numMassiveEdges": 1,
+    "numMasslessEdges": 1,
+    "distinctInternalMasses": 1,
+    "internalMassLabels": [
+      "m"
+    ],
+    "edgeMassPattern": "01",
+    "numExtLegs": 2,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 2,
+    "extLegSignature": "00"
+  }
 }

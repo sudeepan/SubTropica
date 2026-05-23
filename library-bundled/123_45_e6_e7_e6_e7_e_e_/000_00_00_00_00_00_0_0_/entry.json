@@ -38,5 +38,17 @@
   "Results": [],
   "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{3, 7}, 0}, {{4, 8}, 0}, {{5, 7}, 0}, {{6, 8}, 0}}",
   "nodes": "{{3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}}",
-  "CanonicalName": "2-loop 6-point (9 propagators)"
+  "CanonicalName": "Massless double pentagon",
+  "MassConfig": {
+    "numEdges": 9,
+    "numMassiveEdges": 0,
+    "numMasslessEdges": 9,
+    "distinctInternalMasses": 0,
+    "internalMassLabels": [],
+    "edgeMassPattern": "000000000",
+    "numExtLegs": 6,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 6,
+    "extLegSignature": "000000"
+  }
 }

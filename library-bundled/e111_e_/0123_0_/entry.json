@@ -38,6 +38,22 @@
   "Results": [],
   "edges": "{{{1, 2}, m[1]}, {{1, 2}, m[2]}, {{1, 2}, m[3]}}",
   "nodes": "{{1, 0}, {2, 0}}",
-  "CanonicalName": "Massless sunrise",
-  "Genus": 1
+  "CanonicalName": "3-mass sunrise (a)",
+  "Genus": 1,
+  "MassConfig": {
+    "numEdges": 3,
+    "numMassiveEdges": 3,
+    "numMasslessEdges": 0,
+    "distinctInternalMasses": 3,
+    "internalMassLabels": [
+      "m[1]",
+      "m[2]",
+      "m[3]"
+    ],
+    "edgeMassPattern": "123",
+    "numExtLegs": 2,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 2,
+    "extLegSignature": "00"
+  }
 }

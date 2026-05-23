@@ -74,7 +74,7 @@
   "Results": [],
   "edges": "{{{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}, {{1, 2}, m}}",
   "nodes": "{{1, M}, {2, M}}",
-  "CanonicalName": "Equal-mass banana",
+  "CanonicalName": "Equal-mass banana (b)",
   "MassConfig": {
     "numEdges": 6,
     "numMassiveEdges": 6,

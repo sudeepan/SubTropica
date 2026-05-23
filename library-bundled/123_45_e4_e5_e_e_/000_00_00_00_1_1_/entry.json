@@ -107,7 +107,7 @@
   "nodes": "{{3, 0}, {4, 0}, {6, M}, {5, M}}",
   "Loops": 2,
   "NumPropagators": 7,
-  "CanonicalName": "2-mass double box",
+  "CanonicalName": "2-mass double box (a)",
   "MassConfig": {
     "numEdges": 7,
     "numMassiveEdges": 0,

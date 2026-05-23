@@ -112,7 +112,7 @@
   ],
   "edges": "{{{1, 2}, 0}, {{1, 3}, m}, {{1, 4}, m}, {{2, 3}, m}, {{2, 4}, m}}",
   "nodes": "{{2, 0}, {3, 0}, {4, 0}}",
-  "CanonicalName": "Double triangle (b), 4 massive propagators",
+  "CanonicalName": "Double triangle, 4 massive propagators (b-a)",
   "MassConfig": {
     "numEdges": 5,
     "numMassiveEdges": 4,

@@ -195,7 +195,7 @@
   "Results": [],
   "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{3, 5}, 0}, {{4, 6}, 0}}",
   "nodes": "{{3, 0}, {4, M}, {6, M}, {5, 0}}",
-  "CanonicalName": "2-mass double box",
+  "CanonicalName": "2-mass double box (c)",
   "MassConfig": {
     "numEdges": 7,
     "numMassiveEdges": 0,

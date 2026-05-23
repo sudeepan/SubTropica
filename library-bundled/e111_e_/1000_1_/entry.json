@@ -277,7 +277,7 @@
   ],
   "edges": "{{{1, 2}, 0}, {{1, 2}, 0}, {{1, 2}, 0}}",
   "nodes": "{{1, M}, {2, M}}",
-  "CanonicalName": "Massless sunrise",
+  "CanonicalName": "Massless sunrise (b)",
   "MassConfig": {
     "numEdges": 3,
     "numMassiveEdges": 0,

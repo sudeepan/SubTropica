@@ -82,7 +82,7 @@
   "edges": "{{{1, 2}, m}, {{1, 3}, m}, {{1, 4}, 0}, {{2, 3}, m}, {{2, 5}, 0}, {{4, 5}, m}}",
   "nodes": "{{3, 0}, {4, m}, {5, m}}",
   "quadruple": "{E^(2*eps*EulerGamma)*Gamma[2*(1 + eps)], (x1*x2 + x1*x3 + x2*x3 + x1*x4 + x3*x4 + x1*x5 + x2*x5 + x4*x5 + x1*x6 + x2*x6 + x4*x6)^(3*eps)/(-(mm*(x1 + x2 + x4)*(x1*x2 + x1*x3 + x2*x3 + x1*x4 + x3*x4 + x1*x5 + x2*x5 + x4*x5 + x1*x6 + x2*x6 + x4*x6 + x6^2)))^(2*(1 + eps)), {x1, x2, x3, x4, x5, x6}, {mm}}",
-  "CanonicalName": "Triangle-box, 4 massive propagators",
+  "CanonicalName": "Triangle-box, 4 massive propagators (b)",
   "MassConfig": {
     "numEdges": 6,
     "numMassiveEdges": 4,

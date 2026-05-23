@@ -5,12 +5,13 @@
   "EpsilonOrder": "0",
   "References": [
     "arXiv:1804.10570 (Nucl.Phys.B 938 (416), 2019)",
-    "arXiv:1811.10429"
+    "arXiv:1811.10429",
+    "arXiv:1609.09159 (JHEP 11 (145), 2016)"
   ],
   "Records": [
     {
       "reference": "arXiv:1804.10570 (Nucl.Phys.B 938 (416), 2019)",
-      "authors": "Groote, S., Körner, J.G.",
+      "authors": "Groote, S., K\u00f6rner, J.G.",
       "description": "Three-loop sunrise-type vacuum diagram with four different masses in $D=4-2\\varepsilon$ dimensions, computed in coordinate space via Bessel function integrals. Corresponds to $E(m_1^2,m_2^2,m_3^2,m_4^2)$ of Martin-Robertson and $M(1,1,1,1,0,0)$ of Freitas. Finite parts evaluated numerically using truncated Bessel integral identities.",
       "epsOrders": "0",
       "familyName": "3-loop sunrise vacuum (E) / 3-loop sunrise vacuum with dot (F)",
@@ -57,7 +58,7 @@
     },
     {
       "reference": "arXiv:1804.10570 (Nucl.Phys.B 938 (416), 2019)",
-      "authors": "Groote, S., Körner, J.G.",
+      "authors": "Groote, S., K\u00f6rner, J.G.",
       "description": "Three-loop sunrise-type vacuum diagram with one squared propagator (dot) and four different masses in D=4-2*eps dimensions. Corresponds to F(m1^2,m2^2,m3^2,m4^2) of Martin-Robertson and M(2,1,1,1,0,0) of Freitas. Computed in coordinate space via Bessel function techniques.",
       "epsOrders": "0",
       "familyName": "3-loop sunrise vacuum with dot (F)",
@@ -71,6 +72,25 @@
       "computationLevel": "numerical",
       "location": "Sec. 2-3, Eq. (10)-(11), Fig. 1(b)",
       "recordId": "bx_6f864bda9fb2",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:1609.09159 (JHEP 11 (145), 2016)",
+      "authors": "Freitas, Ayres",
+      "description": "Four-propagator three-loop vacuum master integral with doubled first propagator. Symmetric under permutations of m2,m3,m4. Evaluated via dispersion integral. Note: in the original `1112|2||` representation, one propagator carries raised exponent (a=2).",
+      "epsOrders": "0",
+      "familyName": "U4",
+      "method": "dispersion, IBP",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "10.1007/JHEP11(2016)145",
+      "texkey": "Freitas:2016zmy",
+      "masterCount": 1,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "numerical",
+      "location": "",
+      "recordId": "bx_f8fba7467c1c",
       "verified": false,
       "verifiedAt": ""
     }

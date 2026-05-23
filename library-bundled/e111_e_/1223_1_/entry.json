@@ -219,7 +219,7 @@
   "Results": [],
   "edges": "{{{1, 2}, m[1]}, {{1, 2}, m[1]}, {{1, 2}, m[2]}}",
   "nodes": "{{1, M}, {2, M}}",
-  "CanonicalName": "2-mass sunrise",
+  "CanonicalName": "2-mass sunrise (b)",
   "MassConfig": {
     "numEdges": 3,
     "numMassiveEdges": 3,

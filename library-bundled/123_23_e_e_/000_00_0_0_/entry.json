@@ -101,5 +101,17 @@
   "Results": [],
   "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 3}, 0}, {{2, 4}, 0}}",
   "nodes": "{{3, M}, {4, M}}",
-  "CanonicalName": "Massless kite"
+  "CanonicalName": "Massless kite (a)",
+  "MassConfig": {
+    "numEdges": 5,
+    "numMassiveEdges": 0,
+    "numMasslessEdges": 5,
+    "distinctInternalMasses": 0,
+    "internalMassLabels": [],
+    "edgeMassPattern": "00000",
+    "numExtLegs": 2,
+    "numOnshellMassiveExtLegs": 2,
+    "numMasslessExtLegs": 0,
+    "extLegSignature": "MM"
+  }
 }

@@ -1,8 +1,9 @@
 {
 	"NickelIndex": "e1111122|e2|e|",
-	"Name": "",
-	"Loops": 4,
-	"Legs": 0,
+	"Name": "6-loop 3-pt extended ice-cone",
+	"PrimaryName": "Bubble-bubble-bubble-bubble-bubble-triangle",
+	"Loops": 6,
+	"Legs": 3,
 	"Propagators": 8,
 	"LoopediaURL": ""
 }

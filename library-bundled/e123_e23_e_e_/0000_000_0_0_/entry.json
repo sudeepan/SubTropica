@@ -10,7 +10,8 @@
     "arXiv:2007.04977 (Phys.Rev.Lett. 125 (), 2020)",
     "arXiv:1912.06561",
     "arXiv:2506.10456",
-    "arXiv:2512.13794"
+    "arXiv:2512.13794",
+    "arXiv:1709.06055 (Phys.Rev.D 96 (), 2017)"
   ],
   "Records": [
     {
@@ -213,7 +214,7 @@
     {
       "reference": "arXiv:2512.13794",
       "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
-      "description": "$I_{2,1,2}$ two-loop topology with three internal paths of lengths a=2, b=1, c=2 (both v_L and v_R carry external legs); 4-point integral, planar (b=1). Geometry: 2 ISPs; at least elliptic; refer to special-case discussions in §4",
+      "description": "$I_{2,1,2}$ two-loop topology with three internal paths of lengths a=2, b=1, c=2 (both v_L and v_R carry external legs); 4-point integral, planar (b=1). Geometry: 2 ISPs; at least elliptic; refer to special-case discussions in \u00a74",
       "epsOrders": "",
       "familyName": "I_{2,1,2}",
       "method": "maximal_cut, Baikov",
@@ -224,8 +225,27 @@
       "masterCount": 0,
       "dimScheme": "d=4-2*eps",
       "computationLevel": "topology",
-      "location": "§3.4 'Integrals with two ISPs' + §4 special cases",
+      "location": "\u00a73.4 'Integrals with two ISPs' + \u00a74 special cases",
       "recordId": "bx_38cf5015ef11",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:1709.06055 (Phys.Rev.D 96 (), 2017)",
+      "authors": "Bern, Zvi, Enciso, Michael, Ita, Harald, Zeng, Mao",
+      "description": "Two-loop massless planar double box with 7 propagators and 2 ISPs. Two IBP-generating vectors from dual conformal symmetry reduce to 2 MIs. No integral evaluation.",
+      "epsOrders": "",
+      "familyName": "planar double box",
+      "method": "IBP",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "10.1103/PhysRevD.96.096017",
+      "texkey": "Bern:2017gdk",
+      "masterCount": 2,
+      "dimScheme": "d=4-2*eps",
+      "computationLevel": "IBP_only",
+      "location": "Section 2.4, Section 4.4, Fig. 1",
+      "recordId": "bx_1d6161df39a8",
       "verified": false,
       "verifiedAt": ""
     }

@@ -38,5 +38,17 @@
   "Results": [],
   "edges": "{{{1, 2}, 0}, {{1, 2}, 0}, {{1, 2}, 0}}",
   "nodes": "{}",
-  "CanonicalName": "Massless theta"
+  "CanonicalName": "Massless theta",
+  "MassConfig": {
+    "numEdges": 3,
+    "numMassiveEdges": 0,
+    "numMasslessEdges": 3,
+    "distinctInternalMasses": 0,
+    "internalMassLabels": [],
+    "edgeMassPattern": "000",
+    "numExtLegs": 0,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 0,
+    "extLegSignature": ""
+  }
 }

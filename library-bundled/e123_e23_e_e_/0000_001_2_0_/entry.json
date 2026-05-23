@@ -40,5 +40,19 @@
   "Results": [],
   "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 3}, 0}, {{2, 4}, m}}",
   "nodes": "{{1, 0}, {2, 0}, {3, M}, {4, 0}}",
-  "CanonicalName": "Massless double triangle (a)"
+  "CanonicalName": "Double triangle, 1 massive propagator (a-a)",
+  "MassConfig": {
+    "numEdges": 5,
+    "numMassiveEdges": 1,
+    "numMasslessEdges": 4,
+    "distinctInternalMasses": 1,
+    "internalMassLabels": [
+      "m"
+    ],
+    "edgeMassPattern": "00001",
+    "numExtLegs": 4,
+    "numOnshellMassiveExtLegs": 1,
+    "numMasslessExtLegs": 3,
+    "extLegSignature": "00M0"
+  }
 }

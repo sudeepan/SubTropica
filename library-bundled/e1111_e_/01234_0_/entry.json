@@ -87,5 +87,22 @@
   "Results": [],
   "edges": "{{{1, 2}, m[1]}, {{1, 2}, m[2]}, {{1, 2}, m[3]}, {{1, 2}, m[4]}}",
   "nodes": "{{1, 0}, {2, 0}}",
-  "CanonicalName": "Massless banana"
+  "CanonicalName": "4-mass banana (a)",
+  "MassConfig": {
+    "numEdges": 4,
+    "numMassiveEdges": 4,
+    "numMasslessEdges": 0,
+    "distinctInternalMasses": 4,
+    "internalMassLabels": [
+      "m[1]",
+      "m[2]",
+      "m[3]",
+      "m[4]"
+    ],
+    "edgeMassPattern": "1234",
+    "numExtLegs": 2,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 2,
+    "extLegSignature": "00"
+  }
 }

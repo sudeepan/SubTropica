@@ -297,7 +297,7 @@
   "Results": [],
   "edges": "{{{1, 2}, m}, {{1, 3}, 0}, {{1, 4}, m}, {{2, 3}, m}, {{2, 4}, 0}}",
   "nodes": "{{3, M}, {4, M}}",
-  "CanonicalName": "Kite, 3 massive propagators (d)",
+  "CanonicalName": "Kite, 3 massive propagators (f)",
   "MassConfig": {
     "numEdges": 5,
     "numMassiveEdges": 3,

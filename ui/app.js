@@ -1107,15 +1107,21 @@ async function loadWaitlist() {
 async function loadLibrary() {
   // Resolution order:
   //   1. /api/library — kernel-backed Python server (full / dev mode).
-  //   2. jsdelivr CDN serving the public repo's ui/library.json — the
-  //      canonical post-release source. Updates within ~12h on @main, or
-  //      instantly when the Publish tab fires the purge endpoint.
-  //   3. Same-origin library.json — legacy fallback for when jsdelivr is
-  //      reachable but slow (or down).
+  //   2. Same-origin library.json — the local static bundle (always at
+  //      least as fresh as the CDN for local devs; identical for public
+  //      deploys built from the same commit).
+  //   3. jsdelivr CDN — fallback for public deploys whose same-origin
+  //      bundle is stale relative to @main, or whose static host is
+  //      broken. Updates within ~12h on @main, or instantly when the
+  //      Publish tab fires the purge endpoint.
+  // Pre-2026-05-22 the chain put the CDN before same-origin, which
+  // silently masked local edits during dev: any local rename in
+  // ui/library.json was shadowed by the CDN's stale public copy until
+  // the public release was cut. Flipped: local file wins.
   const PUBLIC_LIBRARY_URL =
     'https://cdn.jsdelivr.net/gh/SubTropica/SubTropica@main/ui/library.json';
   async function tryStaticChain() {
-    for (const url of [PUBLIC_LIBRARY_URL, 'library.json']) {
+    for (const url of ['library.json', PUBLIC_LIBRARY_URL]) {
       try {
         const r = await fetch(url);
         if (r.ok) return await r.json();
@@ -5830,7 +5836,12 @@ function createConfigToast(topoKey, topo, cm, ck) {
   const thumb = generateThumbnail(topoKey, ck);
   thumb.classList.add('notif-thumb');
   const cfgHasResults = (cfg.results||cfg.Results||[]).length > 0;
-  const starPrefix = cfgHasResults ? '<span class="result-star" title="Result computed">\u2605</span> ' : '';
+  const cfgIsLocal = hasSource(cfg, 'SubTropica');
+  const starPrefix = cfgHasResults
+    ? (cfgIsLocal
+        ? '<span class="result-star result-star-local" title="Local result (computed by you)">\u2605</span> '
+        : '<span class="result-star" title="Result computed">\u2605</span> ')
+    : '';
   const body = document.createElement('div');
   body.className = 'notif-body';
   body.innerHTML = `
@@ -6942,7 +6953,10 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
 
       const resultsSection = document.createElement('div');
       resultsSection.className = 'popup-section';
-      resultsSection.innerHTML = `<div class="popup-section-title"><span class="result-star">\u2605</span> Computed Results</div>`;
+      const _isLocalCfg = hasSource(cfg, 'SubTropica');
+      const _resStarClass = _isLocalCfg ? 'result-star result-star-local' : 'result-star';
+      const _resSuffix = _isLocalCfg ? ' (local)' : '';
+      resultsSection.innerHTML = `<div class="popup-section-title"><span class="${_resStarClass}">\u2605</span> Computed Results${_resSuffix}</div>`;
 
       results.forEach(r => {
         const groupKey = `${r.dimension || ''}|${r.epsOrder ?? ''}`;
@@ -8502,7 +8516,11 @@ function populateBrowser() {
         thumb.classList.add('notif-thumb');
         const cardBody = document.createElement('div');
         cardBody.className = 'notif-body';
-        const resultStar = t.hasResults ? '<span class="result-star" title="Result computed">\u2605</span> ' : '';
+        const resultStar = t.hasResults
+          ? (t.isLocal
+              ? '<span class="result-star result-star-local" title="Local result (computed by you)">\u2605</span> '
+              : '<span class="result-star" title="Result computed">\u2605</span> ')
+          : '';
         cardBody.innerHTML = `
           <div class="notif-title">${resultStar}${renderInlineMathString(t.name)}</div>
           <div class="notif-stats">
@@ -8570,7 +8588,11 @@ function populateBrowser() {
         if (fc && fc !== 'None' && fc !== 'Unknown' && fc !== 'unknown') badges += functionBadge(fc);
         badges += refCountBadge(d.cfg);
         // Verified badge removed from toast — now per-result only.
-        const dResultStar = d.hasResults ? '<span class="result-star" title="Result computed">\u2605</span> ' : '';
+        const dResultStar = d.hasResults
+          ? (d.isLocal
+              ? '<span class="result-star result-star-local" title="Local result (computed by you)">\u2605</span> '
+              : '<span class="result-star" title="Result computed">\u2605</span> ')
+          : '';
         cardBody.innerHTML = `
           <div class="notif-title">${dResultStar}${renderInlineMathString(d.name)}${badges ? ' ' + badges : ''}</div>
           <div class="notif-stats">

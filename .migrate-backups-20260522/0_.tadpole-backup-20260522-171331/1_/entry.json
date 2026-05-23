@@ -1,0 +1,98 @@
+{
+  "CNickelIndex": "0|:1|",
+  "MassScales": 1,
+  "FunctionClass": "rational",
+  "EpsilonOrder": "all_orders",
+  "References": [
+    "arXiv:2201.03593 (doi: 10.1007/978-3-030-99558-4)",
+    "arXiv:1704.07931",
+    "arXiv:1609.05071"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2201.03593 (doi: 10.1007/978-3-030-99558-4)",
+      "authors": "Weinzierl, Stefan",
+      "description": "Single-propagator one-loop vacuum bubble with mass m, T_nu = e^(eps gamma) (mu^2)^(nu-D/2) int d^Dk/(i pi^(D/2)) 1/(-k^2+m^2)^nu. Closed-form Gamma-function result valid for any D given in eq. result_tadpole; explicit 4D and 2D specializations follow. Used throughout the book as the simplest illustration of dim reg, Wick rotation and IBP reduction.",
+      "epsOrders": "all_orders",
+      "familyName": "one-loop tadpole T_nu",
+      "method": "direct_integration",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "10.1007/978-3-030-99558-4",
+      "texkey": "Weinzierl:2022eaz",
+      "masterCount": 1,
+      "dimScheme": "d=D",
+      "computationLevel": "full",
+      "location": "Chapter 'Basics', Sec. 'Wick rotation' Eq. (T_1 def, line ~882) and result Eq. (chapter_basics:result_tadpole, line ~1534)",
+      "recordId": "bx_83198f8db12b",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:1704.07931",
+      "authors": "",
+      "description": "Massive tadpole one-loop integral in D=2-2eps. UV divergent as O(eps^{-1}). Closed form in Gamma functions.",
+      "epsOrders": "all_orders",
+      "familyName": "tadpole_1m",
+      "method": "direct_integration, coaction",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 1,
+      "dimScheme": "d=2-2*eps",
+      "computationLevel": "full",
+      "location": "Section 3.1, Appendix D.1",
+      "recordId": "bx_b2eeb729bcc1",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:1609.05071",
+      "authors": "",
+      "description": "One-loop massive vacuum bubble integral I_1 = int_k 1/(k^2+1) in d=2-2*eps dimensions. Normalization convention: unit mass. Has a simple pole in eps. Serves as the normalization factor (I_1)^L for L-loop master integrals.",
+      "epsOrders": "all_orders",
+      "familyName": "GN_vacuum_1L",
+      "method": "direct_integration",
+      "tools": [],
+      "ancillaryFiles": false,
+      "doi": "",
+      "texkey": "",
+      "masterCount": 1,
+      "dimScheme": "d=2-2*eps",
+      "computationLevel": "full",
+      "location": "Eq. (B.2), Sec. 3, App. B",
+      "recordId": "bx_23fc2df33fbf",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Names": [
+    "one-loop tadpole T_nu",
+    "tadpole_1m",
+    "GN_vacuum_1L"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 1,
+  "NumPropagators": 1,
+  "Results": [],
+  "edges": "{{{1, 1}, m}}",
+  "nodes": "{}",
+  "CanonicalName": "Equal-mass (unknown)",
+  "MassConfig": {
+    "numEdges": 1,
+    "numMassiveEdges": 1,
+    "numMasslessEdges": 0,
+    "distinctInternalMasses": 1,
+    "internalMassLabels": [
+      "m"
+    ],
+    "edgeMassPattern": "1",
+    "numExtLegs": 0,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 0,
+    "extLegSignature": ""
+  }
+}

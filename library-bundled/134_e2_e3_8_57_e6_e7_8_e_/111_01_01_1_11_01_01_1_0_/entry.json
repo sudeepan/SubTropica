@@ -40,5 +40,19 @@
   "Results": [],
   "edges": "{{{1, 2}, m}, {{1, 4}, m}, {{1, 5}, m}, {{2, 3}, m}, {{3, 4}, m}, {{4, 9}, m}, {{5, 6}, m}, {{5, 8}, m}, {{6, 7}, m}, {{7, 8}, m}, {{8, 9}, m}}",
   "nodes": "{{2, 0}, {3, 0}, {6, 0}, {7, 0}, {9, 0}}",
-  "CanonicalName": "3-loop 5-point (11 propagators)"
+  "CanonicalName": "Equal-mass 3-loop box-pentagon-box",
+  "MassConfig": {
+    "numEdges": 11,
+    "numMassiveEdges": 11,
+    "numMasslessEdges": 0,
+    "distinctInternalMasses": 1,
+    "internalMassLabels": [
+      "m"
+    ],
+    "edgeMassPattern": "11111111111",
+    "numExtLegs": 5,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 5,
+    "extLegSignature": "00000"
+  }
 }

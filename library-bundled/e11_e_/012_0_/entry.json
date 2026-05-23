@@ -38,5 +38,20 @@
   "Results": [],
   "edges": "{{{1, 2}, m[1]}, {{1, 2}, m[2]}}",
   "nodes": "{{1, 0}, {2, 0}}",
-  "CanonicalName": "Massless bubble"
+  "CanonicalName": "2-mass bubble (a)",
+  "MassConfig": {
+    "numEdges": 2,
+    "numMassiveEdges": 2,
+    "numMasslessEdges": 0,
+    "distinctInternalMasses": 2,
+    "internalMassLabels": [
+      "m[1]",
+      "m[2]"
+    ],
+    "edgeMassPattern": "12",
+    "numExtLegs": 2,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 2,
+    "extLegSignature": "00"
+  }
 }

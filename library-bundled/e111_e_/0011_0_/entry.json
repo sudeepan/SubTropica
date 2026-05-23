@@ -40,5 +40,19 @@
   "Results": [],
   "edges": "{{{1, 2}, 0}, {{1, 2}, m}, {{1, 2}, m}}",
   "nodes": "{{1, 0}, {2, 0}}",
-  "CanonicalName": "Massless sunrise"
+  "CanonicalName": "Sunrise, 2 massive propagators (a)",
+  "MassConfig": {
+    "numEdges": 3,
+    "numMassiveEdges": 2,
+    "numMasslessEdges": 1,
+    "distinctInternalMasses": 1,
+    "internalMassLabels": [
+      "m"
+    ],
+    "edgeMassPattern": "011",
+    "numExtLegs": 2,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 2,
+    "extLegSignature": "00"
+  }
 }

@@ -101,7 +101,7 @@
   "Results": [],
   "edges": "{{{1, 2}, m[1]}, {{1, 3}, m[2]}, {{2, 4}, m[3]}, {{3, 4}, m[4]}}",
   "nodes": "{{1, m[1]}, {2, m[1]}, {4, m[1]}, {3, m[1]}}",
-  "CanonicalName": "4-mass box",
+  "CanonicalName": "4-mass box (d)",
   "MassConfig": {
     "numEdges": 4,
     "numMassiveEdges": 4,

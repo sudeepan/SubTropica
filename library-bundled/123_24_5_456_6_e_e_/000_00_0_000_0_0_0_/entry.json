@@ -43,5 +43,17 @@
   "Results": [],
   "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 3}, 0}, {{2, 5}, 0}, {{3, 6}, 0}, {{4, 5}, 0}, {{4, 6}, 0}, {{4, 7}, 0}, {{5, 7}, 0}}",
   "nodes": "{{6, 0}, {7, 0}}",
-  "CanonicalName": "Massless tetrahedral core (c)"
+  "CanonicalName": "Massless tetrahedral core (c-a)",
+  "MassConfig": {
+    "numEdges": 10,
+    "numMassiveEdges": 0,
+    "numMasslessEdges": 10,
+    "distinctInternalMasses": 0,
+    "internalMassLabels": [],
+    "edgeMassPattern": "0000000000",
+    "numExtLegs": 2,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 2,
+    "extLegSignature": "00"
+  }
 }

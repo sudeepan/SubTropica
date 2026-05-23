@@ -1,7 +1,7 @@
 {
   "NickelIndex": "123|e4|e4|e5|e6|e7|e7|e|",
   "Name": "$I^{*}_{5,2,2}$",
-  "PrimaryName": "",
+  "PrimaryName": "Non-planar box-heptagon",
   "Loops": 2,
   "Legs": 7,
   "Propagators": 9,

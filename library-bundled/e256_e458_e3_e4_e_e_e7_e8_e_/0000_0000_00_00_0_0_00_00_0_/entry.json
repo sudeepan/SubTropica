@@ -38,6 +38,18 @@
   "Results": [],
   "edges": "{{{1, 3}, 0}, {{1, 6}, 0}, {{1, 7}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{2, 9}, 0}, {{3, 4}, 0}, {{4, 5}, 0}, {{7, 8}, 0}, {{8, 9}, 0}}",
   "nodes": "{{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}}",
-  "CanonicalName": "2-loop 9-point (10 propagators)",
-  "Genus": 1
+  "CanonicalName": "Massless non-planar double hexagon",
+  "Genus": 1,
+  "MassConfig": {
+    "numEdges": 10,
+    "numMassiveEdges": 0,
+    "numMasslessEdges": 10,
+    "distinctInternalMasses": 0,
+    "internalMassLabels": [],
+    "edgeMassPattern": "0000000000",
+    "numExtLegs": 9,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 9,
+    "extLegSignature": "000000000"
+  }
 }

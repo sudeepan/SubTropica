@@ -142,7 +142,7 @@
   ],
   "edges": "{{{1, 2}, m[1]}, {{1, 3}, m[2]}, {{2, 3}, m[3]}}",
   "nodes": "{{1, 0}, {2, 0}, {3, 0}}",
-  "CanonicalName": "3-mass triangle",
+  "CanonicalName": "3-mass triangle (a)",
   "MassConfig": {
     "numEdges": 3,
     "numMassiveEdges": 3,

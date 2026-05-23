@@ -40,5 +40,17 @@
   "nodes": "{{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}}",
   "CanonicalName": "Massless non-planar box-pentagon",
   "Genus": 3,
-  "HyperellipticConfirmed": true
+  "HyperellipticConfirmed": true,
+  "MassConfig": {
+    "numEdges": 7,
+    "numMassiveEdges": 0,
+    "numMasslessEdges": 7,
+    "distinctInternalMasses": 0,
+    "internalMassLabels": [],
+    "edgeMassPattern": "0000000",
+    "numExtLegs": 6,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 6,
+    "extLegSignature": "000000"
+  }
 }

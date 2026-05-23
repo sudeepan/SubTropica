@@ -38,5 +38,21 @@
   "Results": [],
   "edges": "{{{1, 2}, m[1]}, {{1, 3}, m[2]}, {{2, 4}, m[3]}, {{3, 4}, 0}}",
   "nodes": "{{1, 0}, {2, 0}, {3, M[3]}, {4, M[4]}}",
-  "CanonicalName": "Massless box"
+  "CanonicalName": "3-mass box, 3 massive propagators (a)",
+  "MassConfig": {
+    "numEdges": 4,
+    "numMassiveEdges": 3,
+    "numMasslessEdges": 1,
+    "distinctInternalMasses": 3,
+    "internalMassLabels": [
+      "m[1]",
+      "m[2]",
+      "m[3]"
+    ],
+    "edgeMassPattern": "1230",
+    "numExtLegs": 4,
+    "numOnshellMassiveExtLegs": 2,
+    "numMasslessExtLegs": 2,
+    "extLegSignature": "00MM"
+  }
 }

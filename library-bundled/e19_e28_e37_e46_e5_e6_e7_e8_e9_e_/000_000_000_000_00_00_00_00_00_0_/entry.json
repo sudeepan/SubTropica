@@ -40,5 +40,17 @@
   "Results": [],
   "edges": "{{{1, 2}, 0}, {{1, 10}, 0}, {{2, 3}, 0}, {{2, 9}, 0}, {{3, 4}, 0}, {{3, 8}, 0}, {{4, 5}, 0}, {{4, 7}, 0}, {{5, 6}, 0}, {{6, 7}, 0}, {{7, 8}, 0}, {{8, 9}, 0}, {{9, 10}, 0}}",
   "nodes": "{{1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}, {10, 0}}",
-  "CanonicalName": "4-loop 10-point (13 propagators)"
+  "CanonicalName": "Massless 4-loop traintrack (CY3)",
+  "MassConfig": {
+    "numEdges": 13,
+    "numMassiveEdges": 0,
+    "numMasslessEdges": 13,
+    "distinctInternalMasses": 0,
+    "internalMassLabels": [],
+    "edgeMassPattern": "0000000000000",
+    "numExtLegs": 10,
+    "numOnshellMassiveExtLegs": 0,
+    "numMasslessExtLegs": 10,
+    "extLegSignature": "0000000000"
+  }
 }

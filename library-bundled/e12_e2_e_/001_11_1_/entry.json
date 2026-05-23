@@ -37,7 +37,7 @@
   "NumPropagators": 3,
   "edges": "{{{1, 2}, 0}, {{1, 3}, m}, {{2, 3}, m}}",
   "nodes": "{{1, 0}, {2, m}, {3, m}}",
-  "CanonicalName": "Triangle, 2 massive propagators",
+  "CanonicalName": "Triangle, 2 massive propagators (c)",
   "MassConfig": {
     "numEdges": 3,
     "numMassiveEdges": 2,

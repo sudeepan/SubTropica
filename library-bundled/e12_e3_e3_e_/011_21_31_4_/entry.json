@@ -38,5 +38,19 @@
   "Results": [],
   "edges": "{{{1, 2}, m}, {{1, 3}, m}, {{2, 4}, m}, {{3, 4}, m}}",
   "nodes": "{{1, 0}, {2, M[2]}, {3, M[3]}, {4, M[4]}}",
-  "CanonicalName": "Massless box"
+  "CanonicalName": "Equal-mass box (d)",
+  "MassConfig": {
+    "numEdges": 4,
+    "numMassiveEdges": 4,
+    "numMasslessEdges": 0,
+    "distinctInternalMasses": 1,
+    "internalMassLabels": [
+      "m"
+    ],
+    "edgeMassPattern": "1111",
+    "numExtLegs": 4,
+    "numOnshellMassiveExtLegs": 3,
+    "numMasslessExtLegs": 1,
+    "extLegSignature": "0MMM"
+  }
 }

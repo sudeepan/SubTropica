@@ -2142,6 +2142,14 @@ body:not(.mode-full) .export-full-only { display: none; }
   vertical-align: 1px;
   margin-left: 2px;
 }
+/* Local results — outlined star (maroon border, white interior) so the
+   user can distinguish their own computed results from the curated
+   bundled-library ones at a glance. */
+.result-star-local {
+  color: var(--surface, #fff);
+  -webkit-text-stroke: 1px var(--accent);
+  text-stroke: 1px var(--accent);
+}
 .notif-thumb-wrap {
   position: relative;
   flex-shrink: 0;
