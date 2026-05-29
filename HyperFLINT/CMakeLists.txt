@@ -270,6 +270,23 @@ option(HF_CLI_STATIC_DEPS
     "Static-link FLINT/GMP/MPFR into the CLI binary (portable distribution)"
     OFF)
 
+# Static FLINT/GMP/MPFR archive paths. Defined HERE -- before the CLI link
+# (hyperflint-cli, below) and the LibraryLink dylib (further down) -- because
+# CMake evaluates top-to-bottom. Defining them only near the LibraryLink
+# section (as before) left them EMPTY at the earlier CLI link, silently
+# dropping the GMP/MPFR archives and causing undefined _mpfr_*/___gmpz_*
+# symbols at link (exit 2) whenever the GMP/MPFR paths were not seeded via -D
+# (the arm64 CI leg). CI seeds HF_FLINT_STATIC_ARCHIVE via -D; the GMP/MPFR
+# defaults below cover the arm64 runner, and the x86_64 leg overrides them via
+# -D for /usr/local.
+set(HF_FLINT_STATIC_ARCHIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/third_party/macos-arm64/libflint.a"
+    CACHE FILEPATH "Static libflint.a archive (LFS-tracked; see HyperFLINT/third_party/README.md to rebuild)")
+set(HF_GMP_STATIC_ARCHIVE  "/opt/homebrew/lib/libgmp.a"
+    CACHE FILEPATH "Static libgmp.a archive (Homebrew default)")
+set(HF_MPFR_STATIC_ARCHIVE "/opt/homebrew/lib/libmpfr.a"
+    CACHE FILEPATH "Static libmpfr.a archive (Homebrew default)")
+
 # -------- Static-deps variant for the CLI (portable distribution) --------
 # When HF_CLI_STATIC_DEPS=ON, build a sibling static library that carries
 # FLINT/GMP/MPFR headers but no transitive shared-library link (same
@@ -1307,13 +1324,10 @@ endif()
 # linking + -fvisibility=hidden + an exported_symbols_list eliminates
 # the symbol-resolution race entirely; the dylib's FLINT calls all go
 # to the embedded static archives.  Cost: dist size grows ~30 MB.
-set(HF_FLINT_STATIC_ARCHIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/third_party/macos-arm64/libflint.a"
-    CACHE FILEPATH "Static libflint.a archive (LFS-tracked; see HyperFLINT/third_party/README.md to rebuild)")
-set(HF_GMP_STATIC_ARCHIVE  "/opt/homebrew/lib/libgmp.a"
-    CACHE FILEPATH "Static libgmp.a archive (Homebrew default)")
-set(HF_MPFR_STATIC_ARCHIVE "/opt/homebrew/lib/libmpfr.a"
-    CACHE FILEPATH "Static libmpfr.a archive (Homebrew default)")
+# HF_FLINT/GMP/MPFR_STATIC_ARCHIVE are defined near the top of this file (just
+# after the HF_*_STATIC_DEPS options) so they are in scope for the CLI link
+# (hyperflint-cli), which appears far above this point. Defining them here
+# would leave them empty at that earlier link and drop GMP/MPFR from the CLI.
 # HF_VERSION cache var moved to the top of CMakeLists.txt (Track 8.1
 # iter-43); see the comment block there.  The hyperflint_librarylink
 # PRIVATE definition below still stamps it into hf_library.cpp's TU.
