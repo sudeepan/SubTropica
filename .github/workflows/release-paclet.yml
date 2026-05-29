@@ -317,6 +317,14 @@ jobs:
                           if fname in exclude:
                               continue
                           full = os.path.join(root, fname)
+                          # actions/upload-artifact strips Unix exec bits, so the
+                          # downloaded hyperflint binary is non-executable. Restore
+                          # +x before zipping; ZipFile.write stores st_mode in the
+                          # entry's external_attr, and PacletInstall honors it, so
+                          # the installed CLI is runnable. Without this the add-on
+                          # binary installs as rw-r--r-- and RunProcess fails.
+                          if fname == "hyperflint":
+                              os.chmod(full, 0o755)
                           zf.write(full, f"{prefix}/{rel_root}/{fname}")
                           staged += 1
                   if staged == 0:

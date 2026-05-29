@@ -118,7 +118,21 @@ stHyperFlintSearchPaths[] := Module[{addon = stHyperFlintAddonDir[]},
         Insert[$STHyperFlintSearchPaths,
             FileNameJoin[{addon, "dist", stHFArchDir[], "hyperflint"}], 2]]];
 
-stDiscoverHyperFlint[] := SelectFirst[stHyperFlintSearchPaths[], FileExistsQ, ""];
+(* Mathematica's PacletInstall does NOT preserve the Unix execute bit when it
+   extracts a paclet, so the CLI bundled in the SubTropicaHyperFLINT add-on
+   installs as `rw-r--r--` and RunProcess fails with "program not found".
+   Restore +x on the resolved binary, memoized once per path per session so
+   repeated discovery calls don't re-spawn chmod. No-op on "" / missing files
+   and Quiet so a read-only location degrades gracefully. *)
+$stHFExecEnsured = <||>;
+stHFEnsureExec[p_String] := (
+    If[p =!= "" && FileExistsQ[p] && ! KeyExistsQ[$stHFExecEnsured, p],
+        Quiet@RunProcess[{"chmod", "+x", p}];
+        $stHFExecEnsured[p] = True];
+    p);
+stHFEnsureExec[x_] := x;  (* non-string (e.g. Automatic / unset) passes through *)
+
+stDiscoverHyperFlint[] := stHFEnsureExec @ SelectFirst[stHyperFlintSearchPaths[], FileExistsQ, ""];
 
 (* Resolve the mzv_reductions.json path.  Searches:
      1. <HF_root>/data/mzv_reductions.json     (build-tree layout: hfRoot 2 levels above binary)
@@ -1227,7 +1241,7 @@ Module[{loaded, applyOne},
                 "MaplePath",                   $MapleCommand = v,
                 "HyperIntPath",                If[StringQ[v] && v =!= "", $SThyperIntPath = v] (* else keep auto-discovered value *),
                 "HyperFlintPath",              If[StringQ[v] && v =!= "",
-                                                   $STHyperFlintPath = v;
+                                                   $STHyperFlintPath = stHFEnsureExec[v];
                                                    $STHyperFlintDataPath = stResolveHyperFlintDataPath[v]],
                 "HyperFlintDataPath",          If[StringQ[v] && v =!= "" && FileExistsQ[v],
                                                    $STHyperFlintDataPath = v],
@@ -1374,7 +1388,7 @@ ConfigureSubTropica[opts:OptionsPattern[]] := Module[
     Module[{hfp = OptionValue[HyperFlintPath],
             hfd = OptionValue[HyperFlintDataPath]},
         If[hfp =!= Inherited,
-            $STHyperFlintPath = If[StringQ[hfp] && hfp =!= "", hfp, stDiscoverHyperFlint[]]];
+            $STHyperFlintPath = stHFEnsureExec[If[StringQ[hfp] && hfp =!= "", hfp, stDiscoverHyperFlint[]]]];
         Which[
             hfd =!= Inherited && StringQ[hfd] && hfd =!= "" && FileExistsQ[hfd],
                 $STHyperFlintDataPath = hfd,
@@ -15388,7 +15402,7 @@ stSetupKernelImpl[nkernels_Integer] := Module[{currentDir, kernelsAlreadyOk,
                 $GinshCommand                   = ginshCmd;
                 $MapleCommand                   = mapleCmd;
                 $SThyperIntPath                 = hyperIntPath;
-                $STHyperFlintPath               = hfPath;
+                $STHyperFlintPath               = stHFEnsureExec[hfPath];
                 $STHyperFlintDataPath           = hfDataPath;
                 $STHyperLogProceduresPath       = hlpPath;
                 $PythonCommand                  = pythonCmd;
