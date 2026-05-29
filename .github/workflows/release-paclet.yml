@@ -163,6 +163,10 @@ jobs:
             "$GITHUB_WORKSPACE/HyperFLINT/flint-static" \
             "${{ matrix.brew }}"
           ls -l "$GITHUB_WORKSPACE/HyperFLINT/flint-static/lib/libflint.a"
+          # Make pkg_check_modules(flint) (CMakeLists.txt) resolve to our
+          # from-source FLINT 3.4.0; brew flint is intentionally not installed.
+          # gmp/mpfr .pc still come from brew's default pkgconfig path.
+          echo "PKG_CONFIG_PATH=$GITHUB_WORKSPACE/HyperFLINT/flint-static/lib/pkgconfig:${PKG_CONFIG_PATH:-}" >> "$GITHUB_ENV"
 
       - name: Compose CMake static-archive flags
         id: cmflags
@@ -181,27 +185,16 @@ jobs:
           echo "flags=$FLAGS" >> "$GITHUB_OUTPUT"
           echo "Static-archive flags: $FLAGS"
 
-      - name: Configure + build release-dist (CLI, static deps, OMP on)
+      - name: Configure + build release-dist (CLI only, static deps, OMP on)
         working-directory: HyperFLINT
         run: |
-          cmake --preset release-dist ${{ steps.cmflags.outputs.flags }}
+          # CLI-only build: HF_LIBRARYLINK=OFF because the in-process dylib
+          # needs WolframLibrary.h (Mathematica), which CI runners do not have.
+          # The HF backend uses the CLI subprocess transport. PKG_CONFIG_PATH
+          # (set in the static-FLINT step) makes pkg_check_modules(flint)
+          # resolve to our from-source FLINT 3.4.0.
+          cmake --preset release-dist ${{ steps.cmflags.outputs.flags }} -DHF_LIBRARYLINK=OFF
           cmake --build build-presets/release-dist -j
-
-      - name: Configure + build librarylink-shared (dylib, static deps, OMP off)
-        working-directory: HyperFLINT
-        run: |
-          cmake --preset librarylink-shared ${{ steps.cmflags.outputs.flags }}
-          cmake --build build-presets/librarylink-shared -j
-
-      - name: Co-locate LibraryLink dylib in release-dist build dir
-        working-directory: HyperFLINT
-        run: |
-          # stage_dist.sh expects both binaries in the single build dir it is
-          # pointed at, so copy the dylib next to the CLI.
-          cp -f build-presets/librarylink-shared/libhyperflint_librarylink.dylib \
-                build-presets/release-dist/libhyperflint_librarylink.dylib
-          ls -l build-presets/release-dist/hyperflint \
-                build-presets/release-dist/libhyperflint_librarylink.dylib
 
       - name: Run regression fixtures (non-fatal)
         working-directory: HyperFLINT

@@ -45,10 +45,14 @@ if [[ ! -f "${CLI}" ]]; then
     echo "       Build first:  cmake --build ${BUILD_DIR} -j" >&2
     exit 1
 fi
+# The LibraryLink dylib is OPTIONAL. It requires WolframLibrary.h, which only
+# ships with a Mathematica / Wolfram Engine install, so CI runners (which have
+# neither) produce a CLI-only bundle. When the dylib is absent, stage the CLI +
+# libomp only; the HF backend then uses the CLI subprocess transport.
+HAVE_LL=1
 if [[ ! -f "${LL}" ]]; then
-    echo "ERROR: ${LL} not found." >&2
-    echo "       Build first:  cmake --build ${BUILD_DIR} -j" >&2
-    exit 1
+    echo "[stage] NOTE: ${LL##*/} not found -> staging CLI-only bundle (no in-process LibraryLink dylib)." >&2
+    HAVE_LL=0
 fi
 
 mkdir -p "${OUT_DIR}"
@@ -82,7 +86,11 @@ OMP_BASE="$(basename "${OMP_SRC}")"
 echo "[stage] libomp  : ${OMP_SRC}  -> ${OMP_BASE}"
 
 cp -f "${CLI}" "${OUT_DIR}/hyperflint"
-cp -f "${LL}"  "${OUT_DIR}/libhyperflint_librarylink.dylib"
+if [[ "${HAVE_LL}" -eq 1 ]]; then
+    cp -f "${LL}"  "${OUT_DIR}/libhyperflint_librarylink.dylib"
+else
+    rm -f "${OUT_DIR}/libhyperflint_librarylink.dylib"
+fi
 cp -f "${OMP_SRC}"   "${OUT_DIR}/${OMP_BASE}"
 
 chmod u+w "${OUT_DIR}"/* 2>/dev/null || true
@@ -116,11 +124,12 @@ rewrite_executable() {
     done < <(otool -L "${exe}" | tail -n +2 | awk '{print $1}')
 }
 
-for f in "${OUT_DIR}/libhyperflint_librarylink.dylib" \
-         "${OUT_DIR}/${OMP_BASE}"; do
-    echo "[stage] rewriting ${f##*/}"
-    rewrite_dylib "${f}"
-done
+echo "[stage] rewriting ${OMP_BASE}"
+rewrite_dylib "${OUT_DIR}/${OMP_BASE}"
+if [[ "${HAVE_LL}" -eq 1 ]]; then
+    echo "[stage] rewriting libhyperflint_librarylink.dylib"
+    rewrite_dylib "${OUT_DIR}/libhyperflint_librarylink.dylib"
+fi
 
 echo "[stage] rewriting hyperflint (CLI)"
 rewrite_executable "${OUT_DIR}/hyperflint"
