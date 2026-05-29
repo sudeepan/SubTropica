@@ -11,9 +11,172 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`HF_USE_BASIS_CTX=1` opt-in slim-ctx path for HyperFLINT**
+  (basis-ctx campaign, 2026-05-28; full record at
+  `notes/hf_mzv_weight_cap_2026-05-28/`). When the env flag is set,
+  HyperFLINT eliminates the 700 MZV reduction-rule LHS variables
+  from its runtime `PolyCtx`. The slim ctx contains only the
+  10-element basis (Log2 + 9 irreducible MZVs) plus user variables
+  (Feynman params, Mandelstams, masses).
+
+  Per-term FLINT primitive cost scales linearly in `num_vars`, so
+  the 47.7× ctx-width shrink (715 → 15 vars on Smirnov tst2) yields
+  a measured **−14.48% wall on tst2 default build** (paired N=3,
+  OMP=13 pinned, CV<3%; pre-committed gate ≥8% cleared by ~1.9×
+  margin). Lower-loop fixtures benefit disproportionately:
+  tst0 −44.44%, tst1 −49.52%.
+
+  Mechanism: at `MzvExpansionTable::load_mzv_expansion()` time, every
+  reduction-rule LHS is eagerly pre-expanded into a basis-only
+  `fmpq_mpoly` Rat using **Rat-level substitution** (not textual; an
+  adversarial chained-rule test fixture locks the correct
+  `-(mzv_2*Log2^2 - mzv_2^2)^2` expansion against the textual-
+  substitution operator-precedence trap). At MZV mint time in
+  `to_mzv_one_word`, a three-arm lookup dispatches: (1) basis name →
+  `Poly::gen`; (2) expansion-table hit → `cross_ctx_transfer_rat`
+  from `basis_ctx` into the integrator ctx; (3) legacy fallback →
+  `Rat::parse` for callers without an active expansion.
+  `apply_mzv_reductions` becomes a no-op on slim ctx via an
+  early-return guard; the legacy code path is retained verbatim for
+  the algebraic-letters fixture class (`introduce_al=true`), which
+  intentionally keeps the wide ctx.
+
+  Output is **byte-identical** to the wide-ctx baseline on tst0/1/2
+  (after stripping the `vars` field, which records the 47.7× ctx
+  shrink). TSan shows zero new races; the slim path actually has ~9×
+  fewer races than baseline because the narrower ctx shrinks the
+  shared-data surface that hosts pre-existing FLINT-internal +
+  static-local-cache races.
+
+  Currently scoped to the `op=hyperflint` bridge handler
+  (`handlers.cpp::hyperflint_sym`); other op handlers
+  (`evaluate_periods`, `fibration_basis`, …) still build the wide
+  ctx. Default OFF; users opting in via `HF_USE_BASIS_CTX=1` are
+  protected by a hard-asserting bridge input scanner that rejects
+  any reducible-LHS or out-of-table MZV token in the request body.
+
+  **HEAVY-INTEGRAND CARVE-OUT (added post-iter-22, 2026-05-28)**: the
+  slim ctx **regresses by +77% wall on tst3** (single-shot reproduced;
+  default 561 s → slim 987 s; math output byte-identical). The
+  campaign was gated only on tst2-scale fixtures (gate 8). On heavier
+  integrands like tst3, the per-mint downstream-multiply inflation
+  (each mint now substitutes a 5.5×-mean-term basis Rat into the outer
+  expression, instead of a 1-term `Poly::gen` placeholder) propagates
+  through `transform_shuffle` / `integration_step` and dominates the
+  per-term ctx-width savings. The legacy wide-ctx path implicitly
+  exploits placeholder-level cancellation that slim ctx loses (see
+  round-3.5 physics reviewer
+  `notes/hf_mzv_weight_cap_2026-05-28/reviews/round35_physics_a75f28674fb6ad7f9.md`
+  for the structural argument). The string-roundtrip
+  `cross_ctx_transfer_rat` (design.md §5.3 deferred-work item) may
+  also contribute; pending F-D profiling falsifier to discriminate.
+
+  **DO NOT enable `HF_USE_BASIS_CTX=1` for heavy integrands.** The
+  campaign delivers wins on tst0/1/2-scale (low-loop, few mints,
+  modest intermediate expressions) and loses badly above that scale.
+  Until either the F-A per-term FLINT repack (design §5.3 deferred)
+  or the F-8 lazy-expansion redesign lands, users should treat this
+  as opt-in for light integrands only. The
+  `apply_mzv_reductions` / `parse_rhs_cached` / tolerance machinery
+  scheduled for v1.1.13 deletion (FOLLOW_UP.md F4) is DEFERRED
+  INDEFINITELY for the same reason.
+
 ### Changed
 
 ### Fixed
+
+---
+
+## [1.1.11.2] — 2026-05-28
+
+Bug fix: bounded-domain `STIntegrate[integrand, {x, 0, 1}, ...]` (and the
+`{x, 1, Infinity}` variant) silently dropped 1/ε poles emerging from
+endpoint-regulated integrals.  Beta-like integrands such as
+`x^(-1+eps) (1-x)^eps` returned `O[eps]^1` instead of
+`Gamma[eps] Gamma[1+eps] / Gamma[1+2 eps] = 1/eps + 0 - (Pi^2/6) eps + O(eps^2)`.
+
+### Fixed
+
+- **Bounded `STIntegrate[..., {x, 0, 1}, ...]` recovers endpoint poles.**
+  The pre-fix path (`stIntegrateBoundedEps`) eps-expanded the integrand
+  *before* integration and handed each non-negative ε-coefficient to
+  `HyperIntica` with the user's bounds intact.  This loses the regulator
+  on integrals where ε lives in an endpoint exponent: the ε⁰ coefficient
+  of `x^(eps-1)(1-x)^eps` is `1/x`, and `HyperIntica[1/x, {x,0,1}]` silently
+  collapses to 0 via `ZeroInfPeriod -> ZeroInfPeriodAsMpl // FullSimplify`,
+  so the 1/ε pole that should have emerged from regulating ∫dx/x at x=0
+  is invisible.  The new path applies a change of variables that maps
+  each bounded interval to (0, ∞)
+
+  ```
+  {x, 0, 1}        ->  x = t/(1+t),  dx = dt/(1+t)^2
+  {x, 1, Infinity} ->  x = 1 + t,    dx = dt
+  ```
+
+  and tail-recurses `STIntegrate` with all-(0, ∞) limits.  The standard
+  projective pipeline (`STEvaluateEulerIntegral` -> `STExpandIntegral`)
+  then sector-decomposes endpoint regulators and recovers the poles
+  correctly.  Regression test: `scripts/test_bounded_cov_2026-05-28.wl`
+  (the Beta integral plus two single-factor pole cases).
+
+### Changed
+
+- **`stIntegrateBoundedEps` removed; `stBoundedToInfinity` added.**  The
+  ~80-line expand-then-integrate helper is replaced by a ~25-line CoV
+  helper.  Its two diagnostic messages (`STIntegrate::boundedCoeffFailed`,
+  `STIntegrate::boundedSeriesFailed`) are no longer reachable and have
+  also been removed.
+- **HyperFLINT prebuilt distribution rebuilt for 1.1.11.2** (`release-tuned`,
+  `-mcpu=apple-m4`, static FLINT).
+
+---
+
+## [1.1.11.1] — 2026-05-27
+
+Robustness fixes around `MethodLR` / pinned-gauge integration and the
+HyperFLINT LR backend.  No user-facing API changes; existing scripts
+keep working unchanged.
+
+### Fixed
+
+- **Pinned-gauge `Fast` -> `Standard` (+ `FindRoots` -> True) recovery.**
+  In `STEvaluateGraph`'s non-automatic-gauge branch, the first
+  `STfindLinearlyReducibleOrders2` call now traps the `STEspressoFubini::noorder`
+  `Abort[]` and, when still on `MethodPolysAndPairs -> "Fast"`, rebuilds
+  under `"Standard"` and retries with `FindRoots -> True` (the maximal
+  permitted combo) before declaring NOLR.  Mirrors what the gauge-scan
+  path already achieves via the scoring-time Fast -> Standard rerun.
+  A genuine NOLR under `"Standard"` re-aborts as before.  The fix is
+  also mirrored in `STEvaluateEulerIntegral`'s NO-SCAN branch.
+  Previously, `STIntegrate[..., "Gauge" -> {x_i -> 1}, ...]` could
+  `$Abort` on diagrams the scan path handles fine (e.g. the off-shell
+  massless-leg hexagon under any pinned gauge).
+- **`stDispatchFubini2` falls back to HyperIntica on a HyperFLINT NOLR
+  verdict, not only on a hard `$Failed`.**  HF's step-strategy routing
+  can NOLR a face that `STFasterFubini2` reduces (observed on
+  pinned-gauge hexagon faces), so its NOLR is now cross-checked with
+  HyperIntica before being trusted.  New helper `stLRResultNOLRQ`
+  detects NOLR in both FindRoots-shape conventions
+  (`{NOLR, Infinity}` and `{{NOLR, Infinity}, _}`).
+
+### Changed
+
+- **HyperFLINT prebuilt distribution rebuilt for 1.1.10.1.**  The
+  previous `dist/macos-arm64/hyperflint` was staged for
+  `SubTropica.wl 1.1.8.12` and emitted no `schema_version` /
+  `hf_version` in its `eval-json` response, triggering
+  `STFindLROrdersHF::schemamismatch` and `versionmismatch` warnings.
+  Rebuilt with the `release-tuned` preset
+  (`-mcpu=apple-m4`, static FLINT) at `HF_VERSION=1.1.10.1`, staged
+  via `HyperFLINT/scripts/stage_dist.sh`.
+
+### Documentation
+
+- **`docs/antropica-usage.md`** — practical guide to the three
+  `STIntegrate` options that drive AnTropica rationalization
+  (`MethodLR -> "AnTropica"`, `"AutoRationalize" -> True`,
+  `FindRoots -> "AnTropica"`): what each one does, when to use which,
+  diagnostics, and current limitations.
 
 ---
 

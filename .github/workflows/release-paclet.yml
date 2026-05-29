@@ -1,12 +1,25 @@
 # .github/workflows/release-paclet.yml
 #
-# On tag push (v*), builds a .paclet file and creates a GitHub Release
-# with the paclet attached. Users install via:
+# Unified release workflow. On tag push (v*) to the public repo it:
 #
-#   PacletInstall["https://github.com/SubTropica/SubTropica/releases/download/vX.Y.Z/SubTropica-X.Y.Z.paclet"]
+#   1. core      — builds the lean SubTropica core paclet (pure-Python zip,
+#                  no Mathematica needed) on Linux.
+#   2. hf-build  — builds the macOS HyperFLINT add-on binaries from source
+#                  for both architectures (arm64 + x86_64). FLINT is built
+#                  as a per-arch static archive; GMP/MPFR/FLINT are
+#                  statically linked into both the CLI and the LibraryLink
+#                  dylib; only libomp is bundled.
+#   3. assemble  — downloads the core paclet and both per-arch HF dist
+#                  trees, zips the SubTropicaHyperFLINT add-on paclet, and
+#                  creates ONE GitHub Release carrying all four assets.
 #
-# The paclet is built in pure Python (zip with specific structure) —
-# no Mathematica/wolframscript needed on the runner.
+# The release is created exactly once, in the assemble job, to avoid a
+# double-create collision.
+#
+# Install (core):
+#   PacletInstall["https://subtropi.ca/SubTropica.paclet"]
+# Install (macOS HyperFLINT add-on):
+#   PacletInstall["https://github.com/SubTropica/SubTropica/releases/latest/download/SubTropicaHyperFLINT.paclet"]
 
 name: Release Paclet
 
@@ -21,7 +34,10 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  # ---------------------------------------------------------------------------
+  # Lean core paclet (pure Python zip, no Mathematica on the runner).
+  # ---------------------------------------------------------------------------
+  core:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,12 +45,11 @@ jobs:
       - name: Extract version from tag
         id: version
         run: |
-          TAG="${GITHUB_REF#refs/tags/v}"
+          TAG="${GITHUB_REF_NAME#v}"
           echo "version=$TAG" >> "$GITHUB_OUTPUT"
-          echo "tag=v$TAG" >> "$GITHUB_OUTPUT"
           echo "Version: $TAG"
 
-      - name: Build .paclet file
+      - name: Build core .paclet file
         shell: python3 {0}
         run: |
           import zipfile, os, re, json
@@ -108,13 +123,234 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
 
+      - name: Upload core paclet artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-paclet
+          path: |
+            SubTropica-${{ steps.version.outputs.version }}.paclet
+            SubTropica.paclet
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # macOS HyperFLINT add-on binaries, per architecture, built from source.
+  # ---------------------------------------------------------------------------
+  hf-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: macos-arm64
+            runner: macos-14
+            brew: /opt/homebrew
+          - arch: macos-x86_64
+            runner: macos-15-intel
+            brew: /usr/local
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # stage_dist.sh reads the git SHA for the VERSION manifest.
+          fetch-depth: 0
+
+      - name: Install build dependencies (Homebrew)
+        run: brew install gmp mpfr libomp mimalloc
+
+      - name: Build static FLINT archive
+        working-directory: HyperFLINT
+        run: |
+          ./scripts/build_static_flint.sh \
+            "$GITHUB_WORKSPACE/HyperFLINT/flint-static" \
+            "${{ matrix.brew }}"
+          ls -l "$GITHUB_WORKSPACE/HyperFLINT/flint-static/lib/libflint.a"
+
+      - name: Compose CMake static-archive flags
+        id: cmflags
+        run: |
+          FLINT_A="$GITHUB_WORKSPACE/HyperFLINT/flint-static/lib/libflint.a"
+          # Always override the FLINT archive (the librarylink-shared preset
+          # hardcodes the arm64 third_party path; release-dist falls back to
+          # the CMakeLists /opt/homebrew default).
+          FLAGS="-DHF_VERSION=1.2.0 -DHF_FLINT_STATIC_ARCHIVE=$FLINT_A"
+          # On the x86_64 leg the brew prefix is /usr/local, but the CMake
+          # GMP/MPFR static-archive defaults point at /opt/homebrew, so they
+          # must be overridden explicitly.
+          if [ "${{ matrix.arch }}" = "macos-x86_64" ]; then
+            FLAGS="$FLAGS -DHF_GMP_STATIC_ARCHIVE=/usr/local/lib/libgmp.a -DHF_MPFR_STATIC_ARCHIVE=/usr/local/lib/libmpfr.a"
+          fi
+          echo "flags=$FLAGS" >> "$GITHUB_OUTPUT"
+          echo "Static-archive flags: $FLAGS"
+
+      - name: Configure + build release-dist (CLI, static deps, OMP on)
+        working-directory: HyperFLINT
+        run: |
+          cmake --preset release-dist ${{ steps.cmflags.outputs.flags }}
+          cmake --build build-presets/release-dist -j
+
+      - name: Configure + build librarylink-shared (dylib, static deps, OMP off)
+        working-directory: HyperFLINT
+        run: |
+          cmake --preset librarylink-shared ${{ steps.cmflags.outputs.flags }}
+          cmake --build build-presets/librarylink-shared -j
+
+      - name: Co-locate LibraryLink dylib in release-dist build dir
+        working-directory: HyperFLINT
+        run: |
+          # stage_dist.sh expects both binaries in the single build dir it is
+          # pointed at, so copy the dylib next to the CLI.
+          cp -f build-presets/librarylink-shared/libhyperflint_librarylink.dylib \
+                build-presets/release-dist/libhyperflint_librarylink.dylib
+          ls -l build-presets/release-dist/hyperflint \
+                build-presets/release-dist/libhyperflint_librarylink.dylib
+
+      - name: Run regression fixtures (non-fatal)
+        working-directory: HyperFLINT
+        run: |
+          # Unit tests + Smirnov-fixture cross-checks. Treated as advisory:
+          # a regression here is surfaced in the log but does not abort the
+          # release cut (the binaries are still staged and asserted below).
+          ctest --test-dir build-presets/release-dist --output-on-failure \
+            || echo "::warning::ctest reported failures (non-fatal for release)"
+
+      - name: Stage dist bundle
+        working-directory: HyperFLINT
+        run: |
+          BREW_PREFIX="${{ matrix.brew }}" \
+            ./scripts/stage_dist.sh build-presets/release-dist "${{ matrix.arch }}"
+
+      - name: Assert staged version + binary launches
+        working-directory: HyperFLINT
+        run: |
+          # The VERSION manifest is written by stage_dist.sh from
+          # $SubTropicaVersion in SubTropica.wl (== 1.2.0); the baked
+          # HF_VERSION is guaranteed by -DHF_VERSION=1.2.0 above.
+          grep -q "1.2.0" "dist/${{ matrix.arch }}/VERSION"
+          echo "VERSION manifest OK:"
+          cat "dist/${{ matrix.arch }}/VERSION"
+          # hyperflint has no --version flag; --help must exit 0.
+          "dist/${{ matrix.arch }}/hyperflint" --help >/dev/null
+          echo "Binary launches OK (--help exit 0)"
+
+      - name: Upload HF dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hf-${{ matrix.arch }}
+          path: HyperFLINT/dist/${{ matrix.arch }}/**
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Assemble the add-on paclet and create the single GitHub Release.
+  # ---------------------------------------------------------------------------
+  assemble:
+    runs-on: ubuntu-latest
+    needs: [core, hf-build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Version: $TAG"
+
+      - name: Download core paclet
+        uses: actions/download-artifact@v4
+        with:
+          name: core-paclet
+          path: assets
+
+      - name: Download HF arm64 dist
+        uses: actions/download-artifact@v4
+        with:
+          name: hf-macos-arm64
+          path: hf-dist/macos-arm64
+
+      - name: Download HF x86_64 dist
+        uses: actions/download-artifact@v4
+        with:
+          name: hf-macos-x86_64
+          path: hf-dist/macos-x86_64
+
+      - name: Build HyperFLINT add-on .paclet
+        shell: python3 {0}
+        run: |
+          import zipfile, os, re
+
+          # The add-on paclet pins version 1.2.0 (matches PacletInfo.wl and
+          # the baked HF_VERSION); the core paclet tracks the tag version.
+          addon_version = "1.2.0"
+          name = "SubTropicaHyperFLINT"
+          paclet_name = f"{name}-{addon_version}.paclet"
+          prefix = f"{name}-{addon_version}"
+
+          # PacletInfo.wl for the add-on, version forced to match.
+          with open("paclet-hyperflint/PacletInfo.wl") as f:
+              paclet_info = f.read()
+          paclet_info = re.sub(
+              r'"Version"\s*->\s*"[^"]*"',
+              f'"Version" -> "{addon_version}"',
+              paclet_info,
+          )
+
+          # (source-on-disk, path-inside-paclet)
+          file_map = [
+              ("HyperFLINT/data/mzv_reductions.json", "data/mzv_reductions.json"),
+              ("HyperFLINT/LICENSE", "LICENSE"),
+              ("HyperFLINT/THIRD-PARTY-LICENSES", "THIRD-PARTY-LICENSES"),
+          ]
+
+          # Per-arch dist trees downloaded as artifacts.
+          dist_dirs = [
+              ("hf-dist/macos-arm64", "dist/macos-arm64"),
+              ("hf-dist/macos-x86_64", "dist/macos-x86_64"),
+          ]
+
+          exclude = {".DS_Store"}
+
+          with zipfile.ZipFile(paclet_name, "w", zipfile.ZIP_DEFLATED) as zf:
+              zf.writestr(f"{prefix}/PacletInfo.wl", paclet_info)
+
+              for src, rel in file_map:
+                  if not os.path.isfile(src):
+                      raise SystemExit(f"missing required file: {src}")
+                  zf.write(src, f"{prefix}/{rel}")
+
+              for src_dir, rel_root in dist_dirs:
+                  if not os.path.isdir(src_dir):
+                      raise SystemExit(f"missing dist dir: {src_dir}")
+                  staged = 0
+                  for root, dirs, files in os.walk(src_dir):
+                      for fname in sorted(files):
+                          if fname in exclude:
+                              continue
+                          full = os.path.join(root, fname)
+                          relpath = os.path.relpath(full, src_dir)
+                          zf.write(full, f"{prefix}/{rel_root}/{relpath}")
+                          staged += 1
+                  if staged == 0:
+                      raise SystemExit(f"no files staged from {src_dir}")
+                  print(f"staged {staged} files from {src_dir} -> {rel_root}")
+
+          size_mb = os.path.getsize(paclet_name) / (1024 * 1024)
+          print(f"\nBuilt {paclet_name} ({size_mb:.1f} MB)")
+
+          # Stable-alias copy for the /latest/download/ URL.
+          import shutil
+          shutil.copy(paclet_name, f"{name}.paclet")
+          print(f"Built {name}.paclet (stable-alias copy)")
+
       - name: Create GitHub Release
         run: |
-          gh release create "$TAG" \
-            "SubTropica-${VERSION}.paclet" \
-            "SubTropica.paclet" \
+          gh release create "$GITHUB_REF_NAME" \
+            "assets/SubTropica-${VERSION}.paclet" \
+            "assets/SubTropica.paclet" \
+            "SubTropicaHyperFLINT-1.2.0.paclet" \
+            "SubTropicaHyperFLINT.paclet" \
             --title "SubTropica v${VERSION}" \
             --notes "## Installation
+
+          ### Core package (all platforms)
 
           Quick (always latest):
           \`\`\`mathematica
@@ -124,11 +360,19 @@ jobs:
 
           Version-pinned:
           \`\`\`mathematica
-          PacletInstall[\"https://github.com/SubTropica/SubTropica/releases/download/${TAG}/SubTropica-${VERSION}.paclet\"]
+          PacletInstall[\"https://github.com/SubTropica/SubTropica/releases/download/${GITHUB_REF_NAME}/SubTropica-${VERSION}.paclet\"]
+          \`\`\`
+
+          ### HyperFLINT add-on (macOS only, optional)
+
+          The HyperFLINT analytic backend ships as a separate macOS add-on
+          paclet (arm64 + x86_64).  Install it alongside the core package;
+          SubTropica discovers it at runtime.
+          \`\`\`mathematica
+          PacletInstall[\"https://github.com/SubTropica/SubTropica/releases/latest/download/SubTropicaHyperFLINT.paclet\"]
           \`\`\`
 
           See [README](https://github.com/SubTropica/SubTropica#readme) for documentation."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}

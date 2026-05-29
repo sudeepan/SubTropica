@@ -1,6 +1,6 @@
 # 🥥 SubTropica
 
-[![Version](https://img.shields.io/badge/version-1.1.10-blue)](https://github.com/SubTropica/SubTropica)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue)](https://github.com/SubTropica/SubTropica)
 [![Mathematica](https://img.shields.io/badge/Mathematica-13.1%2B-red)](https://www.wolfram.com/mathematica/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Data: CC BY-NC-SA 4.0](https://img.shields.io/badge/data_license-CC_BY--NC--SA_4.0-orange)](LICENSE-DATA)
@@ -12,6 +12,10 @@ A Mathematica package for computing Feynman integrals via tropical geometry. Sub
 
 Every code listing from the paper is reproduced and checked in [`PaperChecks.wl`](PaperChecks.wl) at the repository root — evaluate it end-to-end after ``Needs["SubTropica`"]`` to regenerate all quoted outputs.
 
+## New in v1.2
+
+HyperFLINT, the C++17/FLINT reimplementation of the HyperIntica and HyperInt hyperlogarithm engine, is now open and available as an optional backend. It can do two jobs: integrate hyperlogarithms (`"Integrator" -> "HyperFLINT"`) and find linear-reducibility orders (`"LROrderBackend" -> "HyperFLINT"`). Set either independently, or call `STIntegrateHF[...]`, a convenience alias that selects HyperFLINT for both. HyperFLINT is MIT-licensed; see [`HyperFLINT/README.md`](HyperFLINT/README.md).
+
 ## Features
 
 - **Tropical subtraction** — Newton polytope analysis, singular subtraction, and epsilon expansion for generic Euler integrals
@@ -20,6 +24,7 @@ Every code listing from the paper is reproduced and checked in [`PaperChecks.wl`
 - **Interactive GUI** — draw Feynman diagrams, assign masses, configure options, and integrate, all from a graphical interface launched with `STIntegrate[]`.
 - **Multiple input formats** — Feynman graphs, propagator lists with numerators, or raw Euler integrands
 - **Parallelized pipeline** — automatic GL(1) gauge fixing, linear reducibility analysis, tropical subtraction scheme, and parallel integration of hyperlogarithms
+- **HyperFLINT**: optional C++17/FLINT analytic backend for hyperlogarithm integration (macOS; install the `SubTropicaHyperFLINT` add-on paclet)
 
 ## Online version & library
 
@@ -48,6 +53,24 @@ PacletInstall["https://subtropi.ca/SubTropica.paclet"]
 ```
 
 After install, load with ``Needs["SubTropica`"]``. Upgrades happen automatically on the next `PacletInstall` call (the `.paclet` archive carries the version).
+
+#### Optional: the HyperFLINT backend (macOS)
+
+HyperFLINT is an optional fast analytic backend. Install the add-on paclet:
+
+```mathematica
+PacletInstall["https://subtropi.ca/SubTropicaHyperFLINT.paclet"]
+```
+
+Then `"Integrator" -> "HyperFLINT"` (or `STIntegrateHF[...]`) is available; check with ``SubTropica`$HyperFLINTAvailable``. Without it, `STIntegrate` uses the built-in HyperIntica engine. The add-on bundles its native libraries, so there is nothing else to install. Supported platforms: macOS arm64 and x86_64 (Linux and Windows users get the core paclet and the HyperIntica engine).
+
+If a browser-downloaded paclet is blocked by Gatekeeper, clear the quarantine flag once on the installed add-on directory (its location is ``PacletObject["SubTropicaHyperFLINT"]["Location"]``):
+
+```bash
+xattr -dr com.apple.quarantine ~/Library/Wolfram/Paclets/Repository/SubTropicaHyperFLINT*
+```
+
+To build HyperFLINT from source (developers, or other platforms), see [`HyperFLINT/README.md`](HyperFLINT/README.md): the build needs `brew install flint gmp mpfr libomp mimalloc` plus CMake.
 
 ### Development install from source
 
@@ -103,6 +126,7 @@ The configuration is persisted (`$UserBaseDirectory/Kernel/SubTropicaConfig.m`) 
 | [ginsh](https://www.ginac.de/) | Optional | Numerical evaluation of hyperlogarithms |
 | [Maple](https://www.maplesoft.com/products/maple/) + [HyperInt](https://bitbucket.org/PanzerErik/hyperint) | Optional | Alternative integrator (`"Integrator" -> "HyperInt"`) |
 | GNU `make` ≥ 4, `curl` | System | pySecDec builds (`make`); library sync / submission (`curl`) |
+| HyperFLINT add-on | Optional | Fast analytic backend (`"Integrator" -> "HyperFLINT"`); macOS arm64/x86_64; `PacletInstall` the `SubTropicaHyperFLINT` paclet |
 
 If FiniteFlow and SPQR are already on Mathematica's `$Path`, the package detects and loads them automatically — no need to set `FiniteFlowPath`/`SPQRPath` in that case. After configuration, verify the install with `STBenchmark[]`.
 
@@ -195,12 +219,13 @@ Mathieu Giroux, Sebastian Mizera, Giulio Salvatori
 
 ## Acknowledgments
 
-Development of SubTropica was assisted by Claude Opus 4.6-7.
+Development of SubTropica was assisted by Claude Opus 4.6-8.
 
 ## License
 
 - **Code** (SubTropica.wl, UI, scripts): [MIT License](LICENSE)
 - **Library data** (library-bundled/, ui/library.json): [CC BY-NC-SA 4.0](LICENSE-DATA) — see [LICENSE-DATA](LICENSE-DATA) for details, including restrictions on machine learning use
+- **HyperFLINT** (`HyperFLINT/`): [MIT License](HyperFLINT/LICENSE); bundles statically-linked LGPL dependencies (FLINT, GMP, MPFR), see [`HyperFLINT/THIRD-PARTY-LICENSES`](HyperFLINT/THIRD-PARTY-LICENSES)
 
 ## Citation
 

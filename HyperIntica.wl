@@ -153,10 +153,21 @@ Handles:
 Returns:
   Internal format {{coef, shuffleKey}, ...} suitable for IntegrationStep.";
   
-ConvertZeroOne::usage = "ConvertZeroOne[wordlist] converts zero-to-infinity 
+ConvertZeroOne::usage = "ConvertZeroOne[wordlist] converts zero-to-infinity
 integrals to zero-to-one integrals via z \[RightTeeArrow] 1/(1+z).";
-  
-ZeroInfPeriodEval::usage = "ZeroInfPeriodEval[word] evaluates a zero-to-infinity 
+
+Convert1InfTo01::usage = "Convert1InfTo01[wordlist] converts a one-to-infinity
+iterated integral to a zero-to-one iterated integral via z \[RightTeeArrow] 1/z
+followed by reversal of the integration path.
+
+Each input entry {coef, {w1,...,wn}} is mapped to a list of output entries
+{coef', {w1',...,wn'}} representing the same value as an iterated integral
+over [0,1]. A zero letter is preserved; a nonzero letter w_i splits into a
+zero-letter branch and a 1/w_i-letter branch with opposite sign.
+
+  Convert1InfTo01[{{1, {0, 0, 1}}}] = {{1, {0, 0, 0}}, {-1, {1, 0, 0}}}";
+
+ZeroInfPeriodEval::usage = "ZeroInfPeriodEval[word] evaluates a zero-to-infinity
 period, handling positive letters via contour deformation.";
 
 TryReduceZeroOnePeriod::usage = "TryReduceZeroOnePeriod[word] attempts to reduce 
@@ -455,6 +466,33 @@ to ensure fresh results.";
 simplifyMZVeven::usage = "Express mzv[n] in terms of mzv[2] when n is even.";
 
 (*Primitive and symbol-related functions:*)
+HyperInticaPrimitive::usage = "HyperInticaPrimitive[f, var] computes the primitive (indefinite integral) of f with respect to var, anchored at var = 0, and returns an expression in terms of Hlog[var, {letters}].
+
+Unlike HyperIntica[], no boundary is evaluated: the result is a function of var itself.
+Supports rational integrands and integrands involving PolyLog or Hlog with var-dependent arguments (the same class handled by HyperIntica[]).";
+
+HyperInticaPrimitiveDebug::usage = "HyperInticaPrimitiveDebug[f, var] is a verbose variant of HyperInticaPrimitive that prints intermediate stages of the computation:
+  [1] output of ConvertToHlogRegInf (wl)
+  [2] each pair {coef, wordlist} processed
+  [3] output of TransformShuffle (subs)
+  [4] output of IntegrateII per sub
+  [5] final wordlist after CollectWords
+Used for debugging the primitive routine. Returns the same primitive as HyperInticaPrimitive[]; only the diagnostic prints differ.";
+
+HyperInticaPrimitiveStable::usage = "HyperInticaPrimitiveStable[f, var] computes the primitive (indefinite integral) of f with respect to var using a direct word-level algorithm. Bypasses the RegInf-basis intermediate that has known bugs in HyperInticaPrimitive[] for inputs involving products/powers of Hlog (e.g., diff^k/(var-a)^k).
+
+Supported inputs: sums of products of rational(var, params) and Hlog[var, w] factors, including integer powers Hlog[var, w]^n.
+
+The routine
+  1. Shuffle-expands all Hlog products into a sum of single-Hlog terms (natural alphabet).
+  2. For each term coef(var)*Hlog[var, w], partial-fractions coef in var.
+  3. Integrates each pole term via:
+       - simple pole: int Hlog[var,w]/(var-a) dvar = Hlog[var, Prepend[w, a]];
+       - higher pole: IBP recursion.
+       - polynomial part: IBP recursion.
+
+Anchored at var = 0 (primitive vanishes when all Hlog vanish, e.g., var -> 0 for non-degenerate words).";
+
 IntegrateII::usage = "IntegrateII[wordlist, var] finds an unevaluated primitive of wordlist with respect to var, returning a new wordlist whose differentiation with respect to var via DifferentiateWordlist[] recovers the original.";
 
 DifferentiateWordlist::usage = "DifferentiateWordlist[wordlist, var] differentiates 
@@ -5126,8 +5164,162 @@ FibrationBasisRecurse[wordlist_List, vars_List, projectOnto_Association,
    ]
   ]
 
-FibrationBasis::leftover = 
+FibrationBasis::leftover =
   "Not reduced to a basis (leftover variables: `1`); undetected relations may remain.";
+
+
+HyperInticaPrimitive[f_, var_Symbol] := Module[
+  {wl, pair, transformResult, sub, primitive, totalPrim, failed = False},
+  wl = ConvertToHlogRegInf[f];
+  If[wl === $Failed, Return[$Failed]];
+  totalPrim = {};
+  Do[
+    If[failed, Break[]];
+    transformResult = TransformShuffle[pair[[2]], var];
+    If[transformResult === $Failed, failed = True; Break[]];
+    Do[
+      If[failed, Break[]];
+      primitive = IntegrateII[ScalarMul[sub[[1]], pair[[1]]], var];
+      If[primitive === $Failed, failed = True; Break[]];
+      totalPrim = Join[totalPrim, primitive],
+      {sub, transformResult}],
+    {pair, wl}];
+  If[failed, Return[$Failed]];
+  totalPrim = CollectWords[totalPrim];
+  Total[Map[Function[w, If[w[[2]] === {}, w[[1]], w[[1]] * Hlog[var, w[[2]]]]], totalPrim]]
+];
+
+
+HyperInticaPrimitiveDebug[f_, var_Symbol] := Module[
+  {wl, pair, transformResult, sub, primitive, totalPrim, failed = False, i, j, k},
+  Print["=== HyperInticaPrimitiveDebug[", Short[f, 80], ", ", var, "] ==="];
+  wl = ConvertToHlogRegInf[f];
+  Print["[1] ConvertToHlogRegInf returned ", If[ListQ[wl], ToString[Length[wl]] <> " entries", "$Failed"], ":"];
+  If[ListQ[wl],
+    Do[Print["    wl[", i, "] = ", InputForm[wl[[i]]]], {i, Length[wl]}]];
+  If[wl === $Failed, Return[$Failed]];
+  totalPrim = {};
+  i = 0;
+  Do[
+    i++;
+    If[failed, Break[]];
+    Print["[2] pair[", i, "] = ", InputForm[pair]];
+    transformResult = TransformShuffle[pair[[2]], var];
+    Print["[3] TransformShuffle returned ",
+      If[ListQ[transformResult], ToString[Length[transformResult]] <> " subs", "$Failed"], ":"];
+    If[ListQ[transformResult],
+      Do[Print["    sub[", j, "] = ", InputForm[transformResult[[j]]]], {j, Length[transformResult]}]];
+    If[transformResult === $Failed, failed = True; Break[]];
+    j = 0;
+    Do[
+      j++;
+      If[failed, Break[]];
+      primitive = IntegrateII[ScalarMul[sub[[1]], pair[[1]]], var];
+      Print["    [4] IntegrateII[sub[", j, "]] returned: ", InputForm[primitive]];
+      If[primitive === $Failed, failed = True; Break[]];
+      totalPrim = Join[totalPrim, primitive],
+      {sub, transformResult}],
+    {pair, wl}];
+  If[failed, Return[$Failed]];
+  Print["[5a] totalPrim before CollectWords (", Length[totalPrim], " entries):"];
+  Do[Print["    ", InputForm[totalPrim[[k]]]], {k, Length[totalPrim]}];
+  totalPrim = CollectWords[totalPrim];
+  Print["[5b] After CollectWords (", Length[totalPrim], " entries):"];
+  Do[Print["    ", InputForm[totalPrim[[k]]]], {k, Length[totalPrim]}];
+  Total[Map[Function[w, If[w[[2]] === {}, w[[1]], w[[1]] * Hlog[var, w[[2]]]]], totalPrim]]
+];
+
+
+(* ==== Stable primitive routine (direct word-level algorithm) ====
+   Bypasses ConvertToHlogRegInf / TransformShuffle / IntegrateII to avoid the
+   known shuffle-related bug in HyperInticaPrimitive[]. *)
+
+(* Shuffle product of two words. Returns a list of words. *)
+wordShufStable[{}, v_List] := {v};
+wordShufStable[u_List, {}] := {u};
+wordShufStable[u_List, v_List] := Join[
+  Prepend[#, First[u]] & /@ wordShufStable[Rest[u], v],
+  Prepend[#, First[v]] & /@ wordShufStable[u, Rest[v]]
+];
+
+(* Multiply two wordlists {{c, w}, ...} via shuffle product. *)
+mulWLStable[wl1_List, wl2_List] := Flatten[
+  Outer[
+    Function[{p1, p2},
+      Map[{p1[[1]] * p2[[1]], #} &, wordShufStable[p1[[2]], p2[[2]]]]],
+    wl1, wl2, 1
+  ],
+  2
+];
+
+(* Convert expression to wordlist {{coef, word}, ...} in natural alphabet. *)
+toWLStable[e_Plus, var_] :=
+  Flatten[toWLStable[#, var] & /@ (List @@ e), 1];
+toWLStable[e_Times, var_] :=
+  Fold[mulWLStable, {{1, {}}}, toWLStable[#, var] & /@ (List @@ e)];
+toWLStable[Hlog[var_, w_List], var_] := {{1, w}};
+toWLStable[Power[Hlog[var_, w_List], n_Integer], var_] /; n >= 1 :=
+  Fold[mulWLStable, {{1, {}}}, ConstantArray[{{1, w}}, n]];
+toWLStable[e_, _] := {{e, {}}};
+
+(* Extract pole location and order from a partial-fraction term coef/(var-a)^k. *)
+polePartStable[term_, var_] := Module[{den, factor, lc, a, k},
+  den = Denominator[Together[term]];
+  factor = SelectFirst[
+    FactorList[den, Extension -> Automatic],
+    ! FreeQ[#[[1]], var] &
+  ];
+  k = factor[[2]];
+  lc = Coefficient[factor[[1]], var, 1];
+  a = -Coefficient[factor[[1]], var, 0] / lc;
+  {a, k}
+];
+
+(* Primitive of a single partial-fraction term * Hlog[var, w]. *)
+hPrimAtomicStable[term_, w_List, var_] := Module[{a, k, c, P},
+  Which[
+    FreeQ[term, var],
+      Throw[$Failed, "hPrimAtomicStable: constant coefficient with Hlog ambiguous"],
+    PolynomialQ[term, var],
+      P = Integrate[term, var];
+      P * Hlog[var, w] -
+        If[Length[w] > 0,
+          hPrimStable[P / (var - w[[1]]), Rest[w], var],
+          0],
+    True,
+      {a, k} = polePartStable[term, var];
+      c = Simplify[term * (var - a)^k];
+      If[! FreeQ[c, var], Throw[$Failed, "polePartStable non-clean residue"]];
+      Which[
+        k === 1,
+          c * Hlog[var, Prepend[w, a]],
+        k >= 2,
+          If[Length[w] === 0,
+            c / ((1 - k) (var - a)^(k - 1)),
+            -c * Hlog[var, w] / ((k - 1) (var - a)^(k - 1)) +
+              c / (k - 1) * hPrimStable[
+                1 / ((var - a)^(k - 1) (var - w[[1]])), Rest[w], var]
+          ]
+      ]
+  ]
+];
+
+(* Primitive of coef(var) * Hlog[var, w] with partial-fraction decomposition. *)
+hPrimStable[coef_, w_List, var_] := Module[{parfr, terms},
+  parfr = Apart[coef, var];
+  terms = If[Head[parfr] === Plus, List @@ parfr, {parfr}];
+  Sum[hPrimAtomicStable[t, w, var], {t, terms}]
+];
+
+(* Public entry point. *)
+HyperInticaPrimitiveStable[f_, var_] := Module[{wl, result = 0, entry},
+  wl = toWLStable[Expand[f], var];
+  Do[
+    result += hPrimStable[entry[[1]], entry[[2]], var],
+    {entry, wl}
+  ];
+  result
+];
 
 
 (* ::Section:: *)
@@ -5248,7 +5440,7 @@ ReglimWord[word_List, var_] := Module[
   
   (* Word not depending on var *)
   If[FreeQ[word, var],
-    If[Union[word] === {0} || Union[word] === {-1}, 
+    If[Union[word] === {0} || Union[word] === {-1},
       $ReglimWordCache[key] = {}; Return[{}]];
     
     If[SubsetQ[{-1, 0}, Union[word]],
