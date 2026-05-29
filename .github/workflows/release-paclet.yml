@@ -194,16 +194,11 @@ jobs:
           # (set in the static-FLINT step) makes pkg_check_modules(flint)
           # resolve to our from-source FLINT 3.4.0.
           cmake --preset release-dist ${{ steps.cmflags.outputs.flags }} -DHF_LIBRARYLINK=OFF
-          cmake --build build-presets/release-dist -j
-
-      - name: Run regression fixtures (non-fatal)
-        working-directory: HyperFLINT
-        run: |
-          # Unit tests + Smirnov-fixture cross-checks. Treated as advisory:
-          # a regression here is surfaced in the log but does not abort the
-          # release cut (the binaries are still staged and asserted below).
-          ctest --test-dir build-presets/release-dist --output-on-failure \
-            || echo "::warning::ctest reported failures (non-fatal for release)"
+          # Build only the CLI target. The dev test suite is not needed for a
+          # release build, and some test targets reference dev-only data
+          # (docs/, test/cross/) that is stripped from the public tree. The CLI
+          # is regression-tested locally by the maintainer before the cut.
+          cmake --build build-presets/release-dist --target hyperflint-cli -j
 
       - name: Stage dist bundle
         working-directory: HyperFLINT
@@ -312,14 +307,17 @@ jobs:
               for src_dir, rel_root in dist_dirs:
                   if not os.path.isdir(src_dir):
                       raise SystemExit(f"missing dist dir: {src_dir}")
+                  # dist/<arch> is a flat set (hyperflint, libomp.dylib,
+                  # VERSION). Place each file by basename so the result is
+                  # correct regardless of how upload/download-artifact nests
+                  # the downloaded tree.
                   staged = 0
                   for root, dirs, files in os.walk(src_dir):
                       for fname in sorted(files):
                           if fname in exclude:
                               continue
                           full = os.path.join(root, fname)
-                          relpath = os.path.relpath(full, src_dir)
-                          zf.write(full, f"{prefix}/{rel_root}/{relpath}")
+                          zf.write(full, f"{prefix}/{rel_root}/{fname}")
                           staged += 1
                   if staged == 0:
                       raise SystemExit(f"no files staged from {src_dir}")

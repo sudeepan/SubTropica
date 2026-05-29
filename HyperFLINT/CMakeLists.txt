@@ -965,13 +965,19 @@ target_compile_definitions(hyperflint-test-cache-registry
 # asserts WILL_FAIL. Without this, the coverage gate could be vacuous (always
 # PASS). Mirrors iter-31 wall-regression-negative-control discipline. See
 # cache_registry.md §4.d.
-file(READ "${CMAKE_CURRENT_SOURCE_DIR}/docs/cache_registry.md" _hf_cr_full)
-string(REGEX REPLACE
-    "\n\\| `g_rhs_cache` \\|[^\n]*\n"
-    "\n"
-    _hf_cr_stripped "${_hf_cr_full}")
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/cache_registry.stripped.md"
-     "${_hf_cr_stripped}")
+# docs/cache_registry.md is dev-only (docs/ is stripped from the public source
+# tree), so this negative-control harness is skipped when the doc is absent
+# (public / CI builds). The cache-registry coverage test then runs without its
+# negative control, which is acceptable for a release build.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/docs/cache_registry.md")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/docs/cache_registry.md" _hf_cr_full)
+    string(REGEX REPLACE
+        "\n\\| `g_rhs_cache` \\|[^\n]*\n"
+        "\n"
+        _hf_cr_stripped "${_hf_cr_full}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/cache_registry.stripped.md"
+         "${_hf_cr_stripped}")
+endif()
 
 # HF FF Phase 5 §A.1 iter-53: REQ-3 BINDING (closure-trigger reviewer
 # agentId `a643bd44c8210297c`). CI coverage for the
