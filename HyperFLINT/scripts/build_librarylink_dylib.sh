@@ -141,6 +141,17 @@ echo "  build dir = ${BUILD_DIR}"
 echo "  FLINT.a   = ${HF_FLINT_A:-<cmake default>}"
 echo "  wolfram   = ${WOLFRAM_INC:-<cmake auto-find>}"
 
+# ---- stamp the dylib's hf_version to match $SubTropicaVersion ---------------
+# SubTropica's loader REJECTS a dylib whose hf_version != $SubTropicaVersion
+# (the runtime version gate), so the dylib must carry the package version, not
+# the CMakeLists default. Parse it from <repo>/SubTropica.wl (the parent of
+# --src), overridable via the HF_VERSION env var.
+if [ -z "${HF_VERSION:-}" ]; then
+  _stwl="$(dirname "${SRC_DIR}")/SubTropica.wl"
+  [ -f "${_stwl}" ] && HF_VERSION=$(sed -n 's/.*\$SubTropicaVersion[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' "${_stwl}" | head -1)
+fi
+echo "  HF_VERSION = ${HF_VERSION:-<cmake default>}"
+
 # ---- assemble cmake args ----------------------------------------------------
 CMAKE_ARGS=(
   -S "${SRC_DIR}" -B "${BUILD_DIR}"
@@ -149,6 +160,7 @@ CMAKE_ARGS=(
   -DHF_OPENMP=ON -DHF_MIMALLOC=OFF
   -DHF_LIBRARYLINK=ON -DHF_LIBRARYLINK_STATIC_DEPS=ON
 )
+[ -n "${HF_VERSION:-}" ] && CMAKE_ARGS+=( -DHF_VERSION="${HF_VERSION}" )
 [ -n "${HF_FLINT_A:-}" ] && CMAKE_ARGS+=( -DHF_FLINT_STATIC_ARCHIVE="${HF_FLINT_A}" )
 [ -n "${HF_MPFR_A:-}" ]  && CMAKE_ARGS+=( -DHF_MPFR_STATIC_ARCHIVE="${HF_MPFR_A}" )
 [ -n "${HF_GMP_A:-}" ]   && CMAKE_ARGS+=( -DHF_GMP_STATIC_ARCHIVE="${HF_GMP_A}" )
