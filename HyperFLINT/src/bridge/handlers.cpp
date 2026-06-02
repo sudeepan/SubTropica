@@ -44,6 +44,7 @@
 #include <flint/flint.h>
 #include <iostream>
 #include <memory>
+#include <mutex>      // std::lock_guard/std::mutex (not transitively included on libstdc++)
 #include <regex>
 #include <set>
 #include <sstream>

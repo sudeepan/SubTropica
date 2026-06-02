@@ -1,6 +1,6 @@
 # 🥥 SubTropica
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue)](https://github.com/SubTropica/SubTropica)
+[![Version](https://img.shields.io/badge/version-1.2.1-blue)](https://github.com/SubTropica/SubTropica)
 [![Mathematica](https://img.shields.io/badge/Mathematica-13.1%2B-red)](https://www.wolfram.com/mathematica/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Data: CC BY-NC-SA 4.0](https://img.shields.io/badge/data_license-CC_BY--NC--SA_4.0-orange)](LICENSE-DATA)
@@ -24,7 +24,7 @@ HyperFLINT, the C++17/FLINT reimplementation of the HyperIntica and HyperInt hyp
 - **Interactive GUI** — draw Feynman diagrams, assign masses, configure options, and integrate, all from a graphical interface launched with `STIntegrate[]`.
 - **Multiple input formats** — Feynman graphs, propagator lists with numerators, or raw Euler integrands
 - **Parallelized pipeline** — automatic GL(1) gauge fixing, linear reducibility analysis, tropical subtraction scheme, and parallel integration of hyperlogarithms
-- **HyperFLINT**: optional C++17/FLINT analytic backend for hyperlogarithm integration (macOS; install the `SubTropicaHyperFLINT` add-on paclet)
+- **HyperFLINT**: optional C++17/FLINT analytic backend for hyperlogarithm integration (macOS/Linux; install the `HyperFLINT` add-on paclet)
 
 ## Online version & library
 
@@ -38,7 +38,7 @@ The library currently contains:
 | **Mass configurations** | 861 |
 | **Literature records**  | 1,587 |
 | **Papers scanned**      | 1,298 |
-| **Computed results**    | 195 |
+| **Computed results**    | 193 |
 
 The full library ships with the package under `library-bundled/` and is compiled into `ui/library.json` for the web interface.
 
@@ -59,15 +59,15 @@ After install, load with ``Needs["SubTropica`"]``. Upgrades happen automatically
 HyperFLINT is an optional fast analytic backend. Install the add-on paclet:
 
 ```mathematica
-PacletInstall["https://subtropi.ca/SubTropicaHyperFLINT.paclet"]
+PacletInstall["https://subtropi.ca/HyperFLINT.paclet"]
 ```
 
-Then `"Integrator" -> "HyperFLINT"` (or `STIntegrateHF[...]`) is available; check with ``SubTropica`$HyperFLINTAvailable``. Without it, `STIntegrate` uses the built-in HyperIntica engine. The add-on bundles its native libraries, so there is nothing else to install. Supported platforms: macOS arm64 and x86_64 (Linux and Windows users get the core paclet and the HyperIntica engine).
+Then `"Integrator" -> "HyperFLINT"` (or `STIntegrateHF[...]`) is available; check with ``SubTropica`$HyperFLINTAvailable``. Without it, `STIntegrate` uses the built-in HyperIntica engine. The add-on bundles its native libraries, so there is nothing else to install. Supported platforms: macOS arm64/x86_64 and Linux x86-64 (Windows users get the core paclet and the HyperIntica engine).
 
-If a browser-downloaded paclet is blocked by Gatekeeper, clear the quarantine flag once on the installed add-on directory (its location is ``PacletObject["SubTropicaHyperFLINT"]["Location"]``):
+If a browser-downloaded paclet is blocked by Gatekeeper, clear the quarantine flag once on the installed add-on directory (its location is ``PacletObject["HyperFLINT"]["Location"]``):
 
 ```bash
-xattr -dr com.apple.quarantine ~/Library/Wolfram/Paclets/Repository/SubTropicaHyperFLINT*
+xattr -dr com.apple.quarantine ~/Library/Wolfram/Paclets/Repository/HyperFLINT*
 ```
 
 To build HyperFLINT from source (developers, or other platforms), see [`HyperFLINT/README.md`](HyperFLINT/README.md): the build needs `brew install flint gmp mpfr libomp mimalloc` plus CMake.
@@ -93,21 +93,31 @@ SubTropica uses several external tools. Configure them with:
 ```mathematica
 ConfigureSubTropica[
   (* required *)
-  PolymakePath   -> "/opt/homebrew/bin/polymake",
+  PolymakePath     -> "/opt/homebrew/bin/polymake",
   (* recommended *)
-  FiniteFlowPath -> "path/to/FiniteFlow",
-  SPQRPath       -> "path/to/SPQR",
+  FiniteFlowPath   -> "path/to/FiniteFlow",
+  SPQRPath         -> "path/to/SPQR",
   (* optional — numerical backends for STNIntegrate / STVerify *)
-  PythonPath     -> "path/to/python3",
-  FIESTAPath     -> "path/to/fiesta/FIESTA5",
-  AMFlowPath     -> "path/to/amflow",
-  LiteRedPath    -> "path/to/LiteRed",
-  FIREPath       -> "path/to/fire/FIRE6",
-  FeyntropPath   -> "path/to/feyntrop",
+  PythonPath       -> "path/to/python3",
+  FIESTAPath       -> "path/to/fiesta/FIESTA5",
+  AMFlowPath       -> "path/to/amflow",
+  LiteRedPath      -> "path/to/LiteRed",
+  FIREPath         -> "path/to/fire/FIRE6",
+  FeyntropPath     -> "path/to/feyntrop",
+  (* optional — IBP ecosystem *)
+  KiraPath         -> "path/to/kira",
+  NeatIBPPath      -> "path/to/NeatIBP",
+  SingularPath     -> "/opt/homebrew/bin/Singular",
+  FermatPath       -> "path/to/fer64",
+  FormPath         -> "path/to/form",     (* auto-detected from $PATH if omitted *)
+  (* optional — analytic / canonical-basis tools *)
+  PolyLogToolsPath -> "path/to/PolyLogTools",
+  LibraPath        -> "path/to/Libra",
+  DiffExpPath      -> "path/to/diffexp",
   (* optional — alternative integrators *)
-  GinshPath      -> "path/to/ginsh",
-  MaplePath      -> "path/to/maple",
-  HyperIntPath   -> "path/to/HyperInt.mpl"
+  GinshPath        -> "path/to/ginsh",
+  MaplePath        -> "path/to/maple",
+  HyperIntPath     -> "path/to/HyperInt.mpl"
 ];
 ```
 
@@ -126,9 +136,42 @@ The configuration is persisted (`$UserBaseDirectory/Kernel/SubTropicaConfig.m`) 
 | [ginsh](https://www.ginac.de/) | Optional | Numerical evaluation of hyperlogarithms |
 | [Maple](https://www.maplesoft.com/products/maple/) + [HyperInt](https://bitbucket.org/PanzerErik/hyperint) | Optional | Alternative integrator (`"Integrator" -> "HyperInt"`) |
 | GNU `make` ≥ 4, `curl` | System | pySecDec builds (`make`); library sync / submission (`curl`) |
-| HyperFLINT add-on | Optional | Fast analytic backend (`"Integrator" -> "HyperFLINT"`); macOS arm64/x86_64; `PacletInstall` the `SubTropicaHyperFLINT` paclet |
+| HyperFLINT add-on | Optional | Fast analytic backend (`"Integrator" -> "HyperFLINT"`); macOS arm64/x86_64 + Linux x86-64; `PacletInstall` the `HyperFLINT` paclet |
 
 If FiniteFlow and SPQR are already on Mathematica's `$Path`, the package detects and loads them automatically — no need to set `FiniteFlowPath`/`SPQRPath` in that case. After configuration, verify the install with `STBenchmark[]`.
+
+#### Optional IBP ecosystem tools
+
+These tools are auto-detected and shown in the welcome banner; none is required by SubTropica itself.
+
+| Tool | What it does | Source | `ConfigureSubTropica` option |
+|---|---|---|---|
+| [Kira](https://gitlab.com/kira-pyred/kira) | IBP reduction via Liteweight algorithm | `gitlab.com/kira-pyred/kira` | `KiraPath -> "/path/to/kira"` |
+| [FireFly](https://gitlab.com/firefly-library/firefly) | Rational-function reconstruction (Kira backend) | Ships bundled with Kira; build with `-DWITH_FIREFLY=ON` | No separate path; detected via Kira |
+| [Fermat](https://home.bway.net/lewis) | Polynomial arithmetic backend used by FireFly | Prebuilt binaries at `home.bway.net/lewis` | `FermatPath -> "/path/to/fer64"` |
+| [NeatIBP](https://github.com/yzhphy/NeatIBP) | IBP generation via syzygy method | `github.com/yzhphy/NeatIBP` | `NeatIBPPath -> "/path/to/NeatIBP"` |
+| SpaSM | Sparse RREF linear algebra (NeatIBP dependency) | Built as part of NeatIBP setup; produces `spasm_macos/libspasm.dylib` | No separate path; located under `NeatIBPPath` |
+| [Singular](https://www.singular.uni-kl.de/) | CAS backend for NeatIBP's Groebner / syzygy computations | `brew install singular` or `www.singular.uni-kl.de` | `SingularPath -> "/path/to/Singular"` |
+| [FORM](https://github.com/vermaseren/form) | Vermaseren's symbolic manipulator | `brew install form` or `github.com/vermaseren/form` | `FormPath -> "/path/to/form"` (auto-detected from `$PATH`) |
+| [PolyLogTools](https://gitlab.com/hampel-classen/polylogtools) | Multiple polylogarithm and symbol manipulation | `gitlab.com/hampel-classen/polylogtools` | `PolyLogToolsPath -> "/path/to/PolyLogTools"` |
+| [Libra](https://github.com/Jiaqi-Li-IBM/Libra) | Canonical differential equation form | `github.com/Jiaqi-Li-IBM/Libra` | `LibraPath -> "/path/to/Libra"` |
+| [DiffExp](https://github.com/LinusHepp/DiffExp) | Differential-equation numeric transport | `github.com/LinusHepp/DiffExp` | `DiffExpPath -> "/path/to/diffexp"` |
+
+Typical setup call for the IBP ecosystem:
+
+```mathematica
+ConfigureSubTropica[
+  KiraPath         -> "/path/to/kira_install/bin/kira",
+  NeatIBPPath      -> "/path/to/NeatIBP",
+  SingularPath     -> "/opt/homebrew/bin/Singular",
+  FermatPath       -> "/path/to/Ferm7a/fer64",
+  PolyLogToolsPath -> "/path/to/PolyLogTools",
+  LibraPath        -> "/path/to/Libra",
+  DiffExpPath      -> "/path/to/diffexp"
+];
+```
+
+`FormPath` and `SingularPath` are auto-detected from `$PATH` (Homebrew installs) if not specified. `FireFly` and `SpaSM` require no separate path option; they are located relative to `KiraPath` and `NeatIBPPath`, respectively.
 
 ## Architecture
 

@@ -25,6 +25,7 @@
 #include "hyperflint/algebra/linear_factors.hpp"
 #include "hyperflint/algebra/poly_struct_hash.hpp"   // Lever A: cache key
 #include "hyperflint/core/zw_table.hpp"              // iter-52 C0c.1: ZWTable for linear_factors transient
+#include "hyperflint/core/factored_rat.hpp"          // B1.3: single-pole factored residue fast path
 #include "hyperflint/instrumentation/dag_hashcons_probe.hpp"  // §A.1 iter-50: op_call emit at function entry
 
 #include <flint/fmpq.h>
@@ -859,6 +860,198 @@ PartialFractionization partial_fractions_impl(
     }
 
     // Step 3: per-pole residue extraction.
+
+    // --- B1.3b FAST PATH (any pole count, no algebraic letters) -----------
+    // When the denominator factors into linear factors only -- no
+    // nonlinear/irreducible buckets, no algebraic-letter mode -- the
+    // per-pole residue algebra can be carried in FactoredRat (numerator
+    // over a product of (base)^exp factors) so that no multivariate GCD is
+    // taken until the final materialize_to_rat() per coefficient. The
+    // legacy Rat residue loop below spends ~93 % of a 277 s req integration
+    // inside fmpq_mpoly_gcd_cofactors; the factored path replaces that with
+    // exponent bookkeeping plus per-factor evaluation at each pole.
+    //
+    // B1.3 covered exactly one distinct pole; B1.3b generalizes to ANY pole
+    // count so the multi-pole MZV fixtures (tst*) also avoid the per-op
+    // GCD.  This block fills out.poles for every linear pole and returns;
+    // the result is value-equal (same ascending Laurent coefficients) to
+    // the Rat loop below, which is left byte-identical and still used for
+    // the algebraic-letter / nonlinear cases.
+    // Defensive fallback (adversarial review, 2026-05-30): the fast path
+    // assumes each primitive linear factor equals exactly Q_k*var - P_k, so
+    // Poly::divexact never sees a true remainder. Should a future
+    // linear_factors return a factor whose primitive form differs from
+    // Q_k*var - P_k by a non-unit, divexact THROWS instead of degrading. We
+    // wrap the whole fast-path body in try/catch over a LOCAL fast_poles
+    // vector: on ANY std::exception (e.g. from divexact, or the vanishing-
+    // denominator-factor guard) we abandon the partial fast-path result
+    // WITHOUT having mutated out.poles, set fast_ok=false, and fall through
+    // to the always-correct legacy Rat residue loop below (which fills
+    // out.poles itself, using the `proper = rem / f.den()` computed above).
+    // No log/print here: this is the hot path and the legacy loop is a
+    // correct silent degrade, not an error.
+    const bool use_factored =
+        !introduce_algebraic_letters && lf.nonlinear.empty();
+    if (use_factored) {
+      bool fast_ok = true;
+      std::vector<PartialFractionPole> fast_poles;
+      try {
+        Poly var_poly = Poly::gen(ctx, var_idx);
+        Poly one = Poly::one_of(ctx);
+
+        // Primitive linear factors lin_k = Q_k*var - P_k for each pole
+        // a_k = P_k/Q_k.  Peel each (via EXACT division) off f.den() so the
+        // remaining factor `den_remaining` holds whatever content / leading
+        // coefficient is left.  INVARIANT after the loop:
+        //   f.den() == den_remaining * prod_k lin_k^{m_k}  (exactly).
+        struct Prim { Poly lin; Poly Q; Poly P; long m; };
+        std::vector<Prim> prims;
+        prims.reserve(lf.linear.size());
+        Poly den_remaining = f.den();
+        for (const auto& linf : lf.linear) {
+            Poly Pk = linf.pole.num();
+            Poly Qk = linf.pole.den();
+            Poly lin = Qk.mul(var_poly).sub(Pk);            // Q_k*var - P_k
+            // EXACT division: f.den() factors as prod lin_k^{m_k} times a
+            // var-free remainder, so divexact never has a true remainder.
+            den_remaining = den_remaining.divexact(
+                lin.pow(static_cast<unsigned long>(linf.multiplicity)));
+            prims.push_back({std::move(lin), std::move(Qk), std::move(Pk),
+                             linf.multiplicity});
+        }
+
+        // Evaluate a Poly h(var) at var = P/Q with per-factor
+        // Q-homogenization:
+        //   d = max(0, deg_var(h));  homog = sum_{k=0..d} [h]_k * P^k * Q^{d-k};
+        //   h(P/Q) = homog / Q^d, returned factored (Rat(homog, Q^d)).
+        // Q^0 = one handles Q == 1 and d == 0 trivially.  Parameterized by
+        // the CURRENT pole's (P, Q): B1.3b evaluates every pole, so the
+        // homogenization base must be that pole's own denominator.
+        auto eval_poly = [&](const Poly& h, const Poly& P,
+                             const Poly& Q) -> FactoredRat {
+            long dd = h.degree_in_var(var_idx);
+            long d = (dd > 0) ? dd : 0;
+            Poly homog = Poly::zero_of(ctx);
+            for (long k = 0; k <= d; ++k) {
+                Poly ck = h.coefficient_of_var(var_idx, k);
+                if (ck.is_zero()) continue;
+                Poly term = ck.mul(P.pow(static_cast<unsigned long>(k)))
+                              .mul(Q.pow(static_cast<unsigned long>(d - k)));
+                homog = homog.add(term);
+            }
+            Poly Qd = Q.pow(static_cast<unsigned long>(d));  // Q^0 = 1 if d==0
+            return FactoredRat::from_rat(Rat(homog, Qd));
+        };
+
+        // Evaluate a FactoredRat D at var = P/Q, factor by factor:
+        //   D(P/Q) = eval_poly(num) / prod_i eval_poly(g_i)^e_i.
+        // The pole a_k's own primitive factor lin_k never appears in expr_k's
+        // denominator (it was cancelled at construction below), so the only
+        // residual denominator factors are the OTHER poles' lin_j (j!=k),
+        // which are nonzero at a_k, plus Q_k^{m_k} and den_remaining.  A
+        // vanishing denominator factor at the pole would therefore signal a
+        // coincident pole (impossible for distinct linear factors); guard
+        // defensively rather than divide by zero.
+        auto eval_factored = [&](const FactoredRat& D, const Poly& P,
+                                 const Poly& Q) -> FactoredRat {
+            FactoredRat r = eval_poly(D.numerator(), P, Q);
+            for (const auto& g : D.den_factors()) {
+                FactoredRat gv = eval_poly(g.base, P, Q);
+                if (gv.numerator().is_zero()) {
+                    throw std::runtime_error(
+                        "partial_fractions_impl factored fast path: "
+                        "denominator factor vanishes at pole");
+                }
+                r = r.div(gv.pow(g.exp));
+            }
+            return r;
+        };
+
+        fast_poles.reserve(prims.size());
+        for (size_t kpole = 0; kpole < prims.size(); ++kpole) {
+            const Prim& pk = prims[kpole];
+            const Rat& a = lf.linear[kpole].pole;
+            long m = pk.m;
+            const Poly& P = pk.P;
+            const Poly& Q = pk.Q;
+
+            // expr_k = (var - a_k)^{m_k} * proper, with proper = rem / f.den().
+            //   var - a_k = (Q_k*var - P_k)/Q_k = lin_k/Q_k,
+            //     so (var - a_k)^{m_k} = lin_k^{m_k} / Q_k^{m_k}.
+            //   f.den() = den_remaining * prod_j lin_j^{m_j}.
+            //   => expr_k = (lin_k^{m_k} / Q_k^{m_k}) * rem
+            //                 / (den_remaining * prod_j lin_j^{m_j})
+            //             = rem / (Q_k^{m_k} * den_remaining
+            //                       * prod_{j!=k} lin_j^{m_j}).
+            // We build the CANCELLED form directly so that no copy of lin_k
+            // survives in the denominator: lin_k(P_k/Q_k) = 0, so a surviving
+            // lin_k denominator factor would vanish when we evaluate at the
+            // pole.  Holding it factored keeps the representation GCD-free
+            // until materialize_to_rat().  Constant Q_k (the polynomial-pole
+            // case a.den()==1) or constant den_remaining folds away through
+            // from_rat, so this one expression covers both branches the
+            // legacy loop handles separately.
+            FactoredRat expr_fac =
+                FactoredRat::from_poly(rem.num())
+                    .mul(FactoredRat::from_rat(Rat(one, rem.den())))
+                    .mul(FactoredRat::from_rat(Rat(one, Q)).pow(m))
+                    .mul(FactoredRat::from_rat(Rat(one, den_remaining)));
+            for (size_t j = 0; j < prims.size(); ++j) {
+                if (j == kpole) continue;  // lin_k cancelled by (var-a_k)^m
+                expr_fac = expr_fac.mul(
+                    FactoredRat::from_rat(Rat(one, prims[j].lin))
+                        .pow(prims[j].m));
+            }
+
+            // Derivative chain in FactoredRat: derivs[t] = d^t/dvar^t expr_k.
+            std::vector<FactoredRat> derivs;
+            derivs.reserve(static_cast<size_t>(m));
+            derivs.push_back(expr_fac);
+            for (long t = 1; t < m; ++t) {
+                derivs.push_back(derivs.back().derivative(var_idx));
+            }
+
+            PartialFractionPole pole{a, m, {}};
+            pole.coefs.reserve(static_cast<size_t>(m));
+            for (long j = 1; j <= m; ++j) {
+                long deriv_order = m - j;
+                FactoredRat val_fac =
+                    eval_factored(derivs[static_cast<size_t>(deriv_order)],
+                                  P, Q);
+                Rat val = val_fac.materialize_to_rat();
+                if (deriv_order > 0) {
+                    // Divide by (m-j)! = deriv_order!.  NOTE: divide the
+                    // MATERIALIZED Rat by the scalar, NOT the FactoredRat: a
+                    // constant FactoredRat divisor is silently dropped by
+                    // FactoredRat::div (push_factor discards constant/one
+                    // bases), which would leave the factorial out.  The
+                    // scalar Rat divide here is identical to the legacy loop
+                    // below and reduces correctly.
+                    long fact = 1;
+                    for (long k = 2; k <= deriv_order; ++k) fact *= k;
+                    val = val / Rat::from_int(ctx, fact);
+                }
+                pole.coefs.push_back(std::move(val));
+            }
+            fast_poles.push_back(std::move(pole));
+          }
+      } catch (const std::exception&) {
+        // divexact-exactness assumption (primitive factor == Q_k*var-P_k)
+        // violated, or a defensive guard tripped: silently degrade to the
+        // legacy Rat residue loop. fast_poles is discarded; out.poles is
+        // untouched (we never wrote to it), so the legacy loop sees a clean
+        // slate. out.polynomial_part (set from quot above) and `proper`
+        // remain valid for the fallback.
+        fast_ok = false;
+      }
+      if (fast_ok) {
+        out.poles = std::move(fast_poles);
+        return out;
+      }
+      // fall through to legacy loop below
+    }
+    // --- END B1.3b FAST PATH ----------------------------------------------
+
     for (auto& linf : lf.linear) {
         PartialFractionPole pole{linf.pole, linf.multiplicity, {}};
 

@@ -1,12 +1,12 @@
 PacletObject[<|
-    "Name" -> "SubTropicaHyperFLINT",
-    "Version" -> "1.2.0",
+    "Name" -> "HyperFLINT",
+    "Version" -> "1.2.1",
     "WolframVersion" -> "13.1+",
-    "Description" -> "Prebuilt macOS HyperFLINT binaries (analytic hyperlogarithm backend) for SubTropica. Optional add-on; discovered at runtime by SubTropica.",
+    "Description" -> "Prebuilt HyperFLINT binaries (analytic hyperlogarithm backend) for SubTropica, for macOS and Linux. Optional add-on; discovered at runtime by SubTropica.",
     "Creator" -> "Sebastian Mizera",
     "URL" -> "https://subtropi.ca",
     "License" -> "MIT",
-    "SystemID" -> {"MacOSX-ARM64", "MacOSX-x86-64"},
+    "SystemID" -> {"MacOSX-ARM64", "MacOSX-x86-64", "Linux-x86-64"},
     "Extensions" -> {
         {"Resource", "Root" -> ".", "Resources" -> {"dist", "data", "THIRD-PARTY-LICENSES", "LICENSE"}}
     }

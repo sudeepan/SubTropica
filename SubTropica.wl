@@ -103,23 +103,26 @@ $STHyperFlintSearchPaths = {
     "/usr/local/bin/hyperflint"
 };
 
-(* Locate the SubTropicaHyperFLINT add-on paclet (the public distribution
-   channel for prebuilt HF binaries) via PacletManager.  Returns its install
-   directory, or "" if the add-on is not installed. *)
+(* Locate the HyperFLINT add-on paclet (the public distribution channel for
+   prebuilt HF binaries) via PacletManager.  Returns its install directory, or
+   "" if the add-on is not installed.  The add-on was named SubTropicaHyperFLINT
+   in v1.2.0 and renamed to HyperFLINT in v1.2.1; check the new name first, then
+   fall back to the old one so existing v1.2.0 installs still resolve. *)
 stHyperFlintAddonDir[] := Quiet@Module[{ps},
-    ps = PacletFind["SubTropicaHyperFLINT"];
+    ps = PacletFind["HyperFLINT"];
+    If[ps === {} || ps === $Failed, ps = PacletFind["SubTropicaHyperFLINT"]];
     If[ps === {} || ps === $Failed, "",
         First[ps]["Location"]]];
 
 (* Search order: dev source-tree build first (so a local cmake build wins),
-   then the SubTropicaHyperFLINT add-on paclet, then the static fallbacks. *)
+   then the HyperFLINT add-on paclet, then the static fallbacks. *)
 stHyperFlintSearchPaths[] := Module[{addon = stHyperFlintAddonDir[]},
     If[addon === "", $STHyperFlintSearchPaths,
         Insert[$STHyperFlintSearchPaths,
             FileNameJoin[{addon, "dist", stHFArchDir[], "hyperflint"}], 2]]];
 
 (* Mathematica's PacletInstall does NOT preserve the Unix execute bit when it
-   extracts a paclet, so the CLI bundled in the SubTropicaHyperFLINT add-on
+   extracts a paclet, so the CLI bundled in the HyperFLINT add-on
    installs as `rw-r--r--` and RunProcess fails with "program not found".
    Restore +x on the resolved binary, memoized once per path per session so
    repeated discovery calls don't re-spawn chmod. No-op on "" / missing files
@@ -441,6 +444,15 @@ $LiteRedPath     = FileNameJoin[{$HomeDirectory, "LiteRed"}];
 $LiteIBPPath     = FileNameJoin[{$HomeDirectory, "finiteflow-mathtools", "packages"}];
 $FIREPath        = FileNameJoin[{$HomeDirectory, "fire", "FIRE6"}];
 $FeyntropPath    = FileNameJoin[{$HomeDirectory, "feyntrop"}];
+$KiraPath         = "";
+$NeatIBPPath      = "";
+$SingularPath     = If[FileExistsQ["/opt/homebrew/bin/Singular"], "/opt/homebrew/bin/Singular", ""];
+$PolyLogToolsPath = "";
+$LibraPath        = "";
+$DiffExpPath      = "";
+$FermatPath       = If[FileExistsQ[FileNameJoin[{$HomeDirectory, "Projects", "Ferm7a", "fer64"}]],
+                       FileNameJoin[{$HomeDirectory, "Projects", "Ferm7a", "fer64"}], ""];
+$FormPath         = "";  (* auto-detected from PATH at load time if empty *)
 
 (* ============================================================ *)
 (*  Dependency registry + smoke tests                           *)
@@ -599,6 +611,98 @@ $STDependencies = <|
     "usedBy" -> {"pySecDec (loop_package build)"},
     "installHint" -> "GNU Make >= 4 required.  brew install make  |  apt install make  (macOS /usr/bin/make is GNU 3.81; the 3.81 pattern-rule bug breaks pySecDec's disteval build.)",
     "configHint" -> "No ConfigureSubTropica override; SubTropica probes /opt/homebrew/opt/make/libexec/gnubin/make, /opt/homebrew/bin/gmake, then falls back to PATH."
+  |>,
+  (* ── IBP ecosystem tools ─────────────────────────────────────── *)
+  "Kira" -> <|
+    "type" -> "binary", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[$KiraPath],
+    "usedBy" -> {"IBP reduction (Kira)"},
+    "installHint" -> "git clone https://gitlab.com/kira-pyred/kira && cd kira && mkdir build && cd build && cmake .. -DWITH_FIREFLY=ON && make install  (or download a prebuilt binary from gitlab.com/kira-pyred/kira)",
+    "configHint" -> "ConfigureSubTropica[KiraPath -> \"/absolute/path/to/kira\"]  (the kira binary)"
+  |>,
+  "FireFly" -> <|
+    "type" -> "firefly", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[$KiraPath],
+    "usedBy" -> {"Kira (rational-function reconstruction backend)"},
+    "installHint" -> "FireFly ships bundled with Kira; build Kira with -DWITH_FIREFLY=ON (see Kira docs).  Standalone: git clone https://gitlab.com/firefly-library/firefly",
+    "configHint" -> "No separate path needed when bundled with Kira; set KiraPath to point at the Kira binary."
+  |>,
+  "Fermat" -> <|
+    "type" -> "binary", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[$FermatPath],
+    "usedBy" -> {"FireFly (polynomial arithmetic backend)"},
+    "installHint" -> "Download Fermat (fer64 binary) from home.bway.net/lewis  (free; macOS/Linux binaries provided)",
+    "configHint" -> "ConfigureSubTropica[FermatPath -> \"/absolute/path/to/fer64\"]  (the fer64 binary)"
+  |>,
+  "NeatIBP" -> <|
+    "type" -> "neatibp", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[$NeatIBPPath],
+    "usedBy" -> {"IBP generation via syzygy method (NeatIBP)"},
+    "installHint" -> "git clone https://github.com/yzhphy/NeatIBP  (see NeatIBP README for Singular and SpaSM build instructions)",
+    "configHint" -> "ConfigureSubTropica[NeatIBPPath -> \"/absolute/path/to/NeatIBP\"]  (dir containing run.sh)"
+  |>,
+  "SpaSM" -> <|
+    "type" -> "spasm", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[$NeatIBPPath],
+    "usedBy" -> {"NeatIBP (sparse RREF linear algebra)"},
+    "installHint" -> "SpaSM is built as part of the NeatIBP setup (follow the NeatIBP README); produces spasm_macos/libspasm.dylib or spasm_linux/libspasm.so.",
+    "configHint" -> "No separate path option; SpaSM is located automatically under NeatIBPPath (spasm_macos/ or spasm_linux/ subdirectory).  Set ConfigureSubTropica[NeatIBPPath -> ...] first."
+  |>,
+  "Singular" -> <|
+    "type" -> "binary", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[$SingularPath],
+    "usedBy" -> {"NeatIBP (CAS backend for Groebner/syzygy computations)"},
+    "installHint" -> "brew install singular  |  apt install singular  |  download from www.singular.uni-kl.de",
+    "configHint" -> "ConfigureSubTropica[SingularPath -> \"/absolute/path/to/Singular\"]  (the Singular binary)"
+  |>,
+  "FORM" -> <|
+    "type" -> "binary", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[If[StringQ[$FormPath] && $FormPath =!= "", $FormPath, "form"]],
+    "usedBy" -> {"symbolic algebra (FORM)"},
+    "installHint" -> "brew install form  |  apt install form  |  download from github.com/vermaseren/form",
+    "configHint" -> "If not on $PATH: ConfigureSubTropica[FormPath -> \"/absolute/path/to/form\"]"
+  |>,
+  (* ── Analytic / canonical-basis tools ────────────────────────── *)
+  "PolyLogTools" -> <|
+    "type" -> "mathematica-package-plt", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[$PolyLogToolsPath],
+    "usedBy" -> {"MPL / symbol manipulation (PolyLogTools)"},
+    "installHint" -> "git clone https://gitlab.com/hampel-classen/polylogtools  (requires a Mathematica license)",
+    "configHint" -> "ConfigureSubTropica[PolyLogToolsPath -> \"/absolute/path/to/PolyLogTools\"]  (dir containing PolyLogTools.m)"
+  |>,
+  "Libra" -> <|
+    "type" -> "mathematica-package-libra", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[$LibraPath],
+    "usedBy" -> {"canonical differential equation form (Libra)"},
+    "installHint" -> "git clone https://github.com/Jiaqi-Li-IBM/Libra  (or download from the author's page)",
+    "configHint" -> "ConfigureSubTropica[LibraPath -> \"/absolute/path/to/Libra\"]  (dir containing Source/Libra.m)"
+  |>,
+  "DiffExp" -> <|
+    "type" -> "mathematica-package-diffexp", "required" -> False,
+    "status" -> "untested", "version" -> "", "statusMsg" -> "",
+    "resolvedPath" -> "",
+    "getPath" -> Function[$DiffExpPath],
+    "usedBy" -> {"differential-equation numeric transport (DiffExp)"},
+    "installHint" -> "git clone https://github.com/LinusHepp/DiffExp  (Linus Hepp; MIT license)",
+    "configHint" -> "ConfigureSubTropica[DiffExpPath -> \"/absolute/path/to/diffexp\"]  (dir containing DiffExp.m)"
   |>
 |>;
 
@@ -706,6 +810,53 @@ stTestOneDependency[name_String] := CheckAbort[Module[
                 If[AssociationQ[gr] && gr["ExitCode"] === 0,
                   "git " <> StringTrim[gr["StandardOutput"]],
                   ""]],
+            "Kira",
+              (* kira --version prints "Kira version: X.Y (Git: <sha>)" on the
+                 first line; extract the version number. *)
+              Module[{raw = stBinaryVersion[resolved, {"--version"}]},
+                First[StringCases[raw,
+                  "Kira version: " ~~ v:RegularExpression["[0-9][^ ]*"] :> "Kira " <> v, 1],
+                  raw]],
+            "FORM",
+              (* FORM prints its version on stderr when called with no args;
+                 the first line is "FORM X.Y.Z (date, vX.Y.Z) ...". *)
+              Module[{pr},
+                pr = Quiet @ Check[
+                  TimeConstrained[RunProcess[{resolved}], 5, $TimedOut],
+                  $Failed];
+                If[!AssociationQ[pr], Return["", Module]];
+                First[StringCases[
+                  Lookup[pr, "StandardOutput", ""] <>
+                    Lookup[pr, "StandardError", ""],
+                  "FORM " ~~ v:RegularExpression["[0-9][0-9A-Za-z.]*"] :>
+                    "FORM " <> v, 1],
+                  ""]],
+            "Fermat",
+              (* Fermat prints its version in the startup banner, e.g.
+                 "Fermat for Mac OSX ... rational C version 7.9 ..."
+                 on the first line of stdout.  The binary exits on EOF.
+                 Use a 15-s timeout to allow for initialization. *)
+              Module[{pr},
+                pr = Quiet @ Check[
+                  TimeConstrained[
+                    RunProcess[{resolved}, All, ""],
+                    15, $TimedOut],
+                  $Failed];
+                If[!AssociationQ[pr], Return["", Module]];
+                First[StringCases[
+                  Lookup[pr, "StandardOutput", ""] <>
+                    Lookup[pr, "StandardError", ""],
+                  "rational C version " ~~ v:RegularExpression["[0-9][0-9A-Za-z.]*"] :>
+                    "Fermat " <> v, 1],
+                  ""]],
+            "Singular",
+              (* Singular --version prints "Singular for ... version X.Y.Z ..."
+                 on the first line of stderr. *)
+              Module[{raw = stBinaryVersion[resolved, {"--version"}]},
+                First[StringCases[raw,
+                  "version " ~~ v:RegularExpression["[0-9][0-9A-Za-z.]*"] :>
+                    "Singular " <> v, 1],
+                  raw]],
             _,       stBinaryVersion[resolved, {"--version"}]];
           {"ok", v, ""}]],
 
@@ -908,6 +1059,136 @@ stTestOneDependency[name_String] := CheckAbort[Module[
               True,
                 {"ok", versionString, "file found but no HyperInt/HLP header; using as-is"}]]]],
 
+    "firefly",
+      (* FireFly ships bundled inside Kira.  We detect it by (a) checking
+         whether the kira binary is present and its --version output mentions
+         FireFly, or (b) finding a standalone `firefly` binary in the same
+         directory as Kira or on $PATH. *)
+      Module[{kiraResolved, kiraDir, vOut, bundled, ffBin, pr},
+        kiraResolved = $STDependencies["Kira", "resolvedPath"];
+        If[!StringQ[kiraResolved] || kiraResolved === "",
+          kiraResolved = stResolvePath[$KiraPath]];
+        If[kiraResolved === None || kiraResolved === "",
+          {"missing", "", "Kira not detected; FireFly requires Kira"},
+          (* Check kira --version for "with FireFly" *)
+          vOut = stBinaryVersion[kiraResolved, {"--version"}];
+          bundled = StringContainsQ[vOut, "FireFly", IgnoreCase -> True];
+          (* Also look for a standalone firefly binary next to kira *)
+          kiraDir = DirectoryName[kiraResolved];
+          ffBin = FileNameJoin[{kiraDir, "firefly"}];
+          Which[
+            bundled,
+              $STDependencies["FireFly", "resolvedPath"] = kiraResolved;
+              {"ok", "bundled with Kira", ""},
+            FileExistsQ[ffBin],
+              $STDependencies["FireFly", "resolvedPath"] = ffBin;
+              {"ok", stBinaryVersion[ffBin, {"--version"}], ""},
+            True,
+              pr = Quiet @ Check[
+                TimeConstrained[RunProcess[{"which", "firefly"}], 5, $TimedOut],
+                $Failed];
+              If[AssociationQ[pr] && pr["ExitCode"] === 0,
+                ffBin = StringTrim[pr["StandardOutput"]];
+                $STDependencies["FireFly", "resolvedPath"] = ffBin;
+                {"ok", stBinaryVersion[ffBin, {"--version"}], ""},
+                {"missing", "",
+                  "Kira present but built without FireFly; rebuild with -DWITH_FIREFLY=ON"}]]]],
+
+    "neatibp",
+      (* NeatIBP is a directory-based Wolfram/shell package.  Detect by
+         checking for run.sh (the main launcher) under the configured dir. *)
+      Module[{dir = $NeatIBPPath, launcher, devLog},
+        If[!StringQ[dir] || dir === "" || !DirectoryQ[dir],
+          {"missing", "", "directory not found at " <> ToString[dir]},
+          launcher = FileNameJoin[{dir, "run.sh"}];
+          If[!FileExistsQ[launcher],
+            {"missing", "", "run.sh not found under " <> dir},
+            $STDependencies["NeatIBP", "resolvedPath"] = launcher;
+            (* Try to extract a version from Development_Log.txt or README *)
+            devLog = FileNameJoin[{dir, "Development_Log.txt"}];
+            Module[{ver = ""},
+              If[FileExistsQ[devLog],
+                ver = Quiet @ First[
+                  StringCases[
+                    StringJoin @ Riffle[
+                      Quiet @ Check[ReadList[devLog, String, 20], {}], "\n"],
+                    "NeatIBP" ~~ Whitespace... ~~ "v" ~~ v:RegularExpression["[0-9][0-9A-Za-z.\\-]*"] :>
+                      "NeatIBP " <> v, 1],
+                  ""]];
+              {"ok", ver, ""}]]]],
+
+    "spasm",
+      (* SpaSM is a shared library bundled under the NeatIBP directory.
+         Look for libspasm.dylib (macOS) or libspasm.so (Linux). *)
+      Module[{dir = $NeatIBPPath, candidates, hit},
+        If[!StringQ[dir] || dir === "" || !DirectoryQ[dir],
+          {"missing", "", "NeatIBPPath not set; cannot locate SpaSM"},
+          candidates = {
+            FileNameJoin[{dir, "spasm_macos", "libspasm.dylib"}],
+            FileNameJoin[{dir, "spasm_linux", "libspasm.so"}],
+            FileNameJoin[{dir, "spasm", "libspasm.dylib"}],
+            FileNameJoin[{dir, "spasm", "libspasm.so"}]};
+          hit = SelectFirst[candidates, FileExistsQ, None];
+          If[hit === None,
+            {"missing", "", "libspasm.dylib/.so not found under " <> dir <>
+              "/spasm_macos or " <> dir <> "/spasm_linux"},
+            $STDependencies["SpaSM", "resolvedPath"] = hit;
+            {"ok", "", ""}]]],
+
+    "mathematica-package-plt",
+      (* PolyLogTools: detect PolyLogTools.m in the configured directory. *)
+      Module[{dir = $PolyLogToolsPath, pkgFile, ver},
+        If[!StringQ[dir] || dir === "" || !DirectoryQ[dir],
+          {"missing", "", "directory not found at " <> ToString[dir]},
+          pkgFile = FileNameJoin[{dir, "PolyLogTools.m"}];
+          If[!FileExistsQ[pkgFile],
+            {"missing", "", "PolyLogTools.m not found under " <> dir},
+            $STDependencies["PolyLogTools", "resolvedPath"] = pkgFile;
+            ver = Quiet @ First[
+              StringCases[
+                StringJoin @ Riffle[
+                  Quiet @ Check[ReadList[pkgFile, String, 30], {}], "\n"],
+                "PolyLogTools" ~~ Whitespace... ~~ "v" ~~ v:RegularExpression["[0-9][0-9A-Za-z.\\-]*"] :>
+                  "PolyLogTools " <> v, 1],
+              ""];
+            {"ok", ver, ""}]]],
+
+    "mathematica-package-libra",
+      (* Libra: detect Source/Libra.m under the configured directory. *)
+      Module[{dir = $LibraPath, pkgFile, ver},
+        If[!StringQ[dir] || dir === "" || !DirectoryQ[dir],
+          {"missing", "", "directory not found at " <> ToString[dir]},
+          pkgFile = FileNameJoin[{dir, "Source", "Libra.m"}];
+          If[!FileExistsQ[pkgFile],
+            {"missing", "", "Source/Libra.m not found under " <> dir},
+            $STDependencies["Libra", "resolvedPath"] = pkgFile;
+            ver = Quiet @ First[
+              StringCases[
+                StringJoin @ Riffle[
+                  Quiet @ Check[ReadList[pkgFile, String, 30], {}], "\n"],
+                "Libra" ~~ Whitespace... ~~ "v" ~~ v:RegularExpression["[0-9][0-9A-Za-z.\\-]*"] :>
+                  "Libra " <> v, 1],
+              ""];
+            {"ok", ver, ""}]]],
+
+    "mathematica-package-diffexp",
+      (* DiffExp: detect DiffExp.m under the configured directory. *)
+      Module[{dir = $DiffExpPath, pkgFile, ver},
+        If[!StringQ[dir] || dir === "" || !DirectoryQ[dir],
+          {"missing", "", "directory not found at " <> ToString[dir]},
+          pkgFile = FileNameJoin[{dir, "DiffExp.m"}];
+          If[!FileExistsQ[pkgFile],
+            {"missing", "", "DiffExp.m not found under " <> dir},
+            $STDependencies["DiffExp", "resolvedPath"] = pkgFile;
+            ver = Quiet @ First[
+              StringCases[
+                StringJoin @ Riffle[
+                  Quiet @ Check[ReadList[pkgFile, String, 30], {}], "\n"],
+                "DiffExp" ~~ Whitespace... ~~ "v" ~~ v:RegularExpression["[0-9][0-9A-Za-z.\\-]*"] :>
+                  "DiffExp " <> v, 1],
+              ""];
+            {"ok", ver, ""}]]],
+
     _, {"untested", "", "unknown type"}
   ];
 
@@ -1093,8 +1374,8 @@ stBenchmarkNudgeLine[] := Module[{data, storedVersion},
    end renders it as one output cell (separate Prints become separate
    cells and break the art's visual continuity). *)
 stPrintGreeting[] := Module[
-  {skyRow2, integratorsRow, reducersRow, toolsRow,
-   content, rendered, nudge},
+  {skyRow2, integratorsRow, reducersRow, toolsRow, ecosystemRow1,
+   ecosystemRow2, content, rendered, nudge},
   CheckAbort[stRunDependencyTests[],
     Print["[SubTropica] Dependency probe was aborted; continuing with best-effort status."]];
 
@@ -1117,13 +1398,22 @@ stPrintGreeting[] := Module[
 
   (* Badge rows: each centered across the 71-char banner width.  Grouped
      so that FiniteFlow and SPQR sit adjacent (they co-load and share a
-     Groebner-basis code path), and so the tiers balance as 4 / 5 / 5. *)
+     Groebner-basis code path), and so the tiers balance as 4 / 5 / 6.
+     The IBP/ecosystem tools are split across TWO rows of 5 because a
+     single 10-badge row is ~123 chars wide and overflows the 71-char
+     banner (stCenterBadgeRow clamps the leading pad to 0 and emits the
+     strip left-flush, far past the art's right edge).  Two rows of 5
+     come out to 57 / 64 chars, which center cleanly like the rows above. *)
   integratorsRow = stCenterBadgeRow[
     {"pySecDec", "FIESTA", "AMFlow", "feyntrop"}];
   reducersRow = stCenterBadgeRow[
     {"FiniteFlow", "SPQR", "LiteRed", "FIRE", "HyperInt"}];
   toolsRow = stCenterBadgeRow[
     {"maple", "ginsh", "python3", "curl", "make", "HyperFLINT"}];
+  ecosystemRow1 = stCenterBadgeRow[
+    {"Kira", "FireFly", "Fermat", "NeatIBP", "SpaSM"}];
+  ecosystemRow2 = stCenterBadgeRow[
+    {"Singular", "FORM", "PolyLogTools", "Libra", "DiffExp"}];
 
   nudge = stBenchmarkNudgeLine[];
 
@@ -1139,6 +1429,8 @@ stPrintGreeting[] := Module[
     integratorsRow,
     reducersRow,
     toolsRow,
+    ecosystemRow1,
+    ecosystemRow2,
     " ~  ~       ~ ~      ~           ~~ ~~~~~~  ~      ~~  ~             ~~",
     "       ~             ~        ~      ~      ~~   ~             ~",
     "",
@@ -1255,6 +1547,14 @@ Module[{loaded, applyOne},
                 "LiteIBPPath",                 $LiteIBPPath = v,
                 "FIREPath",                    $FIREPath = v,
                 "FeyntropPath",                $FeyntropPath = v,
+                "KiraPath",                    $KiraPath = v,
+                "NeatIBPPath",                 $NeatIBPPath = v,
+                "SingularPath",                $SingularPath = v,
+                "PolyLogToolsPath",            $PolyLogToolsPath = v,
+                "LibraPath",                   $LibraPath = v,
+                "DiffExpPath",                 $DiffExpPath = v,
+                "FermatPath",                  $FermatPath = v,
+                "FormPath",                    $FormPath = v,
                 "BenchmarkNudge",              $ShowBenchmarkNudge = TrueQ[v],
                 _, Null];
             KeyValueMap[applyOne, loaded]]]];
@@ -1283,12 +1583,20 @@ Options[ConfigureSubTropica] = {
     LiteIBPPath                 -> Inherited,
     FIREPath                    -> Inherited,
     FeyntropPath                -> Inherited,
+    KiraPath                    -> Inherited,
+    NeatIBPPath                 -> Inherited,
+    SingularPath                -> Inherited,
+    PolyLogToolsPath            -> Inherited,
+    LibraPath                   -> Inherited,
+    DiffExpPath                 -> Inherited,
+    FermatPath                  -> Inherited,
+    FormPath                    -> Inherited,
     BenchmarkNudge              -> Inherited
 };
 With[{$SubTropicaDir = DirectoryName[$InputFileName]},
 
 $SubTropicaInstallDir = $SubTropicaDir;
-$SubTropicaVersion = "1.2.0";
+$SubTropicaVersion = "1.2.1";
 
 (* Init-order fix: line 109 set $STHyperFlintDataPath before
    $SubTropicaInstallDir was bound, so the install-dir-derived data
@@ -1298,6 +1606,16 @@ $SubTropicaVersion = "1.2.0";
 If[!StringQ[$STHyperFlintDataPath] || $STHyperFlintDataPath === "" ||
    !FileExistsQ[$STHyperFlintDataPath],
     $STHyperFlintDataPath = stResolveHyperFlintDataPath[$STHyperFlintPath]];
+
+(* Same init-order fix for the LibraryLink dylib path: line ~320 resolved
+   $STHyperFlintLibraryPath before $SubTropicaInstallDir was bound, so the
+   dist/<arch>/ candidate (and the alt HyperFLINT/ layout) were skipped.
+   Re-resolve now that both are set, so a paclet user with the prebuilt HF
+   dist but no co-located CLI binary still finds the dylib (the eager load
+   at package init then succeeds on the first lazy retry). *)
+If[!StringQ[$STHyperFlintLibraryPath] || $STHyperFlintLibraryPath === "" ||
+   !FileExistsQ[$STHyperFlintLibraryPath],
+    $STHyperFlintLibraryPath = stResolveHyperFlintLibraryPath[$STHyperFlintPath]];
 
 (* FindRoots root-letter substitutions: W$i -> algebraic root expressions.
    Set by STReadResults when the integration used FindRoots alphabet letters.
@@ -1405,6 +1723,14 @@ ConfigureSubTropica[opts:OptionsPattern[]] := Module[
     If[OptionValue[LiteIBPPath]                 =!= Inherited, $LiteIBPPath                 = OptionValue[LiteIBPPath]];
     If[OptionValue[FIREPath]                    =!= Inherited, $FIREPath                    = OptionValue[FIREPath]];
     If[OptionValue[FeyntropPath]                =!= Inherited, $FeyntropPath                = OptionValue[FeyntropPath]];
+    If[OptionValue[KiraPath]                    =!= Inherited, $KiraPath                    = OptionValue[KiraPath]];
+    If[OptionValue[NeatIBPPath]                 =!= Inherited, $NeatIBPPath                 = OptionValue[NeatIBPPath]];
+    If[OptionValue[SingularPath]                =!= Inherited, $SingularPath                = OptionValue[SingularPath]];
+    If[OptionValue[PolyLogToolsPath]            =!= Inherited, $PolyLogToolsPath            = OptionValue[PolyLogToolsPath]];
+    If[OptionValue[LibraPath]                   =!= Inherited, $LibraPath                   = OptionValue[LibraPath]];
+    If[OptionValue[DiffExpPath]                 =!= Inherited, $DiffExpPath                 = OptionValue[DiffExpPath]];
+    If[OptionValue[FermatPath]                  =!= Inherited, $FermatPath                  = OptionValue[FermatPath]];
+    If[OptionValue[FormPath]                    =!= Inherited, $FormPath                    = OptionValue[FormPath]];
     If[OptionValue[BenchmarkNudge]              =!= Inherited, $ShowBenchmarkNudge          = TrueQ[OptionValue[BenchmarkNudge]]];
 
     (* Distribute $PolymakeCommand to any already-running subkernels
@@ -1493,7 +1819,15 @@ ConfigureSubTropica[opts:OptionsPattern[]] := Module[
             "LiteRedPath"                 -> $LiteRedPath,
             "LiteIBPPath"                 -> $LiteIBPPath,
             "FIREPath"                    -> $FIREPath,
-            "FeyntropPath"                -> $FeyntropPath,
+            "FeyntropPath"               -> $FeyntropPath,
+            "KiraPath"                    -> $KiraPath,
+            "NeatIBPPath"                 -> $NeatIBPPath,
+            "SingularPath"                -> $SingularPath,
+            "PolyLogToolsPath"            -> $PolyLogToolsPath,
+            "LibraPath"                   -> $LibraPath,
+            "DiffExpPath"                 -> $DiffExpPath,
+            "FermatPath"                  -> $FermatPath,
+            "FormPath"                    -> $FormPath,
             "BenchmarkNudge"              -> $ShowBenchmarkNudge|>;
         Quiet[CreateDirectory[DirectoryName[$STConfigFile],
             CreateIntermediateDirectories -> True]];
@@ -1534,7 +1868,7 @@ STPreAnalysis[integrand, xvars, coeffs] performs an extended analysis of the sin
 It returns an association <| trData -> tropical data, rays -> divergent rays, faces -> divergent faces, us -> u-variables |>
 ";
 
-ConfigureSubTropica::usage = "ConfigureSubTropica[opt -> val, ...] sets external-tool paths (PolymakePath, GinshPath, MaplePath, HyperIntPath, HyperFlintPath, PythonPath, FiniteFlowPath, SPQRPath, FIESTAPath, AMFlowPath, LiteRedPath, LiteIBPPath, FIREPath, FeyntropPath, PolymakeConcurrencyFraction). Only options that are explicitly named are updated; omitted options leave the current global state unchanged (no silent reset to package defaults). The configuration is auto-persisted to $STConfigFile and reapplied on the next Get[\"SubTropica`\"], so you only need to call this once per machine.";
+ConfigureSubTropica::usage = "ConfigureSubTropica[opt -> val, ...] sets external-tool paths (PolymakePath, GinshPath, MaplePath, HyperIntPath, HyperFlintPath, PythonPath, FiniteFlowPath, SPQRPath, FIESTAPath, AMFlowPath, LiteRedPath, LiteIBPPath, FIREPath, FeyntropPath, KiraPath, NeatIBPPath, SingularPath, PolyLogToolsPath, LibraPath, DiffExpPath, FermatPath, FormPath, PolymakeConcurrencyFraction). Only options that are explicitly named are updated; omitted options leave the current global state unchanged (no silent reset to package defaults). The configuration is auto-persisted to $STConfigFile and reapplied on the next Get[\"SubTropica`\"], so you only need to call this once per machine.";
 
 STResetConfig::usage = "STResetConfig[] removes the persistent SubTropica configuration file at $STConfigFile, restoring package defaults at the next package load.";
 
@@ -8512,7 +8846,7 @@ STTropicalDataPrecompute[allIntegrands_, vb_:False] := Module[
                     While[ProcessStatus[$STPolymakeProcess] === "Running", Pause[0.2]];
                     ,
                     (* Abort handler: kill all polymake children, then the bash wrapper *)
-                    With[{pid = ToString[ProcessID[$STPolymakeProcess]]},
+                    With[{pid = ToString[ProcessInformation[$STPolymakeProcess, "ProcessID"]]},
                         RunProcess[{"/bin/bash", "-c",
                             "pkill -TERM -P " <> pid <> "; kill -TERM " <> pid}];
                         Pause[0.5];
@@ -10425,7 +10759,7 @@ STParseHyperLogProceduresOutput[$Failed]   := $Failed;
 
 STHyperFlint::usage = "STHyperFlint[integrand, {x1, ..., xn}] evaluates the Euler integral over [0, \[Infinity])^n analytically by delegating to the external `hyperflint` CLI (C++/FLINT port of HyperIntica).  Returns the same symbolic form HyperInt[integrand, {x1, ..., xn}] produces on convergent inputs.  Set $STHyperFlintPath or use ConfigureSubTropica[HyperFlintPath -> ...] to override the binary location.";
 
-$HyperFLINTAvailable::usage = "$HyperFLINTAvailable is True when the HyperFLINT backend (binary + MZV data table) is resolvable, either from a dev source build, the SubTropicaHyperFLINT add-on paclet, or a configured path. Use it to check whether Integrator -> \"HyperFLINT\" / STHyperFlint will run.";
+$HyperFLINTAvailable::usage = "$HyperFLINTAvailable is True when the HyperFLINT backend (binary + MZV data table) is resolvable, either from a dev source build, the HyperFLINT add-on paclet, or a configured path. Use it to check whether Integrator -> \"HyperFLINT\" / STHyperFlint will run.";
 
 STHyperFlint::notfound  = "HyperFLINT binary not found at ``.  Set via ConfigureSubTropica[HyperFlintPath -> \"/absolute/path/to/hyperflint\"], or build with `cd ~/Projects/SubTropica-branchSM/HyperFLINT && cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release && cmake --build build-release`.";
 STHyperFlint::nodata    = "HyperFLINT data file (mzv_reductions.json) not found.  Tried: ``  -- Fix: re-clone HyperFLINT so <hf_root>/data/mzv_reductions.json is present, OR drop the file at ~/.subtropica/mzv_reductions.json, OR ConfigureSubTropica[HyperFlintDataPath -> \"/abs/path/to/mzv_reductions.json\"].  The file (110 KB) ships with the HyperFLINT source tree.";
@@ -15951,9 +16285,23 @@ result},
     (* R21 C.1: distribute HF helpers to subkernels when ParallelTable
        will dispatch into stTimedHyperFlint.  Without this, subkernels
        see undefined SubTropica`Private`stTimedHyperFlint and the call
-       returns unevaluated, miscounting as success. *)
+       returns unevaluated, miscounting as success.
+
+       2026-06-01 perf: gate on Length[Kernels[]] > 0.  DistributeDefinitions
+       gathers and serialises STHyperFlint's full definition closure on every
+       call; STHyperFlint grew substantially (FactoredRat etc.) in v1.2.0, so
+       this costs ~4 s per face.  When there are no parallel kernels (e.g.
+       Parallelization -> 1) ParallelTable degrades to a sequential evaluation
+       on the main kernel, where stTimedHyperFlint / STHyperFlint and the
+       $STHyperFlint* globals already exist; distributing them to an empty
+       subkernel pool is pure waste and cannot change the result.  Even if a
+       later ParallelTable auto-launches kernels, an undistributed package call
+       is re-evaluated on the main kernel (correct value, just serial), so the
+       guard is value-preserving.  Matches the existing Kernels[] idiom at
+       STLaunchHyperInticaBruteForce and STLaunchHyperIntica. *)
     If[OptionValue["LevelParallelism"] =!= "None" &&
-       OptionValue["Integrator"] === "HyperFLINT",
+       OptionValue["Integrator"] === "HyperFLINT" &&
+       Length[Kernels[]] > 0,
         DistributeDefinitions[stTimedHyperFlint, STHyperFlint,
             $STHyperFlintPath, $STHyperFlintDataPath,
             $STHyperFlintThreads, $STHyperFlintUseLibraryLink,
@@ -16354,7 +16702,11 @@ STLaunchHyperInticaPartialIntegrandsEpsOrder[faceDirectories_, OptionsPattern[]]
     safeCount = 1;
     While[
         (safeCount++) < \[Infinity] && 
-        ($QueueLength > 0 (* jobs still in queue *) || MemberQ[Head /@ ProcessState /@ ids, running](* job running? *)) && 
+        (* Fully-qualify the Parallel`Developer` job-queue symbols: referenced
+           bare inside the SubTropica` package they were created in SubTropica`
+           and shadowed Parallel`Developer`$QueueLength/ProcessState/running
+           (::shdw warnings once the parallel subsystem loads). *)
+        (Parallel`Developer`$QueueLength > 0 (* jobs still in queue *) || MemberQ[Head /@ Parallel`Developer`ProcessState /@ ids, Parallel`Developer`running](* job running? *)) &&
         Length[ids] > 0,
         
         {kernelReport, id, ids} = WaitNext[ids];
@@ -17051,7 +17403,11 @@ STGenerateIntegrand[g_, opts:OptionsPattern[]] := Module[
   Module[{nEdges = If[MatchQ[g, {_List, _List}], Length[g[[1]]], Length[xvars]]},
     prefactor = (-1)^nEdges * prefactor];
   massvars = DeleteCases[
-    Union@Cases[integrand, _Symbol, Infinity],
+    Union[Cases[integrand, _Symbol, Infinity],
+          (* Cases[_Symbol] (Heads->False) misses indexed masses mm[i]/MM[i]
+             (the head is at part 0, not searched), so on graphs with >=2
+             distinct masses they were dropped from coeffs.  Capture them. *)
+          Cases[integrand, (mm | MM | m | M)[_Integer], {0, Infinity}]],
     Alternatives @@ Join[xvars, {eps}]];
 
   (* Check that the F polynomial has not vanished after substitutions *)
@@ -20520,7 +20876,15 @@ $STAutocompletionData = <|
         "LiteRedPath"                 -> {"FileNameJoin[{$HomeDirectory, \"LiteRed\"}]"},
         "LiteIBPPath"                 -> {"FileNameJoin[{$HomeDirectory, \"finiteflow-mathtools\", \"packages\"}]"},
         "FIREPath"                    -> {"FileNameJoin[{$HomeDirectory, \"fire\", \"FIRE6\"}]"},
-        "FeyntropPath"                -> {"FileNameJoin[{$HomeDirectory, \"feyntrop\"}]"}
+        "FeyntropPath"                -> {"FileNameJoin[{$HomeDirectory, \"feyntrop\"}]"},
+        "KiraPath"                    -> {"\"\""},
+        "NeatIBPPath"                 -> {"\"\""},
+        "SingularPath"                -> {"\"/opt/homebrew/bin/Singular\""},
+        "PolyLogToolsPath"            -> {"\"\""},
+        "LibraPath"                   -> {"\"\""},
+        "DiffExpPath"                 -> {"\"\""},
+        "FermatPath"                  -> {"FileNameJoin[{$HomeDirectory, \"Projects\", \"Ferm7a\", \"fer64\"}]"},
+        "FormPath"                    -> {"\"\"  (* auto-detected from $PATH *)"}
     |>
 |>;
 
@@ -28041,8 +28405,15 @@ STSaveResult[ir_Association, opts:OptionsPattern[]] := Module[
 
     stLog["[SubTropica] Result saved to: ", entryPath];
 
-    (* Rebuild library.json so the UI picks up the new entry *)
-    Quiet @ Check[STBuildLibraryJSON[], Null];
+    (* Rebuild library.json so the UI picks up the new entry.  Only attempt
+       this when the dev-only rollup script is actually present (it is
+       stripped from the shipped paclet); otherwise there is nothing to
+       rebuild and STBuildLibraryJSON would no-op anyway.  Quiet@Check does
+       NOT suppress stLog/stErr (they are Print, not Message), so gate the
+       call instead of relying on the wrapper. *)
+    If[FileExistsQ[FileNameJoin[{$SubTropicaInstallDir, "scripts",
+            "_build_library_json.py"}]],
+        Quiet @ Check[STBuildLibraryJSON[], Null]];
 
     newRecord
 ];
@@ -28439,7 +28810,17 @@ STBuildLibraryJSON[outputPath_String : Automatic] := Module[
         "validate_library.py"}];
 
     If[!FileExistsQ[buildScript],
-        stErr["[SubTropica] STBuildLibraryJSON: missing ", buildScript];
+        (* The rollup script is a dev/release-time asset; it is intentionally
+           NOT bundled in the shipped paclet (release-paclet.yml core job
+           include-list and publish-release.sh strip scripts/).  In an
+           installed paclet its absence is the normal state, not an error:
+           library-local/ has already been written by the caller and there is
+           no central library.json to rebuild.  Use stLog (verbose-gated)
+           rather than stErr (unconditional Print, which Quiet@Check at the
+           call site cannot suppress) so no message reaches an end user, and
+           return $Failed silently. *)
+        stLog["[SubTropica] STBuildLibraryJSON: build script not present (",
+            buildScript, "); skipping library.json rebuild (dev-only step)."];
         Return[$Failed]];
 
     (* Run python scripts from libRoot so their relative-path defaults

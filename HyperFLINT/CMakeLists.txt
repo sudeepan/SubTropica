@@ -103,6 +103,7 @@ warn on mismatch at every eval-json roundtrip (Track 8.1).")
 set(HF_SOURCES
     src/core/poly.cpp
     src/core/rat.cpp
+    src/core/factored_rat.cpp
     src/core/rat_scalar.cpp
     src/core/rat_split.cpp
     src/core/sym_coef_split.cpp
@@ -558,6 +559,24 @@ target_link_libraries(hyperflint-test-merge-sorted-canonical
 add_executable(hyperflint-test-rat-add-equivalence
                test/test_rat_add_equivalence.cpp)
 target_link_libraries(hyperflint-test-rat-add-equivalence
+                      PRIVATE hyperflint)
+
+# FactoredRat (2026-05-30): Phase B0 standalone unit test for the
+# factored-denominator coefficient type. Links the full hyperflint lib;
+# run directly (no add_test), exit 0 = pass.
+add_executable(hyperflint-test-factored-rat
+               test/test_factored_rat.cpp)
+target_link_libraries(hyperflint-test-factored-rat
+                      PRIVATE hyperflint)
+
+# B1 regression oracle (2026-05-30): partial_fractions reconstruction
+# characterization. Pins the current partial_fractions behavior via the
+# value round-trip identity  P + Σ c_{i,j}/(var-a_i)^j == f  so the Phase
+# B1 FactoredRat refactor is provably value-preserving. Mirrors the
+# factored-rat block idiom; run directly, exit 0 = pass.
+add_executable(hyperflint-test-partial-fractions-characterization
+               test/test_partial_fractions_characterization.cpp)
+target_link_libraries(hyperflint-test-partial-fractions-characterization
                       PRIVATE hyperflint)
 
 # Phase 1 (poles streaming, 2026-05-03): ShardedFlatMap skeleton +
@@ -1379,19 +1398,32 @@ $InstallationDirectory/SystemFiles/IncludeFiles/C)")
                     "(reverts to shared FLINT — known to crash Mma kernel "
                     "on heavy fixtures).")
             endif()
-            # -Wl,-force_load is required because the LibraryLink
-            # dylib also uses -undefined dynamic_lookup (for the
-            # WolframLibraryData callbacks).  Without -force_load, the
-            # linker would defer FLINT/GMP/MPFR symbols to runtime
-            # instead of pulling them from the static archives, and
-            # at load time dyld would resolve them against Mma's
-            # bundled libflint.17/libgmp/libmpfr — exactly the
-            # collision we're trying to avoid.
-            target_link_libraries(hyperflint_librarylink PRIVATE
-                hyperflint_nomp_sd
-                "-Wl,-force_load,${HF_FLINT_STATIC_ARCHIVE}"
-                "-Wl,-force_load,${HF_MPFR_STATIC_ARCHIVE}"
-                "-Wl,-force_load,${HF_GMP_STATIC_ARCHIVE}")
+            # Force-load ALL objects from the static archives so the
+            # FLINT/GMP/MPFR symbols are embedded in the library instead of
+            # being deferred to runtime, where the loader would resolve them
+            # against the host's bundled libflint/libgmp/libmpfr -- exactly
+            # the collision we avoid. Symbol privacy is then enforced via the
+            # exported-symbols list (macOS) / version script (Linux) below.
+            if(APPLE)
+                # macOS/ld64 syntax. -force_load is also required because the
+                # dylib uses -undefined dynamic_lookup for the
+                # WolframLibraryData callbacks (set in the APPLE block below).
+                target_link_libraries(hyperflint_librarylink PRIVATE
+                    hyperflint_nomp_sd
+                    "-Wl,-force_load,${HF_FLINT_STATIC_ARCHIVE}"
+                    "-Wl,-force_load,${HF_MPFR_STATIC_ARCHIVE}"
+                    "-Wl,-force_load,${HF_GMP_STATIC_ARCHIVE}")
+            else()
+                # GNU ld (Linux): --whole-archive is the -force_load
+                # equivalent; --no-whole-archive resets for any later libs.
+                target_link_libraries(hyperflint_librarylink PRIVATE
+                    hyperflint_nomp_sd
+                    -Wl,--whole-archive
+                    "${HF_FLINT_STATIC_ARCHIVE}"
+                    "${HF_MPFR_STATIC_ARCHIVE}"
+                    "${HF_GMP_STATIC_ARCHIVE}"
+                    -Wl,--no-whole-archive)
+            endif()
             target_compile_options(hyperflint_librarylink PRIVATE
                 -fvisibility=hidden)
         else()
@@ -1420,6 +1452,19 @@ $InstallationDirectory/SystemFiles/IncludeFiles/C)")
             set_target_properties(hyperflint_librarylink PROPERTIES
                 SUFFIX ".dylib"
                 LINK_FLAGS "${_hf_ll_link_flags}")
+        elseif(UNIX)
+            # Linux/ELF: the undefined Wolfram callback symbols resolve at
+            # load time by default (no -undefined dynamic_lookup needed). The
+            # SHARED default already yields libhyperflint_librarylink.so. When
+            # static-linking the deps, restrict the dynamic symbol table to
+            # the LibraryLink entry points via the version script (the ELF
+            # mirror of exports.txt) and hide all archive symbols, so the
+            # embedded FLINT/GMP/MPFR cannot cross-resolve with the Engine's
+            # bundled copies.
+            if(HF_LIBRARYLINK_STATIC_DEPS)
+                set_target_properties(hyperflint_librarylink PROPERTIES
+                    LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/bridge/librarylink/exports.map -Wl,--exclude-libs,ALL")
+            endif()
         endif()
     endif()
 endif()

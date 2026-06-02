@@ -5545,6 +5545,7 @@ function onGraphChanged() {
   }
   clearTimeout(_matchDebounce);
   _matchDebounce = setTimeout(doLiveMatch, 80);
+  syncNotebookBtn();
 }
 
 function doLiveMatch() {
@@ -5669,6 +5670,36 @@ function doLiveMatch() {
 
         matches.push({ topoKey: key, topo, configMatches });
       }
+    }
+
+    // Readout reconciliation: nickel.js and the Mathematica computeNickelIndex
+    // use different canonical conventions (GraphState e<digits vs Mma
+    // |<digits<A-Z<e), so they print different strings for the same graph on
+    // ~95% of topologies. When the drawing matches a library topology, show
+    // that entry's stored (Mathematica) key, so the readout agrees with the
+    // library, the downloaded notebook, and the paper. A novel graph has no
+    // library key and keeps the JS form (nothing to be inconsistent with; the
+    // case-i notebook recomputes the Mathematica form via computeNickelIndex).
+    // currentNickel itself stays the JS form — it is sent to the kernel as
+    // jsNickel and must remain the GraphState convention.
+    // A drawn graph can map to more than one stored key: computeNickelIndex's
+    // bare is color-coupled, so the same graph may sit under two Mathematica
+    // keys (distinct colorings). Prefer the full-topology match whose coloring
+    // the drawing reproduces exactly; else any full-topology match; else (a
+    // novel graph) keep the JS form.
+    const fullMatchKeys = new Set(library._canonIndex[nickelStr] || []);
+    const fullMatches = matches.filter(m => fullMatchKeys.has(m.topoKey));
+    const exactMatch = fullMatches.find(m => Object.values(m.configMatches).includes('exact'));
+    const displayNickel =
+      (exactMatch && exactMatch.topoKey) ||
+      (fullMatches[0] && fullMatches[0].topoKey) ||
+      nickelStr;
+    $('nickel-display').textContent = displayNickel;
+    if (displayNickel !== nickelStr) {
+      $('nickel-display').title =
+        'Library (Mathematica) canonical Nickel index. GraphState/JS form: ' + nickelStr;
+    } else {
+      $('nickel-display').removeAttribute('title');
     }
 
     // ── Subtopology matching ──
@@ -5836,7 +5867,11 @@ function createConfigToast(topoKey, topo, cm, ck) {
   const thumb = generateThumbnail(topoKey, ck);
   thumb.classList.add('notif-thumb');
   const cfgHasResults = (cfg.results||cfg.Results||[]).length > 0;
-  const cfgIsLocal = hasSource(cfg, 'SubTropica');
+  // "Local" (user-computed, not-yet-bundled) results only exist in full
+  // (kernel) mode. In the web/lite build every config is from the bundled
+  // library, so a 'SubTropica' source means a bundled/verified entry, not a
+  // local one -- never show the outlined local star there.
+  const cfgIsLocal = backendMode === 'full' && hasSource(cfg, 'SubTropica');
   const starPrefix = cfgHasResults
     ? (cfgIsLocal
         ? '<span class="result-star result-star-local" title="Local result (computed by you)">\u2605</span> '
@@ -6953,7 +6988,8 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
 
       const resultsSection = document.createElement('div');
       resultsSection.className = 'popup-section';
-      const _isLocalCfg = hasSource(cfg, 'SubTropica');
+      // local only in full (kernel) mode; bundled in the web/lite build (see createConfigToast)
+      const _isLocalCfg = backendMode === 'full' && hasSource(cfg, 'SubTropica');
       const _resStarClass = _isLocalCfg ? 'result-star result-star-local' : 'result-star';
       const _resSuffix = _isLocalCfg ? ' (local)' : '';
       resultsSection.innerHTML = `<div class="popup-section-title"><span class="${_resStarClass}">\u2605</span> Computed Results${_resSuffix}</div>`;
@@ -7348,7 +7384,17 @@ function generateTikZRaw() {
   const momLabels = getMomentumLabels();
   const showLabels = shouldShowLabels();
 
-  let tikz = '\\begin{tikzpicture}\n';
+  // Style macros defined once, referenced per edge below, so the \draw lines
+  // stay short and a paper can retune all propagators by editing one place.
+  // Requires \usetikzlibrary{arrows.meta, decorations.markings, decorations.pathmorphing}.
+  let tikz = '\\begin{tikzpicture}[\n' +
+    '  prop/.style={thick},                 % massless propagator\n' +
+    '  massive/.style={ultra thick},        % massive propagator (also coloured)\n' +
+    '  mom/.style={postaction={decorate, decoration={markings,\n' +
+    '    mark=at position 0.55 with {\\arrow{Latex[length=2mm]}}}}}, % momentum arrow\n' +
+    '  wavy/.style={decorate, decoration={snake, amplitude=1.5pt, segment length=5pt}},\n' +
+    '  gluon/.style={decorate, decoration={coil, aspect=0.5, segment length=4pt, amplitude=3pt}},\n' +
+    ']\n';
 
   // Coordinates
   state.vertices.forEach((v, i) => {
@@ -7356,38 +7402,57 @@ function generateTikZRaw() {
   });
   tikz += '\n';
 
+  // Group parallel edges (same unordered vertex pair) so coincident
+  // propagators fan out with alternating bends instead of drawing on top of
+  // one another (e.g. the three lines of a sunset/banana). The straight
+  // `--` is kept for single edges and the central edge of an odd group.
+  const _pairKey = e => (e.a <= e.b ? `${e.a}-${e.b}` : `${e.b}-${e.a}`);
+  const _parGroups = {};
+  state.edges.forEach((e, i) => { (_parGroups[_pairKey(e)] ||= []).push(i); });
+
   // Edges with styles and colors
   state.edges.forEach((e, i) => {
     const mass = e.mass || 0;
-    // Thicken massive edges so they visually pop against massless ones,
-    // matching the convention of printed diagrams in the literature.
-    let opts = [mass > 0 ? 'ultra thick' : 'thick'];
-    // Mid-edge momentum arrow, matching the "Arrows" toggle in the UI.
-    // TikZ's `postaction` places an arrow head at ~55 % along the edge
-    // without breaking the line, so the result mirrors what the canvas
-    // draws.
-    if (showArrows && e.a !== e.b) {
-      opts.push('postaction={decorate, decoration={markings, mark=at position 0.55 with {\\arrow{Latex[length=2mm]}}}}');
-    }
+    // Reference the style macros from the preamble instead of repeating the
+    // option lists on every edge: `massive` thickens (and is coloured below),
+    // `mom` adds the mid-edge momentum arrow, `wavy`/`gluon` are decorations.
+    let opts = [mass > 0 ? 'massive' : 'prop'];
     if (mass > 0) {
       const colors = ['Maroon', 'OliveGreen', 'RoyalBlue', 'Goldenrod', 'Plum', 'BrickRed', 'Teal', 'Brown'];
       opts.push(colors[(mass - 1) % colors.length]);
     }
+    if (showArrows && e.a !== e.b) opts.push('mom');
     if (e.style === 'dashed') opts.push('dashed');
-    else if (e.style === 'wavy') opts.push('decorate', 'decoration={snake, amplitude=1.5pt, segment length=5pt}');
-    else if (e.style === 'dblwavy') opts.push('double', 'decorate', 'decoration={snake, amplitude=1.5pt, segment length=5pt}');
-    else if (e.style === 'gluon' || e.style === 'zigzag') opts.push('decorate', 'decoration={coil, aspect=0.5, segment length=4pt, amplitude=3pt}');
+    else if (e.style === 'wavy') opts.push('wavy');
+    else if (e.style === 'dblwavy') opts.push('double', 'wavy');
+    else if (e.style === 'gluon' || e.style === 'zigzag') opts.push('gluon');
 
-    let edgeLine = `  \\draw[${opts.join(', ')}] (v${e.a+1}) -- (v${e.b+1})`;
-
-    // Edge label (particle label or momentum/number)
-    if (e.edgeLabel) {
-      edgeLine += ` node[midway, auto] {$${e.edgeLabel}$}`;
-    } else if (showLabels && momLabels) {
-      edgeLine += ` node[midway, auto, font=\\footnotesize] {$${momLabels[i]}$}`;
-    } else if (showLabels) {
-      edgeLine += ` node[midway, auto, font=\\footnotesize] {${i + 1}}`;
+    // Fan out parallel edges between distinct vertices with bends.
+    let connector = '--';
+    if (e.a !== e.b) {
+      const grp = _parGroups[_pairKey(e)];
+      if (grp.length > 1) {
+        const k = grp.indexOf(i);
+        const angle = Math.round((k - (grp.length - 1) / 2) * 22); // 22 deg per arc
+        if (angle > 0) connector = `to[bend left=${angle}]`;
+        else if (angle < 0) connector = `to[bend right=${-angle}]`;
+        else connector = 'to'; // central edge of an odd group stays straight
+      }
     }
+
+    // Edge label (particle label or momentum/number). Placed between the
+    // connector and the target so it sits on the (possibly curved) path for
+    // both `--` and `to[bend ...]` forms.
+    let labelNode = '';
+    if (e.edgeLabel) {
+      labelNode = ` node[midway, auto] {$${e.edgeLabel}$}`;
+    } else if (showLabels && momLabels) {
+      labelNode = ` node[midway, auto, font=\\footnotesize] {$${momLabels[i]}$}`;
+    } else if (showLabels) {
+      labelNode = ` node[midway, auto, font=\\footnotesize] {${i + 1}}`;
+    }
+
+    let edgeLine = `  \\draw[${opts.join(', ')}] (v${e.a+1}) ${connector}${labelNode} (v${e.b+1})`;
 
     const exp = e.propExponent ?? 1;
     if (exp !== 1) edgeLine += ` %% nu=${exp}`;
@@ -7406,6 +7471,108 @@ function generateTikZRaw() {
 
   tikz += '\\end{tikzpicture}';
   return tikz;
+}
+
+// Convert a LaTeX-ish momentum label (\ell_{1}, "-\ell_{1} - \ell_{2}", p_{2},
+// 2\ell_{1} + p, (p_{1}+p_{2})) into Mathematica box language, so the embedded
+// diagram renders momenta with real subscripts and a script-ell. Stays ASCII
+// (the raw DiagramGraphics cell cannot carry UTF-8) via the \[ScriptL] named
+// character and SubscriptBox. Returns a box string, or null if empty.
+function momTexToBoxes(s) {
+  if (!s) return null;
+  const toks = [];
+  const re = /(\\ell)_\{(\d+)\}|(\\ell)|([A-Za-z])_\{(\d+)\}|([A-Za-z])|(\d+)|([+\-()])/g;
+  let m;
+  while ((m = re.exec(s)) !== null) {
+    if (m[1] && m[2]) toks.push(`SubscriptBox["\\[ScriptL]", "${m[2]}"]`);
+    else if (m[3])    toks.push(`"\\[ScriptL]"`);
+    else if (m[4] && m[5]) toks.push(`SubscriptBox["${m[4]}", "${m[5]}"]`);
+    else if (m[6])    toks.push(`"${m[6]}"`);
+    else if (m[7])    toks.push(`"${m[7]}"`);
+    else if (m[8])    toks.push(`"${m[8]}"`);
+  }
+  if (toks.length === 0) return null;
+  return toks.length === 1 ? toks[0] : `RowBox[{${toks.join(', ')}}]`;
+}
+
+// Build a native Mathematica GraphicsBox string for the current diagram, so the
+// notebook can embed the diagram as a pre-rendered, vector `Cell[BoxData[...],
+// "Output"]` that displays on open — instead of a wall of base64 PNG bytes that
+// only render after evaluating ImportByteArray. Mirrors generateTikZRaw's
+// geometry (y-flip, mass colours, parallel-edge fanning, internal-vertex dots).
+function generateDiagramGraphicsBox() {
+  const deg = getVertexDegrees();
+  const momLabels = getMomentumLabels();
+  const showLabels = shouldShowLabels();
+  const num = x => Number(x).toFixed(4);
+  // dvipsnames-ish palette matching the TikZ Maroon/OliveGreen/RoyalBlue/... order.
+  const massRGB = [
+    [0.690, 0.188, 0.376], [0.235, 0.506, 0.106], [0.129, 0.290, 0.610],
+    [0.930, 0.660, 0.070], [0.560, 0.270, 0.520], [0.700, 0.120, 0.130],
+    [0.000, 0.430, 0.450], [0.400, 0.200, 0.100],
+  ];
+  const inkRGB = [0.239, 0.204, 0.157];
+
+  const pairKey = e => (e.a <= e.b ? `${e.a}-${e.b}` : `${e.b}-${e.a}`);
+  const groups = {};
+  state.edges.forEach((e, i) => { (groups[pairKey(e)] ||= []).push(i); });
+
+  const prims = [];
+  state.edges.forEach((e, i) => {
+    const va = state.vertices[e.a], vb = state.vertices[e.b];
+    if (!va || !vb) return;
+    const ax = va.x, ay = -va.y, bx = vb.x, by = -vb.y;            // y-flip → canvas orientation
+    const mass = e.mass || 0;
+    const col = mass > 0 ? massRGB[(mass - 1) % massRGB.length] : inkRGB;
+    const thick = mass > 0 ? 3.2 : 2.0;
+    // Perpendicular offset for parallel-edge fanning / label placement.
+    const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
+    const px = -dy / len, py = dx / len;
+    const grp = groups[pairKey(e)];
+    const k = grp.indexOf(i);
+    const frac = (e.a !== e.b && grp.length > 1) ? (k - (grp.length - 1) / 2) * 0.5 : 0;
+    // A mid-edge arrowhead (a -> b) shows the momentum flow direction, matching
+    // the routing the labels refer to. Mirrors the "Arrows" toggle / the TikZ
+    // `mom` style; Arrowheads[{{size, pos}}] places one arrowhead partway along.
+    const drawArrow = showArrows && e.a !== e.b;
+    const head = 'Arrowheads[{{0.05, 0.58}}], ';
+    let pathBox, labelAt;
+    if (frac !== 0) {
+      const cx = (ax + bx) / 2 + px * frac * len, cy = (ay + by) / 2 + py * frac * len;
+      const bez = `BezierCurveBox[{{${num(ax)},${num(ay)}},{${num(cx)},${num(cy)}},{${num(bx)},${num(by)}}}]`;
+      pathBox = drawArrow ? `${head}ArrowBox[${bez}]` : bez;
+      labelAt = [(ax + bx) / 2 + px * frac * len * 0.62, (ay + by) / 2 + py * frac * len * 0.62];
+    } else {
+      const pts = `{{${num(ax)},${num(ay)}},{${num(bx)},${num(by)}}}`;
+      pathBox = drawArrow ? `${head}ArrowBox[${pts}]` : `LineBox[${pts}]`;
+      labelAt = [(ax + bx) / 2 + px * 0.14 * len, (ay + by) / 2 + py * 0.14 * len];
+    }
+    prims.push(`{RGBColor[${col.map(num).join(',')}], AbsoluteThickness[${thick}], ${pathBox}}`);
+    // Edge label: momentum labels become box language (SubscriptBox + script-l)
+    // so they render with real subscripts; a custom particle label stays a plain
+    // ASCII string. (The raw DiagramGraphics cell cannot carry UTF-8.)
+    let labBox = null;
+    if (e.edgeLabel) {
+      const safe = String(e.edgeLabel)
+        .replace(/\\ell/g, 'l').replace(/\\/g, '').replace(/[{}_"]/g, '').replace(/[^\x20-\x7e]/g, '');
+      if (safe) labBox = `"${safe}"`;
+    } else if (showLabels && momLabels && momLabels[i]) {
+      labBox = momTexToBoxes(momLabels[i]);
+    } else if (showLabels) {
+      labBox = `"${i + 1}"`;
+    }
+    if (labBox) {
+      prims.push(`InsetBox[StyleBox[${labBox}, FontSize->9, FontColor->RGBColor[0.42,0.35,0.25]], {${num(labelAt[0])},${num(labelAt[1])}}]`);
+    }
+  });
+  // Internal vertices as filled dots (external legs, degree <= 1, get none).
+  state.vertices.forEach((v, i) => {
+    if ((deg[i] || 0) > 1) {
+      prims.push(`{RGBColor[${inkRGB.map(num).join(',')}], DiskBox[{${num(v.x)},${num(-v.y)}}, 0.06]}`);
+    }
+  });
+
+  return `GraphicsBox[{${prims.join(', ')}}, ImageSize->320, PlotRange->All, AspectRatio->Automatic, ImageMargins->4]`;
 }
 
 /** Resolve all CSS var() references in an element tree to computed values. */
@@ -7726,7 +7893,7 @@ function openAbout() {
         nResults += resultsList.length;
         scatterPoints.push({ loops, legs, computed: hasResults });
         const src = configs[ck].source || configs[ck].Source || '';
-        if (src === 'SubTropica') nLocal++;
+        if (backendMode === 'full' && src === 'SubTropica') nLocal++;
         const recs = configs[ck].Records || configs[ck].records || [];
         nRecords += recs.length;
         recs.forEach(r => {
@@ -8262,7 +8429,7 @@ function populateBrowser() {
   for (const key in library.topologies) {
     const t = library.topologies[key];
     const hasResults = Object.values(t.configs||{}).some(c => (c.results||c.Results||[]).length > 0);
-    const isLocal = Object.values(t.configs||{}).some(c => (c.source||c.Source||'') === 'SubTropica');
+    const isLocal = backendMode === 'full' && Object.values(t.configs||{}).some(c => (c.source||c.Source||'') === 'SubTropica');
     // Collect all diagram names/aliases under this topology for search
     const _diagramNames = [];
     for (const ck in (t.configs||{})) {
@@ -8307,7 +8474,7 @@ function populateBrowser() {
         name, topoName: t.primaryName||t.name||t.Name||key,
         loops: t.loops??t.L??0, legs: t.legs??0, props: t.props??0,
         source,
-        isLocal: hasSource(cfg, 'SubTropica'),
+        isLocal: backendMode === 'full' && hasSource(cfg, 'SubTropica'),
         isWaitlisted: _waitlistConfigSet.has(waitlistKey(key, ck)),
         massScales: cfg.MassScales ?? cfg.massScales ?? null,
         fcClass: classifyFC(fc),
@@ -9040,7 +9207,7 @@ $('browser-sync-btn').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = 'Syncing\u2026';
   try {
-    const res = await kernel.post('syncLibrary', '{}');
+    const res = await kernel.post('syncLibrary', {});
     if (res.status === 'ok') {
       localStorage.setItem('subtropica-last-sync', new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }));
       showWarningToast(`Synced: ${res.downloaded || 0} new entries`);
@@ -9075,6 +9242,16 @@ $('export-menu-btn').addEventListener('click', (evt) => {
   evt.stopPropagation();
   $('export-dropdown').classList.toggle('visible');
 });
+
+// Notebook download button
+const nbDlBtn = document.getElementById('notebook-dl-btn');
+if (nbDlBtn) {
+  nbDlBtn.addEventListener('click', () => downloadStarterNotebook(buildNotebookPayloadFromCurrentState()));
+}
+function syncNotebookBtn() {
+  if (nbDlBtn) nbDlBtn.disabled = !(state.edges && state.edges.length > 0);
+}
+syncNotebookBtn();
 document.addEventListener('click', () => {
   $('export-dropdown').classList.remove('visible');
   if (!_massPickerJustOpened) closeMassPicker();
@@ -14461,14 +14638,16 @@ function parseNotebookCells(wl) {
       while (i < lines.length && blank(lines[i])) i++;
       if (i >= lines.length) break;
       if (lines[i].startsWith('(*')) {
-        const single = lines[i].match(/^\(\*(.*)\*\)\s*$/);
-        if (single) { cells.push({ style, text: single[1].trim() }); i++; }
-        else {
-          let body = lines[i].replace(/^\(\*/, ''); i++;
-          while (i < lines.length && !lines[i].includes('*)')) { body += '\n' + lines[i]; i++; }
-          if (i < lines.length) { body += '\n' + lines[i].replace(/\*\)\s*$/, ''); i++; }
-          cells.push({ style, text: body.trim() });
-        }
+        // Nesting-aware comment read: track (* / *) depth so an inner comment
+        // does not prematurely close the cell. Mirrors parseCells() in
+        // notebook/wl-to-nb.mjs (keep the two in sync).
+        const depthOf = s => (s.match(/\(\*/g) || []).length - (s.match(/\*\)/g) || []).length;
+        let raw = lines[i];
+        let depth = depthOf(lines[i]);
+        i++;
+        while (i < lines.length && depth > 0) { raw += '\n' + lines[i]; depth += depthOf(lines[i]); i++; }
+        const body = raw.replace(/^\(\*/, '').replace(/\*\)\s*$/, '');
+        cells.push({ style, text: body.trim() });
       } else cells.push({ style, text: '' });
       continue;
     }
@@ -14516,10 +14695,49 @@ function renderNotebookPreview(container, wl) {
   }
 }
 
+// Capture the current canvas as a base64 PNG + raw TikZ for the notebook.
+// Returns {} on any failure so the notebook still generates. The PNG path
+// mirrors the proven exportPNG(): an SVG loaded into an Image via the
+// `charset=utf-8,encodeURIComponent` data URI (NOT base64/btoa) and rasterized
+// onto a fixed-size canvas. The earlier base64/btoa + `img.width` version
+// produced a 0-sized canvas (viewBox-only SVGs have no intrinsic px size), so
+// no PNG was ever embedded.
+async function captureDiagramArtifacts() {
+  const out = {};
+  try {
+    let svgStr = generateExportSVG();
+    // generateExportSVG emits a viewBox-only SVG (no intrinsic px size), so an
+    // <img> of it sizes to 0 / fails to load and nothing rasterizes. Force
+    // explicit 800x600 pixel dimensions on the root <svg> (stripping any present
+    // width/height first) so it rasterizes reliably, matching what the live
+    // #draw-canvas does. viewBox is preserved, so the drawing still fits.
+    svgStr = svgStr.replace(/<svg\b([^>]*)>/, (_, attrs) => {
+      let a = attrs.replace(/\s(?:width|height)\s*=\s*"[^"]*"/g, '');
+      if (!/\bxmlns\s*=/.test(a)) a += ' xmlns="http://www.w3.org/2000/svg"';
+      return '<svg' + a + ' width="800" height="600">';
+    });
+    const img = await new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(i); i.onerror = rej;
+      i.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+    });
+    const cv = document.createElement('canvas');
+    cv.width = 800; cv.height = 600;                  // fixed, like exportPNG
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    out.pngBase64 = cv.toDataURL('image/png').split(',')[1];
+  } catch (e) { console.warn('PNG capture failed', e); }
+  try { out.tikz = generateTikZRaw(); } catch (e) { console.warn('TikZ capture failed', e); }
+  // Native Mathematica GraphicsBox so the notebook embeds the diagram as a
+  // pre-rendered vector cell (renders on open) rather than a base64 PNG blob.
+  try { out.graphicsBox = generateDiagramGraphicsBox(); } catch (e) { console.warn('GraphicsBox capture failed', e); }
+  return out;
+}
+
 async function downloadStarterNotebook(entry, recordIdx = 0) {
   try {
     const template = await getStarterTemplate();
-    const wl = await renderNotebook(template, entry, recordIdx, { offline: false, stVersion: ST_VERSION });
+    const art = await captureDiagramArtifacts();
+    const wl = await renderNotebook(template, entry, recordIdx, { offline: false, stVersion: ST_VERSION, ...art });
     // Ship .nb rather than .wl: Mathematica opens .wl files in Package
     // Editor (code view, no inline cell evaluation), but .nb files open as
     // real notebooks where Shift-Enter works on each cell and FeynmanPlot
@@ -18814,6 +19032,11 @@ if (location.search.includes('test=1')) {
     get lastIntegrationData() { return _lastIntegrationData; },
     doIntegrate,
     loadFromNickel,
+    importEdgeList,
+    downloadStarterNotebook,
+    captureDiagramArtifacts,
+    generateExportSVG,
+    generateTikZRaw,
     collectIntegrationPayload,
     lookupLibraryResult,
     onGraphChanged,

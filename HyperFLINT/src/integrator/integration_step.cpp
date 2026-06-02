@@ -2745,7 +2745,19 @@ RegulatorSym integration_step(const PolyCtx& ctx,
         }
         return SymCoef::from_monomials(ctx, std::move(roundtripped));
     };
+    // FIX-B (2026-06-01): this schedule(dynamic,1) was the ONLY one of the three
+    // omp parallel-for schedules in this file not gated on HF_OMP_FULL_SCHEDULES
+    // (cf. lines ~1004 and ~2087). schedule(dynamic) emits ___kmpc_dispatch_deinit,
+    // which Wolfram's bundled libomp does NOT export; the in-process LibraryLink
+    // dylib (hyperflint_nomp_sd, no HF_OMP_FULL_SCHEDULES) then binds it to null and
+    // SIGSEGVs at PC=0 inside integration_step on the dbox's do_parallel_merge path.
+    // Gate it like the siblings so the dylib uses schedule(static,1); the CLI
+    // (HF_OMP_FULL_SCHEDULES=1) keeps the dynamic path for load balancing.
+#ifdef HF_OMP_FULL_SCHEDULES
     #pragma omp parallel for schedule(dynamic, 1) if(do_parallel_merge)
+#else
+    #pragma omp parallel for schedule(static, 1) if(do_parallel_merge)
+#endif
     for (long i = 0; i < static_cast<long>(flat_v.size()); ++i) {
         auto& mp = flat_v[static_cast<size_t>(i)];
         // 2026-04-28 (Lever-D gate): per-slot in/out monomial counts.

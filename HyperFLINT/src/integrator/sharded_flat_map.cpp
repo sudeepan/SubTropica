@@ -1,6 +1,7 @@
 #include "hyperflint/integrator/sharded_flat_map.hpp"
 
 #include <algorithm>
+#include <mutex>      // std::lock_guard/std::mutex (not transitively included on libstdc++)
 #include <utility>
 
 namespace hyperflint {

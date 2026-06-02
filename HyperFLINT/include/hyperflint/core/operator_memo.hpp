@@ -84,6 +84,8 @@
 #include <cstdint>
 #include <iterator>
 #include <memory>
+#include <mutex>          // std::unique_lock (libstdc++ does not pull it in
+                          // transitively via <shared_mutex> the way libc++ does)
 #include <shared_mutex>
 #include <tuple>
 #include <unordered_map>
