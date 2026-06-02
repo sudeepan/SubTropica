@@ -1217,12 +1217,24 @@ stRunDependencyTests[] := Module[{names},
      CheckAbort inside the definition handles probe-level aborts,
      CheckAbort here handles the pathological case where the guard
      itself fails.  Either way, one bad probe never aborts the sweep. *)
-  Do[
-    If[name =!= "FiniteFlow",
-      CheckAbort[stTestOneDependency[name],
-        $STDependencies[name, "status"]    = "error";
-        $STDependencies[name, "statusMsg"] = "dependency probe aborted"]],
-    {name, names}];
+  (* #41 fix: run the probe sweep with automatic progress reporting blocked.
+     On Mathematica 13.2 (notebook front end) a slow external probe -- e.g.
+     polymake's first-run wrapper compilation via RunProcess -- crosses the
+     progress-report threshold and trips a 13.2 bug in the Progress`ProgressDump`
+     machinery, emitting spurious "AppendTo: Progress`ProgressDump`this$state$NNN
+     is not a variable with a value ..." messages even though the sweep itself
+     succeeds.  Blocking $ProgressReporting keeps the buggy code path from
+     running (harmless no-op where the FE bug is fixed, i.e. >= 13.3); the
+     narrow Quiet is belt-and-suspenders for the same spurious message. *)
+  Block[{$ProgressReporting = False},
+    Quiet[
+      Do[
+        If[name =!= "FiniteFlow",
+          CheckAbort[stTestOneDependency[name],
+            $STDependencies[name, "status"]    = "error";
+            $STDependencies[name, "statusMsg"] = "dependency probe aborted"]],
+        {name, names}],
+      {Set::rvalue, AppendTo::rvalue}]];
 ];
 
 (* Run all dependency checks and print a summary report.  Public path used
@@ -1616,6 +1628,20 @@ If[!StringQ[$STHyperFlintDataPath] || $STHyperFlintDataPath === "" ||
 If[!StringQ[$STHyperFlintLibraryPath] || $STHyperFlintLibraryPath === "" ||
    !FileExistsQ[$STHyperFlintLibraryPath],
     $STHyperFlintLibraryPath = stResolveHyperFlintLibraryPath[$STHyperFlintPath]];
+
+(* v1.2.1 fix: re-attempt the LibraryLink load now that $SubTropicaVersion
+   (line ~1599) and $STHyperFlintLibraryPath (just above) are both bound.
+   The eager load at package init (line ~424) fires before $SubTropicaVersion
+   is set, so its version gate trips and leaves $STHyperFlintUseLibraryLink
+   False.  The lazy retry in stHFLibraryEnsureLoaded does NOT reliably engage
+   the dylib from inside STIntegrate's first HF op (it silently falls back to
+   the CLI subprocess transport), so the in-process LibraryLink path never
+   turns on for a plain STIntegrate call.  Loading here, at package-load top
+   level with both prerequisites bound, sets $STHyperFlintUseLibraryLink=True
+   before any STIntegrate call -- the dispatch then uses the in-process
+   transport.  CheckAbort mirrors line ~424: a LibraryFunctionLoad abort on a
+   mismatched-ABI dylib degrades to the CLI path instead of aborting Needs[]. *)
+CheckAbort[stHFLibraryEnsureLoaded[], $STHyperFlintUseLibraryLink = False];
 
 (* FindRoots root-letter substitutions: W$i -> algebraic root expressions.
    Set by STReadResults when the integration used FindRoots alphabet letters.
