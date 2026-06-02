@@ -270,23 +270,32 @@ jobs:
           echo "engine=$(ls -d /usr/local/Wolfram/WolframEngine/*/ | xargs -n1 basename | head -1)" >> "$GITHUB_OUTPUT"
           echo "Engine include: $INC"
 
-      - name: Build static FLINT 3.4.0 (-fPIC)
+      - name: Build static -fPIC GMP + MPFR + FLINT
         run: |
+          # apt's x86_64 static libgmp.a/libmpfr.a are NOT built with -fPIC
+          # (their TLS relocations R_X86_64_TPOFF32 cannot go into a shared
+          # object), so build GMP/MPFR/FLINT from source with PIC for the dylib.
+          set -e
           cd "$GITHUB_WORKSPACE"
+          DEPS="$GITHUB_WORKSPACE/HyperFLINT/deps-static"
+          wget -q https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz
+          tar xf gmp-6.3.0.tar.xz
+          ( cd gmp-6.3.0 && ./configure --disable-shared --enable-static --with-pic --prefix="$DEPS" && make -j"$(nproc)" && make install )
+          wget -q https://ftp.gnu.org/gnu/mpfr/mpfr-4.2.1.tar.xz
+          tar xf mpfr-4.2.1.tar.xz
+          ( cd mpfr-4.2.1 && ./configure --disable-shared --enable-static --with-pic --with-gmp="$DEPS" --prefix="$DEPS" && make -j"$(nproc)" && make install )
           wget -q https://github.com/flintlib/flint/releases/download/v3.4.0/flint-3.4.0.tar.gz
-          tar xf flint-3.4.0.tar.gz && cd flint-3.4.0
-          ./configure --disable-shared --enable-static \
-            --prefix="$GITHUB_WORKSPACE/HyperFLINT/flint-static" \
-            --with-gmp=/usr --with-mpfr=/usr CFLAGS="-O2 -fPIC -fvisibility=hidden"
-          make -j"$(nproc)" && make install
-          echo "PKG_CONFIG_PATH=$GITHUB_WORKSPACE/HyperFLINT/flint-static/lib/pkgconfig:${PKG_CONFIG_PATH:-}" >> "$GITHUB_ENV"
+          tar xf flint-3.4.0.tar.gz
+          ( cd flint-3.4.0 && ./configure --disable-shared --enable-static --with-gmp="$DEPS" --with-mpfr="$DEPS" CFLAGS="-O2 -fPIC -fvisibility=hidden" --prefix="$DEPS" && make -j"$(nproc)" && make install )
+          echo "PKG_CONFIG_PATH=$DEPS/lib/pkgconfig:${PKG_CONFIG_PATH:-}" >> "$GITHUB_ENV"
+          echo "HF_DEPS=$DEPS" >> "$GITHUB_ENV"
 
       - name: Build + gate the LibraryLink .so
         run: |
           WOLFRAM_INC="${{ steps.env.outputs.wolfram_inc }}" \
-          HF_FLINT_A="$GITHUB_WORKSPACE/HyperFLINT/flint-static/lib/libflint.a" \
-          HF_GMP_A="/usr/lib/${{ steps.env.outputs.archlib }}/libgmp.a" \
-          HF_MPFR_A="/usr/lib/${{ steps.env.outputs.archlib }}/libmpfr.a" \
+          HF_FLINT_A="$HF_DEPS/lib/libflint.a" \
+          HF_GMP_A="$HF_DEPS/lib/libgmp.a" \
+          HF_MPFR_A="$HF_DEPS/lib/libmpfr.a" \
           CC=clang CXX=clang++ \
             bash HyperFLINT/scripts/build_librarylink_dylib.sh \
               --arch linux-x86_64 --src "$GITHUB_WORKSPACE/HyperFLINT" \
@@ -298,9 +307,9 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3" \
             -DHF_OPENMP=ON -DHF_MIMALLOC=OFF -DHF_LIBRARYLINK=OFF -DHF_CLI_STATIC_DEPS=ON \
             -DHF_VERSION=1.2.1 \
-            -DHF_FLINT_STATIC_ARCHIVE="$GITHUB_WORKSPACE/HyperFLINT/flint-static/lib/libflint.a" \
-            -DHF_GMP_STATIC_ARCHIVE="/usr/lib/${{ steps.env.outputs.archlib }}/libgmp.a" \
-            -DHF_MPFR_STATIC_ARCHIVE="/usr/lib/${{ steps.env.outputs.archlib }}/libmpfr.a" \
+            -DHF_FLINT_STATIC_ARCHIVE="$HF_DEPS/lib/libflint.a" \
+            -DHF_GMP_STATIC_ARCHIVE="$HF_DEPS/lib/libgmp.a" \
+            -DHF_MPFR_STATIC_ARCHIVE="$HF_DEPS/lib/libmpfr.a" \
             -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
           cmake --build HyperFLINT/build-cli-linux --target hyperflint-cli -j"$(nproc)"
           "$(find HyperFLINT/build-cli-linux -name hyperflint -type f | head -1)" --help >/dev/null
