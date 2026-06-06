@@ -21,32 +21,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Doppio linear-reducibility engine (`MethodLR -> "Doppio"`).** A new
-  per-face LR backend that builds the integration-order table from genuine
-  Landau loci (Euler-discriminant eliminations over the torus) instead of
-  the sequential discriminant/resultant chain, removing order-dependent
-  fictitious singularities: every letter in the table is chi-certified
-  (Euler-characteristic drop on the incidence variety, cleared-dlog
-  counts after Crisanti/Lippstreu/McLeod/Polackova's DiscKosky).  Includes
-  automatic projective detection with Cheng-Wu gauge fixing, a fast
-  all-gauges scan (`"ChengWu" -> "Scan"`: all n gauges from one ungauged
-  table), and a `KeepRule -> "FindRoots"` tier that carries
-  variable-dependent square roots to terminal discharge.  On the
-  rationalization catalogue this unlocks admissible orders on 5 of 7
-  diagrams that production `FindRoots -> True` declares non-linearly
-  reducible.  Engine in `scripts/doppiofubini/doppio/` (tests t01..t24),
-  wired into the per-face dispatch of `STIntegrate`.
-
-- **HyperFLINT port of the Doppio scan** (`euler_chi`, `euler_filter`,
-  `lr_scan`): Euler-characteristic counter on msolve Groebner bases, an
-  opt-in chi-drop letter filter inside `find_lr_orders`
-  (`HF_EULER_FILTER`, default OFF), and a standalone LR-order scanner
-  with the projective gauge scan, the Euler-conic strict tier, and the
-  carried-sqrt tier.  Exact cross-engine parity with the Mathematica
-  engine on the validation fixtures; chi certification runs roughly 6-10x
-  faster in HF.  msolve inputs are reduced into [0, p) before
-  serialization (msolve 0.9.4 silently produces wrong bases on
-  coefficients >= 2^32).
+- **Experimental: Doppio linear-reducibility engine** (`MethodLR ->
+  "Doppio"`, dev preview — undocumented, interface may change).  A
+  per-face LR backend that builds the integration-order table from
+  genuine Landau loci (Euler-discriminant eliminations) instead of the
+  sequential discriminant/resultant chain, with every letter
+  chi-certified.  A corresponding scan ships inside HyperFLINT
+  (`HF_EULER_FILTER`, default OFF).  Both engines use msolve for their
+  Groebner bases.
 
 - **`STToIterInt` and the IterInt symbolic backend.**  Translates
   SubTropica hyperlogarithm results into IterInt's iterated-integral
@@ -250,20 +232,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   deliberately not badged (the registry lists invocable tools, not their
   build libraries).
 
-- **Known issue (msolve >= 0.9.5):** the Doppio A/B *research* variants and
-  the crawl (`DoppioFubini` with `"Doppio" -> "A"|"B"`, `DoppioCrawl`) drive
-  msolve through FiniteFlow32's `FFAlgGroebner`, which fails against
-  msolve 0.9.5 (`FF::badgroebnercoeffnode`).  The production surface is
-  unaffected: `MethodLR -> "Doppio"` (variant C/CII, pure Mathematica) and
-  HyperFLINT's own Doppio scan (`euler_chi`/`lr_scan`, its own msolve
-  serializer) both pass against 0.9.5.
+- **Known issue (msolve >= 0.9.5):** internal research variants that drive
+  msolve through FiniteFlow32's `FFAlgGroebner` fail against msolve 0.9.5
+  (`FF::badgroebnercoeffnode`).  Nothing user-facing is affected.
 
-- **msolve dependency badge + `MsolvePath` option.**  The HyperFLINT
-  Doppio LR scan shells out to msolve for its Groebner bases (and the
-  Mathematica-side DoppioFubini A/B variants use it through SPQR /
-  FiniteFlow32), so msolve joins the dependency registry: probed at load
-  (`msolve -V`), shown in a new engines badge row
-  (`HyperFLINT  IterInt  msolve`), configurable via
+- **msolve dependency badge + `MsolvePath` option.**  msolve joins the
+  dependency registry as the Groebner-basis backend of the experimental
+  linear-reducibility tooling: probed at load (`msolve -V`), shown in a
+  new engines badge row (`HyperFLINT  IterInt  msolve`), configurable via
   `ConfigureSubTropica[MsolvePath -> ...]` (default: `msolve` resolved
   from `PATH`; `brew install msolve`).  The tools badge row no longer
   overflows the banner width (the old 7-badge row was clamped flush-left

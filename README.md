@@ -12,10 +12,6 @@ A Mathematica package for computing Feynman integrals via tropical geometry. Sub
 
 Every code listing from the paper is reproduced and checked in [`PaperChecks.wl`](PaperChecks.wl) at the repository root — evaluate it end-to-end after ``Needs["SubTropica`"]`` to regenerate all quoted outputs.
 
-## New in v1.2
-
-HyperFLINT, the C++17/FLINT reimplementation of the HyperIntica and HyperInt hyperlogarithm engine, is open (MIT) and available as an add-on backend — and since v1.2.2 it is the **default** integrator and LR-order search engine whenever the add-on is installed (see [`HyperFLINT/README.md`](HyperFLINT/README.md)). v1.2.2 also brings the chi-certified Doppio linear-reducibility engine (`MethodLR -> "Doppio"`), a namespace overhaul that eliminates user-symbol shadowing (public surface 5135 → ~430 declared symbols), the `STToIterInt`/IterInt symbolic evaluator, the `"ExternalLegs"` option fixing hidden-leg kinematics inference, and a one-click installer for the open-source external tools (`STInstallDependencies[]`).
-
 ## Features
 
 - **Tropical subtraction** — Newton polytope analysis, singular subtraction, and epsilon expansion for generic Euler integrals
@@ -62,7 +58,7 @@ HyperFLINT is a fast analytic backend (a C++17 reimplementation of the hyperloga
 PacletInstall["https://subtropi.ca/HyperFLINT.paclet"]
 ```
 
-Once installed, HyperFLINT is picked up automatically and becomes the **default** symbolic integrator and LR-order search engine of `STIntegrate` (since v1.2.2) — no options needed. Check availability with ``SubTropica`$HyperFLINTAvailable`` (the `[✓] HyperFLINT` banner badge shows the same). Pass `"Integrator" -> "HyperIntica"` / `"LROrderBackend" -> "HyperIntica"` to revert to the built-in engine for a call; without the add-on, `STIntegrate` uses the built-in HyperIntica engine throughout. The add-on bundles its native libraries, so there is nothing else to install — except [msolve](https://msolve.lip6.fr) (`brew install msolve`) if you want the Doppio linear-reducibility scan (`MethodLR -> "Doppio"`). Supported platforms: macOS arm64/x86_64 and Linux x86-64 (Windows users get the core paclet and the HyperIntica engine).
+Once installed, HyperFLINT is picked up automatically and becomes the **default** symbolic integrator and LR-order search engine of `STIntegrate` (since v1.2.2) — no options needed. Check availability with ``SubTropica`$HyperFLINTAvailable`` (the `[✓] HyperFLINT` banner badge shows the same). Pass `"Integrator" -> "HyperIntica"` / `"LROrderBackend" -> "HyperIntica"` to revert to the built-in engine for a call; without the add-on, `STIntegrate` uses the built-in HyperIntica engine throughout. The add-on bundles its native libraries, so there is nothing else to install. Supported platforms: macOS arm64/x86_64 and Linux x86-64 (Windows users get the core paclet and the HyperIntica engine).
 
 If a browser-downloaded paclet is blocked by Gatekeeper, clear the quarantine flag once on the installed add-on directory (its location is ``PacletObject["HyperFLINT"]["Location"]``):
 
@@ -114,7 +110,7 @@ ConfigureSubTropica[
   PolyLogToolsPath -> "path/to/PolyLogTools",
   LibraPath        -> "path/to/Libra",
   DiffExpPath      -> "path/to/diffexp",
-  (* optional — Doppio LR scan + symbolic evaluators *)
+  (* optional — Groebner backend + symbolic evaluators *)
   MsolvePath       -> "msolve",           (* resolved from PATH if omitted *)
   IterIntPath      -> "path/to/iterint_mpfr",
   (* optional — alternative integrators *)
@@ -137,7 +133,7 @@ The configuration is persisted (`$UserBaseDirectory/Kernel/SubTropicaConfig.m`) 
 | [pySecDec](https://github.com/gudrunhe/secdec) / [FIESTA](https://bitbucket.org/feynmanIntegrals/fiesta) / [AMFlow](https://gitlab.com/multiloop-pku/amflow) / [feyntrop](https://github.com/michibo/feyntrop) | Optional | Numerical cross-checks via `STNIntegrate` / `STVerify` |
 | [LiteRed](https://inp.nsk.su/~lee/programs/LiteRed/) / [FIRE](https://gitlab.com/feynmanintegrals/fire) | Optional | IBP reducers used by the AMFlow backend |
 | [ginsh](https://www.ginac.de/) | Optional | Numerical evaluation of hyperlogarithms |
-| [msolve](https://msolve.lip6.fr) | Optional | Groebner bases for the Doppio linear-reducibility scan (`MethodLR -> "Doppio"`, both the HyperFLINT and the Mathematica-side engines); `brew install msolve` |
+| [msolve](https://msolve.lip6.fr) | Optional | Groebner-basis backend for experimental linear-reducibility tooling; `brew install msolve` |
 | [IterInt](https://github.com/baugid/IterInt) | Optional | Iterated-integral symbolic evaluator for `STVerify` (`SymbolicEvaluator -> "iterint"`); building its driver needs GSL, Boost, MPFR, MPC (`brew install gsl boost mpfr libmpc`) |
 | [Maple](https://www.maplesoft.com/products/maple/) + [HyperInt](https://bitbucket.org/PanzerErik/hyperint) | Optional | Alternative integrator (`"Integrator" -> "HyperInt"`) |
 | GNU `make` ≥ 4, `curl` | System | pySecDec builds (`make`); library sync / submission (`curl`) |
