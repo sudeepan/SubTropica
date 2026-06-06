@@ -43,12 +43,25 @@ namespace hyperflint {
 // Rat-reducible (i.e. no positive-letter continuation fires inside
 // them); fixtures that violate this assertion lie outside the Phase
 // 6d-v scope.
+// DP.3 spectator projection (2026-06-03): `spectator_var_indices` lists
+// the ctx indices of user variables that are never integrated (free
+// kinematic parameters). The boundary-divergence check projects each
+// accumulated bin onto the fibration basis over (un-integrated
+// integration vars) UNION (spectators) before the zero test. Without
+// the spectators, cross-letter cancellations that are functions of the
+// free parameters are invisible to the per-term is_zero fallback and
+// generic CONVERGENT integrands (e.g. 1/((x+1)(x+y)) over x) are
+// falsely reported divergent -- the Mathematica reference
+// (HyperIntica's TestZeroFunction) tests the bin as a function of all
+// surviving variables and accepts them. Empty list preserves the old
+// behavior.
 RegulatorSym hyperflint_sym(const PolyCtx& ctx,
                               const ShuffleList& input,
                               const std::vector<size_t>& var_indices,
                               const MzvReductionTable& table,
                               bool introduce_algebraic_letters = false,
-                              bool check_divergences = false);
+                              bool check_divergences = false,
+                              const std::vector<size_t>& spectator_var_indices = {});
 
 // Phase 5f-iii: interval rescaling for `var` from [from, to] to [0, ∞).
 //

@@ -9647,15 +9647,49 @@ function buildFeynmanIntegralLaTeX() {
     normPrefix = `${norm} \\,`;
   }
 
-  // Build numerator from numerator rows
+  // Build numerator from numerator rows.
+  // Paren policy (2026-06-05): wrap a factor only when precedence demands it.
+  //   * A single factor at power 1 is NEVER wrapped (l.p, not (l.p)) — alone
+  //     over the fraction bar even a sum is unambiguous.
+  //   * A factor whose outermost parens already enclose the whole expression
+  //     is never re-wrapped (user-typed "(l.p+m^2)" stays as typed; typed
+  //     powers like "(l.p)^2" display as (l.p)^2, not ((l.p)^2)).
+  //   * Exponent-field powers wrap the base once, unless the base is already
+  //     fully wrapped or is a single TeX atom (z^2, not (z)^2).
+  //   * Multiple factors at power 1 keep parens on non-atomic content:
+  //     (l·p1)(l·p2) is the standard typography.
+  const texFullyWrapped = (s) => {
+    if (!s.startsWith('(') || !s.endsWith(')')) return false;
+    let depth = 0;
+    for (let i = 0; i < s.length; i++) {
+      if (s[i] === '(') depth++;
+      else if (s[i] === ')') { depth--; if (depth === 0) return i === s.length - 1; }
+    }
+    return false;
+  };
+  const texWrappedPower = (s) => {
+    // (...)^{k} or (...)^k with the parens opening at position 0
+    const m = s.match(/\^\{?-?\d+\}?$/);
+    if (!m) return false;
+    return texFullyWrapped(s.slice(0, m.index));
+  };
+  const texSingleAtom = (s) =>
+    /^\\?[A-Za-z]+(?:_\{[^{}]*\}|_[A-Za-z0-9])?$/.test(s);
   const numRows = computeConfig.numeratorRows.filter(r => r.expr);
   let numerator = '1';
   if (numRows.length > 0) {
     const numParts = numRows.map(r => {
       const expr = momToTeX(r.expr || '1');
       const exp = parseInt(r.exp) || -1;
-      if (exp === -1) return `(${expr})`;
-      return `(${expr})^{${-exp}}`;
+      if (exp === -1) {
+        if (numRows.length === 1) return expr;
+        if (texFullyWrapped(expr) || texWrappedPower(expr) ||
+            texSingleAtom(expr)) return expr;
+        return `(${expr})`;
+      }
+      const base = (texFullyWrapped(expr) || texSingleAtom(expr))
+        ? expr : `(${expr})`;
+      return `${base}^{${-exp}}`;
     });
     numerator = numParts.join('\\,');
   }
@@ -10994,6 +11028,25 @@ function populateExportTab() {
   }
   const optsForProps = opts.filter(s => !s.startsWith('"Substitutions"'));
   if (propsSubsListStr) optsForProps.push(`"Substitutions" -> ${propsSubsListStr}`);
+  // "ExternalLegs": the kernel infers the leg count from the distinct p[i]
+  // visible in the propagators (+1 via momentum conservation).  When legs
+  // attach to the diagram in combinations (e.g. pair-attached legs entering
+  // only through p[1]+p[2]), some p[j] with j < n never appears, the
+  // inference undercounts n, and the on-shell conditions silently collapse
+  // invariants like (p1+p2)^2 -> 0 (vacuum-period degeneration; kernel bug
+  // class found 2026-06-05).  Emit the explicit count whenever any of
+  // p[1..n-1] is missing from the propagator list -- p[n]'s absence is
+  // expected (eliminated by momentum conservation) and carries no signal.
+  const nLegsProps = extMassRules.length;
+  if (propsArg && nLegsProps >= 2) {
+    const seenLegs = new Set();
+    for (const m of String(propsArg).matchAll(/p\[(\d+)\]/g)) seenLegs.add(Number(m[1]));
+    let hiddenLeg = false;
+    for (let j = 1; j <= nLegsProps - 1; j++) {
+      if (!seenLegs.has(j)) { hiddenLeg = true; break; }
+    }
+    if (hiddenLeg) optsForProps.push(`"ExternalLegs" -> ${nLegsProps}`);
+  }
   const propsBaseOptStr = optsForProps.length > 0
     ? ',\n  ' + optsForProps.join(',\n  ')
     : '';
@@ -11342,10 +11395,60 @@ function buildNonDefOpts(config) {
 // the SubTropica view of the Integral box. The kernel emits its own
 // authoritative `stCommand` in the result payload (see handleIntegrate);
 // onIntegrationComplete upgrades the stashed string when that arrives.
+// Propagator-form STIntegrate command from canvas state (JS-only; null when
+// momentum routing fails).  Mirrors the Export tab's props assembly and the
+// kernel's stBuildSTCommand propagator branch: M[i] mass rules merged with
+// user substitutions, Exponents from rows, ExternalLegs emitted when legs
+// are hidden from the propagator list.
+function buildPropsCommandJS(baseOpts) {
+  const jsProps = buildPropsInfoJS();
+  if (!jsProps) return null;
+  const extMassRules = buildPropsExtMassSubsJS();
+  const userSubsRaw = (computeConfig.substitutions || '').trim();
+  const userSubsBody = (userSubsRaw.startsWith('{') && userSubsRaw.endsWith('}'))
+    ? userSubsRaw.slice(1, -1).trim() : userSubsRaw;
+  let subsList = '';
+  if (extMassRules.length > 0 && userSubsBody) {
+    subsList = `{${extMassRules.join(', ')}, ${userSubsBody}}`;
+  } else if (extMassRules.length > 0) {
+    subsList = `{${extMassRules.join(', ')}}`;
+  } else if (userSubsBody) {
+    subsList = `{${userSubsBody}}`;
+  }
+  const opts = (baseOpts || []).filter(s => !s.startsWith('"Substitutions"'));
+  if (subsList) opts.push(`"Substitutions" -> ${subsList}`);
+  const nLegs = extMassRules.length;
+  if (nLegs >= 2) {
+    const seen = new Set();
+    for (const m of String(jsProps.propsArg).matchAll(/p\[(\d+)\]/g)) seen.add(Number(m[1]));
+    for (let j = 1; j <= nLegs - 1; j++) {
+      if (!seen.has(j)) { opts.push(`"ExternalLegs" -> ${nLegs}`); break; }
+    }
+  }
+  if (jsProps.exponentsStr) opts.push(`"Exponents" -> ${jsProps.exponentsStr}`);
+  const optStr = opts.length ? ',\n  ' + opts.join(',\n  ') : '';
+  return fixCenterDot(`STIntegrate[${jsProps.propsArg}${optStr}]`);
+}
+
 function buildSTIntegrateCommandJS(payload) {
+  const opts = buildSTIntegrateOpts();
+  // Numerators / non-unit exponents cannot be encoded in the graph form
+  // {edges, nodes} -- show the loop-momentum (propagator) form instead,
+  // falling back to the graph form only when momentum routing fails
+  // (incomplete diagram).  Matches the kernel's run-print rule and
+  // stBuildSTCommand (2026-06-05).
+  const hasNumerator = (computeConfig.numeratorRows || [])
+    .some(r => r && r.expr && r.expr.trim());
+  const hasNonUnitExp = state.edges.some(e => {
+    const x = e.propExponent ?? 1;
+    return !(x === 1 || x === '1');
+  });
+  if (hasNumerator || hasNonUnitExp) {
+    const propsCmd = buildPropsCommandJS(opts);
+    if (propsCmd) return propsCmd;
+  }
   const graphArg = buildGraphArgJS();
   if (!graphArg) return '';
-  const opts = buildSTIntegrateOpts();
   const optStr = opts.length ? ',\n  ' + opts.join(',\n  ') : '';
   return `STIntegrate[${graphArg}${optStr}]`;
 }

@@ -23,6 +23,7 @@
 #include "hyperflint/reduce/mzv_expansion.hpp"   // HF basis-ctx campaign (PHASE_2 iter 10)
 #include "hyperflint/core/poly.hpp"
 #include "hyperflint/core/rat.hpp"
+#include "hyperflint/core/addpf_probe.hpp"  // period-tuples Phase 0 census
 #include "hyperflint/core/symcoef.hpp"
 #include "hyperflint/integrator/ctx_probe.hpp"
 #include "hyperflint/integrator/env_flags.hpp"  // iter-77 Track-probe-ctx (cross-domain rule-3)
@@ -32,6 +33,8 @@
 #include "hyperflint/integrator/regularize.hpp"
 #include "hyperflint/integrator/step_strategy.hpp"  // Track 6.5 wire-in iter-40
 #include "hyperflint/reduce/mzv_reduce.hpp"             // clear_rhs_cache
+#include "hyperflint/core/period_table.hpp"             // period_powers emission (Phase 2)
+#include "hyperflint/reduce/period_scratch.hpp"          // period_tuples_enabled (Phase 2)
 #include "hyperflint/runtime/narrow_ctx_flag.hpp"       // reset_narrow_ctx_flag
 #include "hyperflint/runtime/env_flags.hpp"             // HF_FLAG_NARROW_CTX (iter-69)
 
@@ -410,6 +413,15 @@ std::string sym_coef_to_mma_string(const hyperflint::SymCoef& s) {
         for (const auto& kv : m.delta_powers) {
             if (kv.second == 1) o << "*delta[" << kv.first << "]";
             else                o << "*delta[" << kv.first << "]^" << kv.second;
+        }
+        // Period-tuples Phase 2: render period generators by their atom
+        // names (same tokens the wide-ctx path embeds in the Rat string,
+        // so the Mathematica-side parser reuses its existing handling).
+        for (const auto& kv : m.period_powers) {
+            const std::string& nm =
+                hyperflint::PeriodTable::instance().key_for(kv.first);
+            if (kv.second == 1) o << "*" << nm;
+            else                o << "*" << nm << "^" << kv.second;
         }
         first = false;
     }
@@ -1085,7 +1097,14 @@ std::string hyperflint_sym(const std::string& body) {
         const bool use_narrow = narrow_env && *narrow_env && narrow_env[0] != '0'
             && !introduce_al && !expr_str_for_discovery.empty()
             && !use_slim;  // slim takes precedence
-        if (use_slim) {
+        if (hyperflint::period_tuples_enabled() && !introduce_al) {
+            // Period-tuples Phase 2 (spec 2026-06-04 §2.1): SLIM ctx --
+            // kinematic vars only; period content lives structurally in
+            // SymMonomial::period_powers via the scratch-ring mint.
+            // introduce_al (Wm/Wp) requests fall back to the legacy wide
+            // path below (pilot exclusion, spec §2.5).
+            base_vars = user_vars;
+        } else if (use_slim) {
             base_vars = hyperflint::build_basis_var_list(*slim_exp, user_vars);
         } else if (use_narrow) {
             base_vars = hyperflint::build_narrow_var_list(
@@ -1094,6 +1113,19 @@ std::string hyperflint_sym(const std::string& body) {
             base_vars = introduce_al
                 ? hyperflint::build_full_var_list(table, user_vars)
                 : hyperflint::build_mzv_var_list(table, user_vars);
+        }
+        // Period-tuples Phase 0 Task 0.2: kinematic prefix length for the
+        // density census (atoms occupy indices >= user_vars.size()).
+        hyperflint::addpf_probe::set_user_var_count(user_vars.size());
+        // HF_CTX_PAD_VARS (period-tuples Phase 0 falsifier, 2026-06-04):
+        // append N synthetic never-referenced variables to measure the
+        // width-attributable share of RSS/wall directly (same fixture,
+        // PAD=0 vs PAD=N, diff peak RSS). Values must be byte-identical
+        // since the pad vars never appear in any polynomial. Default OFF.
+        if (const char* pad_env = std::getenv("HF_CTX_PAD_VARS")) {
+            const long npad = std::strtol(pad_env, nullptr, 10);
+            for (long i = 0; i < npad; ++i)
+                base_vars.push_back("hfpad_" + std::to_string(i));
         }
         // RAII guard: install active expansion for the lifetime of this
         // bridge call. Mint site reads it via get_active_mzv_expansion()
@@ -1198,6 +1230,11 @@ std::string hyperflint_sym(const std::string& body) {
             }
         }
 
+        // DP.3 (divergence policy, 2026-06-03): the intended bare-request
+        // default is TRUE, but the flip is BLOCKED on HF-DIVCHECK-PARITY
+        // (the scan false-positives on generic multi-pole convergent
+        // integrands) -- see bridge/cli/main.cpp and
+        // notes/hf_divcheck_parity.md. Flip only after parity.
         bool check_div = false;
         {
             std::regex re("\"check_divergences\"\\s*:\\s*(true|false)");
@@ -1215,10 +1252,30 @@ std::string hyperflint_sym(const std::string& body) {
                 canonical_emission = (m[1] == "true");
         }
 
+        // DP.3 spectator projection (2026-06-03): user variables that are
+        // never integrated (free kinematic parameters) feed the
+        // divergence check's fibration-basis zero test. Built from
+        // base_vars (the user-supplied "vars" list, BEFORE atom-pool
+        // augmentation) so MZV constants / Log2 / minted letters are
+        // never projected over. Cheap: only computed when the check is
+        // armed; empty when every user var is integrated.
+        std::vector<size_t> spectator_idx;
+        if (check_div) {
+            for (const auto& bv : base_vars) {
+                bool is_int = false;
+                for (const auto& vi : vars_int)
+                    if (vi == bv) { is_int = true; break; }
+                if (is_int) continue;
+                for (size_t i = 0; i < vars.size(); ++i)
+                    if (vars[i] == bv) { spectator_idx.push_back(i); break; }
+            }
+        }
+
         try {
             auto _bench_t0 = std::chrono::steady_clock::now();
             hyperflint::RegulatorSym out = hyperflint::hyperflint_sym(
-                ctx, input, var_indices, table, introduce_al, check_div);
+                ctx, input, var_indices, table, introduce_al, check_div,
+                spectator_idx);
             auto _bench_t1 = std::chrono::steady_clock::now();
             double compute_s =
                 std::chrono::duration<double>(_bench_t1 - _bench_t0).count();

@@ -97,7 +97,6 @@ $NoAlgebraicRootsContributions::usage = "Given a linear order of integration, th
 	not the algebraic roots to appear in LinearFactor[] should be set to zero. 
 	The default is True.";
 	
-NonlinearFactorsCatch::usage = "Non-linear factor catch variable. It is set to True if a non-linear term is encountered and left undefined otherwise.";
 
 $HyperWarnZeroed::usage = "If True (default), print a reminder whenever LinearFactors[] sets a contribution to zero due to a non-linear factor, asking you to confirm a linearly reducible ordering was passed to HyperInt[]. Set to False to suppress these reminders.";
 
@@ -106,7 +105,6 @@ $HyperAlgebraicLetterCounter::usage = "Monotone counter for algebraic letters in
 $HyperAlgebraicLetterTable::usage = "Association mapping each algebraic-letter index i to a metadata record with keys Polynomial, Variable, LC, Sum, Product, Discriminant, WmValue, WpValue.";
 ClearAlgebraicLetters::usage = "ClearAlgebraicLetters[] resets $HyperAlgebraicLetterCounter and $HyperAlgebraicLetterTable.";
 GetAlgebraicBackSubRules::usage = "GetAlgebraicBackSubRules[] returns rules {Wm[i] -> r_minus, Wp[i] -> r_plus} for every letter i in $HyperAlgebraicLetterTable.";
-GetAlgebraicVietaRules::usage = "GetAlgebraicVietaRules[] returns rules collapsing Wm[i]+Wp[i] and Wm[i]*Wp[i] to their rational Vieta values.";
 SimplifyWithVieta::usage = "SimplifyWithVieta[expr] reduces expr to at-most-linear form in each Wm[i], Wp[i] pair via Wm*Wp -> product, Wm^2 -> s*Wm - p, etc. Symmetric combinations collapse to rational expressions; antisymmetric residues keep Wm[i] - Wp[i].";
 CanonicalizeAlgebraicLetters::usage = "CanonicalizeAlgebraicLetters[results_:None] prunes $HyperAlgebraicLetterTable to indices that actually appear in `results` (when given), dedupes survivors up to the mirror-swap equivalence Sort[{Together[WmValue], Together[WpValue]}], renumbers survivors 1..k consecutively (mutating the table in place), and returns a rule list {Wm[old] -> Wm[new], Wp[old] -> Wp[new], ...} (or the swapped pair when the group's survivor used the opposite sign convention) to apply to any expression carrying the letters. Pass the final result so that Fubini-intermediate letters that cancelled in the end are dropped from the on-disk metadata.";
 Wm::usage = "Wm[i] is the i-th algebraic root letter with the '-Sqrt' branch; introduced by LinearFactors[] when $HyperIntroduceAlgebraicLetters is True. Metadata in $HyperAlgebraicLetterTable[i].";
@@ -123,6 +121,23 @@ when $UseFFPolynomialQuotient is True. Default {1, 100}. \
 Set this before calling HyperInt[] or STEvaluate[] to tune the finite-field computation. \
 Can also be overridden per-call via the \"MaxWeight\" option of PartialFractions[].";
 
+SPQRPolynomialQuotient::usage = "SPQRPolynomialQuotient[f, p, x] computes PolynomialQuotient[f, p, x] \
+via the SPQR/FiniteFlow finite-field backend (drop-in replacement, no intermediate expression swell). \
+The definition lives in PolynomialQuotientFF.wl, which SubTropica.wl Get[]s once both FiniteFlow and \
+SPQR have loaded; PartialFractions[] dispatches to it when $UseFFPolynomialQuotient is True. \
+This public declaration is itself the essential part of the fix: it makes the PartialFractions[] \
+dispatch, the SubTropica.wl availability checks, and the PolynomialQuotientFF.wl definitions all \
+bind the single symbol HyperIntica`SPQRPolynomialQuotient. Without it the dispatch parse-binds an empty \
+HyperIntica`Private` symbol and the finite-field path silently never fires (dead-code bug, found and \
+fixed 2026-06-05).";
+
+$stPostStageInstrumentation::usage = "$stPostStageInstrumentation, when True, makes SubTropica's \
+post-processing stage wrappers and HyperIntica's SimplifyWithVieta emit per-stage timing/ByteCount \
+diagnostics. Declared here (public) so the SubTropica.wl producers and the SimplifyWithVieta consumer \
+bind one symbol; without this declaration the consumer parse-binds an empty HyperIntica`Private` twin \
+and its instrumentation can never fire (same binding-bug class as SPQRPolynomialQuotient, found \
+2026-06-05). Defaults to False (set at SubTropica.wl load).";
+
 (*Conversion.*)
 
 HlogAsMpl::usage = "HlogAsMpl[z, {w1,...,wn}] expresses a hyperlogarithm as a 
@@ -137,7 +152,6 @@ The conversion reads the word from right to left:
 Example:
   HlogAsMpl[z, {0, 0, 1}] returns -Mpl[{3}, {z}] = -Li\:2083(z)";
   
-ConvertToMpl::usage = "Convert any expression containing Hlog to Mpl notation";
 
 
 ConvertToHlogRegInf::usage = "ConvertToHlogRegInf[expr] converts a mathematical 
@@ -173,8 +187,6 @@ period, handling positive letters via contour deformation.";
 TryReduceZeroOnePeriod::usage = "TryReduceZeroOnePeriod[word] attempts to reduce 
 a ZeroOnePeriod to known MZVs using various transformations.";
 
-ToMZV::usage = "ToMZV[wordlist] converts words in {-1,0,1} alphabet to 
-mzv[...] notation.";
 
 mzvAllReductions::usage = "Association of MZV reduction rules to the standard basis.
 
@@ -319,23 +331,7 @@ ReglimWord::usage = "ReglimWord[word, var] computes the regularized limit of
 a word as var \[RightArrow] 0.";
 
 
-GetNonlinearFactors::usage = "GetNonlinearFactors[] returns the association 
-$NonlinearFactorsCache containing all nonlinear factors encountered.
 
-Each key is {polynomial, variable} and each value is an association with:
-  \"Polynomial\" -> the polynomial that did not factor linearly
-  \"Variable\" -> the integration variable
-  \"Degree\" -> degree of the polynomial
-  \"Timestamp\" -> when it was encountered
-  \"Fatal\" -> True if it caused an error, False if ignored";
-
-HasNonlinearFactors::usage = "HasNonlinearFactors[] returns True if any 
-nonlinear polynomial factors were encountered during computation, False otherwise.
-
-Example:
-  ForgetAllMemo[];
-  result = HyperInt[...];
-  If[HasNonlinearFactors[], Print[\"Warning: nonlinear factors found\"]]";
 
 GetFatalNonlinearFactors::usage = "GetFatalNonlinearFactors[] returns only the 
 nonlinear factors that were fatal (i.e., caused $Failed to be returned rather 
@@ -350,8 +346,6 @@ Output format:
     poly2 in variable y [ignored]
     ...";
 
-ClearNonlinearCache::usage = "ClearNonlinearCache[] clears only the 
-$NonlinearFactorsCache without affecting other memoization caches.";
 
 
 
@@ -411,29 +405,7 @@ Examples:
   HyperSeries[Hlog[z, {0, 1}]/z, {z, 0, 4}]
   HyperSeries[Hlog[1, {u/(-1+u+\[Delta])}], {\[Delta], 0, 2}]";
 
-HlogSeries::usage = "HlogSeries[arg, word, var, order] computes the series expansion of Hlog[arg, word] around var = 0 up to O[var]^(order+1).
 
-Strategy:
-  - If arg -> 0 as var -> 0: uses ZeroExpansion.
-  - Otherwise: Taylor expansion via HyperD.
-
-Examples:
-  HlogSeries[z, {0, 1}, z, 5]
-  HlogSeries[1, {u/(u-1+\[Delta])}, \[Delta], 3]";
-
-MplSeries::usage = "MplSeries[ns, zs, var, order] computes the series expansion of Mpl[ns, zs] around var = 0 up to O[var]^(order+1).
-
-Strategy:
-  - If last arg -> 0: MplSum (defining partial sum, all depths).
-  - If first arg -> 0: MplSum (outer sum vanishes, valid for any last arg).
-  - If depth = 1 (= PolyLog[n,z]): delegates to Mathematica's built-in Series.
-  - If depth > 1 and last arg -> 1 with first arg fixed: log-series singularity;
-    returns unevaluated with a warning.
-  - Otherwise: Taylor expansion via HyperD.
-
-Examples:
-  MplSeries[{2}, {z}, z, 5]
-  MplSeries[{1, 2}, {x, 1-x/u}, x, 3]";
 
 MplSum::usage = "MplSum[ns, zs, maxN] computes the defining partial sum of Mpl[ns, zs] with summation indices running from 1 to maxN.
 
@@ -499,9 +471,6 @@ DifferentiateWordlist::usage = "DifferentiateWordlist[wordlist, var] differentia
 a flat wordlist {{coef, word}, ...} with respect to var. Used to verify IntegrateII 
 via DifferentiateWordlist[IntegrateII[wl, x], x] == wl.";
 
-ShuffleCompress::usage = "ShuffleCompress[wordlist] expands shuffle representation 
-{{coef, {w1, w2, ...}}, ...} to flat format {{coef, word}, ...} for use with IntegrateII. 
-Equivalent to Maple's shuffleCompress.";
 
 ConvertToSymbol::usage = "ConvertToSymbol[expr, opts] converts an expression 
 containing hyperlogarithms to its symbol representation.
@@ -517,15 +486,8 @@ The symbol captures the leading singularity structure of polylogarithms.";
 Sym::usage = "Sym[{a1, a2, ...}] represents a symbol tensor a1 \[CircleTimes] a2 \[CircleTimes] ...
   Sym[{}] = 1 (empty tensor)";
 
-SymbolExpand::usage = "SymbolExpand[symbolList] expands each letter in the symbol 
-into its irreducible polynomial factors.";
 
-SymbolSimplify::usage = "SymbolSimplify[symbolList] simplifies a symbol by:
-  1. Combining terms with identical tensor structure
-  2. Removing terms with zero coefficients
-  3. Optionally factoring letters";
   
-MaybeQuiet::usage = "MaybeQuiet[expr] evaluates expr while suppressing print output when $HyperVerbosity = 0. Used internally throughout the code to gate diagnostic messages.";
   
 RegTail::usage = "RegTail[wordlist, letter, substitute] regularizes words in wordlist by stripping trailing occurrences of letter and replacing them with the regulator value substitute (default 0).
 
@@ -584,9 +546,6 @@ RatResidue::usage = "RatResidue[f, var] returns the leading coefficient in the L
 
 Used internally to extract integration constants during TransformWord[]. Results are memoized in \$RatResidueCache.";
 
-ConvertToSymbolInternal::usage = "ConvertToSymbolInternal[expr] is the internal recursive engine for ConvertToSymbol[]. Returns the symbol of expr as a wordlist {{coef, {letter1,...}}, ...}.
-
-Handles: sums (recursively), products (via ShuffleProduct), integer powers, Hlog, Log, PolyLog, Mpl (via MplAsHlog), and constants (mzv, Zeta, Pi -> {}).";
 
 
 factorCompletely::usage = "factorCompletely[poly, x] factors poly completely by solving for roots numerically (Cubics and Quartics options are off) and returns the explicit product form lcoeff * (x - r1) * (x - r2) * ...";
@@ -3320,11 +3279,42 @@ PartialFractions[f_, var_, opts:OptionsPattern[]] := Module[
   (*Extract the polynomial part via polynomial division; avoids the expensive Apart[] call.
     p and q are already the numerator/denominator of Together[f], so the polynomial part
     is exactly PolynomialQuotient[p, q, var]. No Apart[] needed.
-    If $UseFFPolynomialQuotient is True, use the faster finite-field version instead.*)
+    If $UseFFPolynomialQuotient is True, use the faster finite-field version instead.
+    The finite-field call is hardened against every observed failure mode:
+    Catch[Catch[..., _, ...]] contains both untagged and tagged Throws
+    (FiniteFlow.m's CheckedInt* validators do Message[FF::noint,...];
+    Throw[$Failed] with NO tag, which would otherwise kill the whole
+    integration -- observed on the 3-loop cylinder Lungo face 3, 2026-06-05),
+    CheckAbort contains Abort[], Quiet[Check[...]] silently converts any
+    generated message into the fallback (NB the ordering: Check must sit
+    INSIDE Quiet; an inner blanket Quiet would suppress the message before
+    Check could see it and render the Check inert), and the
+    FreeQ-then-PolynomialQ guard rejects structurally wrong returns (FreeQ
+    must run first: PolynomialQ[x^2 + $Failed, x] is True).
+    Every failure falls back to the exact PolynomialQuotient[], which is
+    always correct, merely slower.
+    CAVEAT for future edits: SPQRPolynomialQuotient is treated as a leaf
+    call here; do not route tagged control-flow Throws through it, the
+    outer Catch[..., _, $Failed &] will swallow them.  And if the
+    SubTropica`-context helpers (SPQRPolynomialQuotientRemainder etc.) are
+    ever wired into a DownValues-based dispatch like this one, declare them
+    publicly in the pre-Private section first, or the empty-Private-symbol
+    dead-code bug fixed on 2026-06-05 will recur.*)
   maxW = OptionValue["MaxWeight"];
   If[maxW === Automatic, maxW = $PartialFractionsMaxWeight];
-  result = {If[$UseFFPolynomialQuotient && MatchQ[DownValues[SPQRPolynomialQuotient], {__}],
-      SPQRPolynomialQuotient[p, q, var, "MaxWeight" -> maxW],
+  result = {If[$UseFFPolynomialQuotient && MatchQ[DownValues[SPQRPolynomialQuotient], {__}] &&
+        (* FiniteFlow works over Q: Complex coefficients (I, I*Pi from
+           eps-expansion counterterms) hit FF's CheckedInt validators and
+           cannot succeed, so skip the doomed attempt outright. Symbolic
+           atoms (parameters, Log[s], ...) are fine as FF variables. *)
+        FreeQ[{p, q}, Complex],
+      Module[{qFF = Quiet[Check[CheckAbort[
+            Catch[Catch[SPQRPolynomialQuotient[p, q, var, "MaxWeight" -> maxW]],
+              _, $Failed &],
+            $Failed], $Failed]]},
+        If[qFF =!= $Failed && FreeQ[qFF, $Failed] && PolynomialQ[qFF, var],
+          qFF,
+          PolynomialQuotient[p, q, var]]],
       PolynomialQuotient[p, q, var]
   ]};
   p =.; q =.; (* free numerator/denominator; no longer needed after polynomial division *)

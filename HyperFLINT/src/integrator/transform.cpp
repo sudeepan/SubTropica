@@ -9,6 +9,8 @@
 
 #include "hyperflint/integrator/transform.hpp"
 
+#include "hyperflint/reduce/period_scratch.hpp"  // period-tuples Phase 2
+
 #include "hyperflint/algebra/linear_factors.hpp"
 #include "hyperflint/algebra/shuffle.hpp"
 #include "hyperflint/core/poly.hpp"
@@ -392,6 +394,20 @@ RegulatorSym reglim_word(const PolyCtx& ctx,
     // mzv_2 in HF's PolyCtx form). The returned Rat is a polynomial
     // in the PolyCtx's mzv_* variables.
     auto evaluate_period = [&](const Word& w) -> RegulatorSym {
+        // Period-tuples Phase 2: this is a production mint site (the
+        // Rat-valued break_up_contour folds the period into a Rat over
+        // atom vars, impossible under the slim ctx). Under the flag the
+        // {-2,-1,0}-letter word mints directly via the scratch ring
+        // into period_powers; the partition logic below only ever sees
+        // such words here (callers gate on all_letters_in_minus2_...).
+        if (period_tuples_enabled()) {
+            RegulatorSym out;
+            SymCoef minted =
+                mint_period_sym(ctx, w, table, /*zero_one=*/false);
+            if (!minted.is_zero())
+                out.push_back(RegTermSym{std::move(minted), RegKey{}});
+            return out;
+        }
         Wordlist seed;
         seed.terms.push_back(WordlistTerm{rat_one, w});
         Regulator buc = break_up_contour(ctx, seed, {}, table);

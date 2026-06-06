@@ -288,7 +288,10 @@ public:
     // fmpq_mpoly_divides.
     Poly divexact(const Poly& b) const;
 
-    // Test whether b divides *this (exact divisibility).
+    // Test whether *this divides b, i.e. exists q with b = q * (*this).
+    // NOTE argument order: a.divides(b) means a | b — the MIRROR of
+    // divexact, where a.divexact(b) computes a / b. (This comment used to
+    // state the opposite of the implementation; see poly.cpp:769.)
     bool divides(const Poly& b) const;
 
     // Euclidean-style quotient + remainder. Returns {q, r} such that
@@ -364,6 +367,11 @@ public:
     // large-fmpz body bytes via `fmpz_size`. Skips one-time PolyCtx overhead.
     // Used by the diagnostic probe walkers; default-OFF env-gated.
     size_t total_bytes() const;
+
+    // Number of monomial terms (fmpq_mpoly_length). Added for the
+    // HF_ADDPF_PROBE attribution probe (additive-parfrac Phase 0,
+    // 2026-06-03); there was no public term-count accessor before.
+    size_t n_terms() const;
 
     // 2026-05-05 (path-A diagnostic — Probe 4 6-bucket decomposition).
     // Same arithmetic as total_bytes() but split into the six attribution

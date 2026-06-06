@@ -27,6 +27,7 @@
 #include "hyperflint/core/poly.hpp"
 #include "hyperflint/core/zw_table.hpp"            // ZWTable (B2 v1 round-trip)
 #include "hyperflint/integrator/regularize.hpp"
+#include "hyperflint/reduce/period_scratch.hpp"  // period-tuples Phase 2
 #include "hyperflint/reduce/periods.hpp"
 #include "hyperflint/runtime/scalar_rep.hpp"        // runtime::scalar_rep_enabled (B2 dispatch)
 #include "hyperflint/runtime/scs_roundtrip.hpp"     // runtime::roundtrip_regulator_through_scs (B2 verifier site)
@@ -325,8 +326,18 @@ RegulatorSym break_up_contour_sym(const PolyCtx& ctx,
         RegulatorSym var_part;
         for (const auto& t : wordlist.terms) {
             if (word_letters_in_minus2_minus1_zero(t.word)) {
-                Rat period = zero_inf_period(ctx, t.word, table);
-                const_val = const_val + t.coef.mul_rat(period);
+                // Period-tuples Phase 2: same reduction, tuple storage
+                // (mint_period_sym runs the identical machinery in the
+                // atoms-only scratch ring and returns period_powers
+                // monomials over the slim ctx).
+                if (period_tuples_enabled()) {
+                    const_val = const_val + t.coef.mul(
+                        mint_period_sym(ctx, t.word, table,
+                                        /*zero_one=*/false));
+                } else {
+                    Rat period = zero_inf_period(ctx, t.word, table);
+                    const_val = const_val + t.coef.mul_rat(period);
+                }
             } else {
                 RegKey key;
                 if (!t.word.empty()) key.push_back(t.word);
@@ -422,9 +433,18 @@ RegulatorSym break_up_contour_sym(const PolyCtx& ctx,
                 || word_all_numeric_letters(tailWord);
             if (smallest_long == 1 && tail_numeric) {
                 // ZeroOnePeriod evaluates to a Rat (mzv-basis); RegKey is empty.
-                Rat zop = zero_one_period(ctx, tailWord, table);
-                if (!zop.is_zero()) {
-                    temp.push_back(RegTermSym{SymCoef::from_rat(zop), RegKey{}});
+                // Period-tuples Phase 2: tuple storage of the same value.
+                if (period_tuples_enabled()) {
+                    SymCoef zop = mint_period_sym(ctx, tailWord, table,
+                                                  /*zero_one=*/true);
+                    if (!zop.is_zero()) {
+                        temp.push_back(RegTermSym{std::move(zop), RegKey{}});
+                    }
+                } else {
+                    Rat zop = zero_one_period(ctx, tailWord, table);
+                    if (!zop.is_zero()) {
+                        temp.push_back(RegTermSym{SymCoef::from_rat(zop), RegKey{}});
+                    }
                 }
             } else {
                 // Mma:  ConvertABtoZeroInf[RegHead[{{1, tailWord}}, smallest], 0, smallest]

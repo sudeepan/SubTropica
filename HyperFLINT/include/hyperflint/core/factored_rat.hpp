@@ -52,6 +52,28 @@ public:
     // The single materialization boundary.
     Rat materialize_to_rat() const;
 
+    // Peel known denominator-base powers off the numerator by EXACT
+    // division: while a base divides the numerator and its exponent is
+    // positive, divide it out and decrement the exponent. Value-preserving
+    // by construction (each step is an exact division applied to both
+    // numerator and the factored denominator). Cheap heap divides versus
+    // the monolithic Brown GCD the reducing Rat ctor would otherwise pay;
+    // applied between derivative-chain steps (B1.3b) so chain numerators
+    // do not swell with removable base powers. No-op below `min_terms`
+    // numerator terms (failed divides() attempts are pure overhead there).
+    // Shared gate for the peel lever: numerators below this term count skip
+    // peeling (failed divides() attempts are pure overhead there). Single
+    // source of truth for BOTH the materialize_to_rat gate and the default
+    // argument below (advisory A3, review of 5f62abe84).
+    static constexpr long kPeelMinTerms = 64;
+
+    void peel_known_factors(long min_terms = kPeelMinTerms);
+
+    // True when HF_FR_MAT_PEEL is set (non-empty, not "0"): callers gate
+    // peel_known_factors() invocations on this so the flag stays the single
+    // switch for the whole peel lever (materialize + derivative chain).
+    static bool peel_enabled();
+
     const PolyCtx& ctx() const { return numerator_.ctx(); }
     const Poly& numerator() const { return numerator_; }
     const std::vector<Factor>& den_factors() const { return den_factors_; }

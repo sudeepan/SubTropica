@@ -51,6 +51,12 @@ struct SymMonomial {
     int                        i_power  = 0;   // canonical: 0 or 1
     std::map<long, int>        log_powers;     // Log[n]^k indexed by n > 0
     std::map<std::string, int> delta_powers;   // delta[var]^k indexed by var
+    // Period-tuples Phase 1 (spec 2026-06-04): opaque period generators
+    // (PeriodTable ids) with integer exponents -- structural home for
+    // transcendental constants, parallel to log_powers. Free commutative
+    // monoid: products = exponent addition; NO reduction here (lazy at
+    // the boundary, Phase 3).
+    std::map<std::uint32_t, int> period_powers;
 
     explicit SymMonomial(Rat pref) : prefactor(std::move(pref)) {}
 

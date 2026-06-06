@@ -3,6 +3,8 @@
 #include <algorithm>
 #include "hyperflint/reduce/periods.hpp"
 
+#include "hyperflint/reduce/period_scratch.hpp"  // period-tuples (binding fold)
+
 #include "hyperflint/algebra/convert.hpp"        // convert_zero_one
 #include "hyperflint/algebra/shuffle.hpp"        // collect_words
 #include "hyperflint/core/poly.hpp"
@@ -747,6 +749,32 @@ void base_case_sym(const PolyCtx& ctx,
         // If all reduce, fold into a single Rat product and emit at
         // the empty-extra-key slot. Else, emit the entry symbolically
         // with its full key (shifted to the "right" of the prefix).
+        // Period-tuples Phase 2 fix (binding review fold, 2026-06-04):
+        // under the slim ctx, zero_inf_period cannot reduce into a Rat
+        // (atom vars absent -> arm-3 parse throw would mis-pin the term
+        // symbolically and could change the divergence verdict). Mint
+        // via the scratch ring and fold with SymCoef::mul instead --
+        // exact parity with the wide path's reduce-and-fold semantics.
+        if (period_tuples_enabled()) {
+            SymCoef folded = entry_sym;
+            bool evaluable = true;
+            for (const auto& u : w.key) {
+                if (u.empty()) continue;
+                try {
+                    folded = folded.mul(
+                        mint_period_sym(ctx, u, table, /*zero_one=*/false));
+                } catch (const std::exception&) {
+                    evaluable = false;
+                    break;
+                }
+            }
+            if (evaluable) {
+                emit(std::vector<Word>{}, folded);
+            } else {
+                emit(w.key, entry_sym);
+            }
+            continue;
+        }
         Rat period_prod = Rat::one_of(ctx);
         bool evaluable = true;
         for (const auto& u : w.key) {

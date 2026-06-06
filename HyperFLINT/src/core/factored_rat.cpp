@@ -1,6 +1,9 @@
 #include "hyperflint/core/factored_rat.hpp"
 
 #include <algorithm>
+#include <chrono>
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
 
 namespace hyperflint {
@@ -31,8 +34,118 @@ Poly FactoredRat::expand_denominator() const {
     return d;
 }
 
+bool FactoredRat::peel_enabled() {
+    // DEFAULT-ON since 2026-06-04 (user decision after the evidence bar:
+    // tst0-tst4 byte-identical ex-timing with walls in noise; face-family
+    // A/B 3.0-14.4x with Mathematica-exact values; adversarial review OK
+    // with no binding issues; 896-face re-sweep running as the at-scale
+    // corpus). HF_FR_MAT_PEEL=0 opts out.
+    static const bool on = []{
+        const char* e = std::getenv("HF_FR_MAT_PEEL");
+        return !(e && *e == '0' && !e[1]);
+    }();
+    return on;
+}
+
+void FactoredRat::peel_known_factors(long min_terms) {
+    if (numerator_.is_zero()) return;
+    if (static_cast<long>(numerator_.n_terms()) < min_terms) return;
+    // Note on constant bases (advisory A1, review of 5f62abe84): no
+    // constant base can currently reach den_factors_ — every factor enters
+    // via from_rat (whose Rat ctors absorb constant denominators into the
+    // rational content) or push_factor (which skips is_one()). Should a
+    // future path admit one anyway, the loop below stays VALUE-EXACT: a
+    // constant c divides everything, so its full exponent is stripped and
+    // 1/c^e folds into the numerator's rational coefficients (verified by
+    // the reviewer's T4 stress case). It is a non-issue for correctness,
+    // only a mild inefficiency.
+    for (auto& f : den_factors_) {
+        while (f.exp > 0 && f.base.divides(numerator_)) {
+            numerator_ = numerator_.divexact(f.base);
+            --f.exp;
+        }
+    }
+    // Drop exhausted factors so expand_denominator()/add() never touch them.
+    den_factors_.erase(
+        std::remove_if(den_factors_.begin(), den_factors_.end(),
+                       [](const Factor& f) { return f.exp == 0; }),
+        den_factors_.end());
+}
+
 Rat FactoredRat::materialize_to_rat() const {
     if (den_factors_.empty()) return Rat(numerator_);
+    // HF_FR_MAT_PEEL=1 — peel known denominator bases off the numerator by
+    // EXACT division before expanding the denominator product. On the
+    // 1m-tbox-full `(1+var)*denBase^4` face family the B1.3b derivative
+    // chain piles powers of the den bases into the numerator: the three hot
+    // materialize calls on ord_-4_face_85 reduce 32k/61k-term operand pairs
+    // down to 2-term numerators, i.e. the monolithic Brown GCD spends
+    // seconds rediscovering a common factor that is knowable structurally.
+    // Each successful divexact strips one base power (cheap heap division
+    // by a <=200-term base); the reducing Rat ctor below is UNCHANGED and
+    // still canonicalizes whatever the peel misses (integer content,
+    // partial-base factors), so the result is value-identical by
+    // construction. Gated on >=64 numerator terms: below that the GCD is
+    // already ~free and a failed divides() attempt is pure overhead.
+    if (peel_enabled() && !numerator_.is_zero() &&
+        static_cast<long>(numerator_.n_terms()) >= kPeelMinTerms) {
+        auto t0 = std::chrono::steady_clock::now();
+        FactoredRat peeled_copy = *this;
+        peeled_copy.peel_known_factors();
+        double t_peel = std::chrono::duration<double>(
+            std::chrono::steady_clock::now() - t0).count();
+        auto t1 = std::chrono::steady_clock::now();
+        Rat r = peeled_copy.den_factors_.empty()
+            ? Rat(peeled_copy.numerator_)
+            : Rat(peeled_copy.numerator_,
+                  peeled_copy.expand_denominator());  // reducing ctor
+        if (std::getenv("HF_FR_MAT_STATS")) {
+            std::fprintf(stderr,
+                "[fr-peel] num_terms=%ld nfac=%zu "
+                "peel_wall=%.3fs -> rnum=%ld rden=%ld gcd_wall=%.3fs\n",
+                static_cast<long>(numerator_.n_terms()), den_factors_.size(),
+                t_peel,
+                static_cast<long>(r.num().n_terms()),
+                static_cast<long>(r.den().n_terms()),
+                std::chrono::duration<double>(
+                    std::chrono::steady_clock::now() - t1).count());
+        }
+        return r;
+    }
+    // HF_FR_MAT_RAW=1 — DIAGNOSTIC ONLY. Skips the reducing Rat ctor's
+    // monolithic fmpq_mpoly_gcd_cofactors(num, expanded_product), which on
+    // the 1m-tbox-full `(1+var)*denBase^4` face family is ~99% of the
+    // integration wall (ord_-4_face_85: 6.5 s of 6.6 s). Violates
+    // from_canonical's coprimality contract on purpose: downstream Rats are
+    // then UNREDUCED, so values stay correct but term sizes may swell.
+    // Never enable in production; this exists to attribute GCD cost.
+    static const bool mat_raw = []{
+        const char* e = std::getenv("HF_FR_MAT_RAW");
+        return e && *e && *e != '0';
+    }();
+    if (mat_raw) return Rat::from_canonical(numerator_, expand_denominator());
+    // HF_FR_MAT_STATS=1 — DIAGNOSTIC ONLY. Per-call operand/result sizes and
+    // wall for the reducing materialize, to attribute the Brown-GCD cost on
+    // the 1m-tbox-full face family. Few calls per integration; stderr.
+    static const bool mat_stats = []{
+        const char* e = std::getenv("HF_FR_MAT_STATS");
+        return e && *e && *e != '0';
+    }();
+    if (mat_stats) {
+        Poly den = expand_denominator();
+        auto t0 = std::chrono::steady_clock::now();
+        Rat r(numerator_, den);
+        double dt = std::chrono::duration<double>(
+            std::chrono::steady_clock::now() - t0).count();
+        std::fprintf(stderr,
+            "[fr-mat] num_terms=%ld den_terms=%ld nfac=%zu -> "
+            "rnum_terms=%ld rden_terms=%ld gcd_wall=%.3fs\n",
+            static_cast<long>(numerator_.n_terms()),
+            static_cast<long>(den.n_terms()), den_factors_.size(),
+            static_cast<long>(r.num().n_terms()),
+            static_cast<long>(r.den().n_terms()), dt);
+        return r;
+    }
     return Rat(numerator_, expand_denominator());  // reducing ctor
 }
 

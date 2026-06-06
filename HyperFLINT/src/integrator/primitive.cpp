@@ -6,6 +6,7 @@
 
 #include "hyperflint/algebra/partial_fractions.hpp"
 #include "hyperflint/algebra/poly_struct_hash.hpp"  // axis-D: pre-gating
+#include "hyperflint/core/addpf_probe.hpp"          // HF_ADDPF_PROBE bump-layer (2026-06-04)
 #include "hyperflint/runtime/trace_gate.hpp"
                                                       // dedup hash.
 #include "hyperflint/algebra/shuffle.hpp"   // collect_words (not strictly
@@ -241,6 +242,29 @@ Wordlist integrate_ii(const PolyCtx& ctx,
     std::vector<Cell> rows;
     std::unordered_map<std::string, size_t> row_index;
 
+    // HF_ADDPF_PROBE bump-layer extension (2026-06-04): per-row distinct
+    // INCOMING denominator hashes (group-by-denominator statistic).
+    // Probe-only side storage, parallel to `rows`; capped per row so a
+    // pathological row cannot blow memory. Empty when the probe is off.
+    constexpr std::size_t kAddpfDenCap = 16;
+    std::vector<std::vector<std::pair<uint64_t, uint64_t>>> addpf_row_dens;
+    const bool addpf_on = addpf_probe::enabled();
+    auto addpf_den_hash = [](const Rat& r) {
+        auto seed = poly_struct_hash_seed();
+        uint64_t h1 = seed.first, h2 = seed.second;
+        poly_struct_hash_raw(h1, h2, r.den());
+        return std::make_pair(h1, h2);
+    };
+    auto addpf_note_den = [&](std::size_t row, const Rat& c) {
+        if (row >= addpf_row_dens.size())
+            addpf_row_dens.resize(row + 1);
+        auto& v = addpf_row_dens[row];
+        if (v.size() >= kAddpfDenCap) return;  // capped; lower bound
+        const auto h = addpf_den_hash(c);
+        for (const auto& e : v) if (e == h) return;
+        v.push_back(h);
+    };
+
     // Resolve thread id once; per-thread storage slots are bounds-checked
     // since init_ii_sub_timers_per_thread may not have been called on the
     // standalone CLI path.
@@ -269,6 +293,7 @@ Wordlist integrate_ii(const PolyCtx& ctx,
         if (it == row_index.end()) {
             row_index[k] = rows.size();
             rows.push_back(Cell{w, c});
+            if (addpf_on) addpf_note_den(rows.size() - 1, c);
             if (_tg) {
                 const auto _bk_t2 = std::chrono::steady_clock::now();
                 auto& _av = bump_addto_storage();
@@ -284,7 +309,23 @@ Wordlist integrate_ii(const PolyCtx& ctx,
             // `coef = coef + c` pattern incurred.  The temporary's
             // assign-back used to deep-copy via fmpq_mpoly_set because
             // Poly lacked a move-assign; both holes are now closed.
-            rows[it->second].coef += c;
+            //
+            // HF_ADDPF_PROBE bump-layer extension (2026-06-04): split
+            // this += by (incoming den == row's current den) and time
+            // it; track incoming-den groups per row. Default-OFF.
+            if (addpf_on) {
+                const bool same_den =
+                    c.den().equal(rows[it->second].coef.den());
+                addpf_note_den(it->second, c);
+                const auto _ap_t0 = std::chrono::steady_clock::now();
+                rows[it->second].coef += c;
+                addpf_probe::record_bump_add(
+                    same_den,
+                    std::chrono::duration<double>(
+                        std::chrono::steady_clock::now() - _ap_t0).count());
+            } else {
+                rows[it->second].coef += c;
+            }
             if (_tg) {
                 const auto _bk_t2 = std::chrono::steady_clock::now();
                 auto& _av = bump_addto_storage();
@@ -568,6 +609,16 @@ Wordlist integrate_ii(const PolyCtx& ctx,
         auto& _rv = bump_unique_rows_storage();
         if (static_cast<size_t>(_ii_tid) < _rv.size())
             _rv[_ii_tid] += static_cast<long>(rows.size());
+    }
+
+    // HF_ADDPF_PROBE bump-layer extension: per-row distinct-den group
+    // counts at the drain (the group-by-denominator statistic).
+    if (addpf_on) {
+        for (std::size_t ri = 0; ri < rows.size(); ++ri) {
+            const std::size_t g = ri < addpf_row_dens.size()
+                                      ? addpf_row_dens[ri].size() : 0;
+            addpf_probe::record_bump_row(g, g >= kAddpfDenCap);
+        }
     }
 
     // Emit a Wordlist, dropping zero-coef rows.

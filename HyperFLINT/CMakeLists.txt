@@ -72,6 +72,14 @@ find_library(GMP_LIB NAMES gmp HINTS ${FLINT_LIBRARY_DIRS})
 # environments without OpenMP). Apple's system clang ships with
 # libomp at /opt/homebrew; we rely on brew's installation.
 option(HF_OPENMP "Enable OpenMP parallelism" ON)
+# HOISTED 2026-06-05 (was declared at the mimalloc link block ~line 1305,
+# AFTER the if(HF_MIMALLOC)-gated test-target definitions at ~line 1119: on a
+# FRESH cache the variable was undefined there, the targets were skipped, and
+# the later link block -- where the option had defaulted ON -- referenced the
+# missing target ("Cannot specify link libraries for target ... not built by
+# this project").  Preset builds masked this by seeding -DHF_MIMALLOC.  Same
+# variable-ordering class as the v1.2.0 GMP/MPFR_STATIC_ARCHIVE CI bug.
+option(HF_MIMALLOC "Link CLI with mimalloc allocator (tst1/tst2 ~10% win)" ON)
 if(HF_OPENMP)
     find_package(OpenMP COMPONENTS CXX)
     if(NOT OpenMP_CXX_FOUND)
@@ -108,6 +116,9 @@ set(HF_SOURCES
     src/core/rat_split.cpp
     src/core/sym_coef_split.cpp
     src/core/symcoef.cpp
+    src/core/addpf_probe.cpp
+    src/core/period_table.cpp
+    src/reduce/period_scratch.cpp
     src/core/zw_table.cpp
     # HF FF Phase 5 §E Step E.2-impl-2 (iter-60-β): operator-call memoization.
     # operator_memo.cpp owns the per-op cache singletons + env-gate predicates
@@ -139,6 +150,9 @@ set(HF_SOURCES
     src/integrator/section_6d_dfs_cap.cpp
     src/integrator/hyper_int.cpp
     src/integrator/lr_search.cpp
+    src/algebra/euler_chi.cpp     # Doppio port phase 1 (2026-06-05): DK chi counter
+    src/algebra/euler_filter.cpp  # Doppio port phase 2: chi-drop letter filter
+    src/integrator/lr_scan.cpp    # Doppio port phase 3: projective gauge scan + conic/carry keep-rules
     src/integrator/ctx_probe.cpp
     src/integrator/sharded_flat_map.cpp
     src/integrator/step_strategy.cpp  # Track 6.3 iter-35
@@ -574,6 +588,42 @@ target_link_libraries(hyperflint-test-factored-rat
 # value round-trip identity  P + Σ c_{i,j}/(var-a_i)^j == f  so the Phase
 # B1 FactoredRat refactor is provably value-preserving. Mirrors the
 # factored-rat block idiom; run directly, exit 0 = pass.
+add_executable(hyperflint-test-period-tuples
+               test/unit/test_period_tuples.cpp)
+target_link_libraries(hyperflint-test-period-tuples PRIVATE hyperflint)
+add_test(NAME hf-period-tuples COMMAND hyperflint-test-period-tuples)
+
+# Doppio port phase 1 (2026-06-05): Euler-characteristic counter (DK
+# cleared-dlog core, msolve grevlex GBs over temp files).  The source is
+# compiled INTO the test target (not the hyperflint lib) so the main
+# library's source list — and other sessions' builds — are untouched
+# until the Doppio port lands for real.  Oracle battery from
+# t20_cleared_dlog.wl; needs `msolve` on PATH (or HF_MSOLVE_PATH).
+add_executable(hyperflint-test-euler-chi
+               test/test_euler_chi.cpp)
+target_link_libraries(hyperflint-test-euler-chi PRIVATE hyperflint)
+add_test(NAME hf-euler-chi COMMAND hyperflint-test-euler-chi)
+
+# Doppio port phase 2 (2026-06-05): chi-drop letter filter + the
+# HF_EULER_FILTER hook in find_lr_orders.  Oracle battery: t18/t20
+# genuineness verdicts (box + split-pair) and the triple-verified uq5
+# intermediate `yb` fictitious catch; OFF-mode parity asserted.
+add_executable(hyperflint-test-euler-filter
+               test/test_euler_filter.cpp)
+target_link_libraries(hyperflint-test-euler-filter PRIVATE hyperflint)
+add_test(NAME hf-euler-filter COMMAND hyperflint-test-euler-filter)
+
+# Doppio port phase 3 (2026-06-05): projective gauge scan (depth n-1,
+# per-gauge dehomogenized judgment) + Euler-conic strict tier + FindRoots
+# carried-sqrt tier.  Mma cross-pins: uq5 Strict scan == 0 orders
+# (gauge-exhaustive NOLR); FindRoots scan == 120 orders with the
+# collaborator order (x2,x3,x1,x4) at gauge x5 and carriedSqrts == 2
+# (t24 battery).
+add_executable(hyperflint-test-lr-scan
+               test/test_lr_scan.cpp)
+target_link_libraries(hyperflint-test-lr-scan PRIVATE hyperflint)
+add_test(NAME hf-lr-scan COMMAND hyperflint-test-lr-scan)
+
 add_executable(hyperflint-test-partial-fractions-characterization
                test/test_partial_fractions_characterization.cpp)
 target_link_libraries(hyperflint-test-partial-fractions-characterization
@@ -645,6 +695,12 @@ target_link_libraries(hyperflint-test-rat-split-roundtrip-synthetic
 # See notes/hf_mzv_rewrite_design_2026-05-05/c_prep_4_scoping_memo.md.
 add_executable(hyperflint-test-sym-coef-canonical-string
                test/unit/test_sym_coef_canonical_string.cpp)
+
+add_executable(hyperflint-test-parse-unary-precedence
+               test/unit/test_parse_unary_precedence.cpp)
+target_link_libraries(hyperflint-test-parse-unary-precedence PRIVATE hyperflint)
+add_test(NAME hf-parse-unary-precedence
+         COMMAND hyperflint-test-parse-unary-precedence)
 target_link_libraries(hyperflint-test-sym-coef-canonical-string
                       PRIVATE hyperflint)
 
@@ -1254,7 +1310,8 @@ endif()
 # Apple's linker (per mimalloc README for macOS).
 #
 # Turn off with `-DHF_MIMALLOC=OFF` if mimalloc isn't installed.
-option(HF_MIMALLOC "Link CLI with mimalloc allocator (tst1/tst2 ~10% win)" ON)
+# (option(HF_MIMALLOC ...) is declared near the top of this file — hoisted
+# 2026-06-05 so the if(HF_MIMALLOC)-gated test targets at ~line 1119 see it.)
 if(HF_MIMALLOC)
     # HF FF Phase 5 §C.b iter-58 fold appendix REC-5 (landed iter-89):
     # require mimalloc >= 3.3 fail-fast.  mimalloc 3.3 is the first

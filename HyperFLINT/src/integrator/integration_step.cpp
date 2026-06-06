@@ -16,6 +16,7 @@
 #include "hyperflint/integrator/primitive.hpp"
 #include "hyperflint/integrator/regularize.hpp"
 #include "hyperflint/integrator/transform.hpp"
+#include "hyperflint/core/addpf_probe.hpp"          // HF_ADDPF_PROBE (additive-parfrac Phase 0)
 #include "hyperflint/reduce/periods.hpp"           // test_zero_function_sym
 #include "hyperflint/runtime/narrow_ctx_flag.hpp"  // R24v2 sentinel-tolerance
 #include "hyperflint/runtime/scalar_rep.hpp"        // Phase-B B6.b: scalar_rep_enabled()
@@ -1654,6 +1655,31 @@ RegulatorSym integration_step(const PolyCtx& ctx,
         // exactly once.  Thread_local guard inside the helper keeps the
         // per-iteration overhead to a single compare after the first call.
         hf_promote_qos_once();
+        // HF_PROGRESS heartbeat (relocated 2026-06-05): this lambda is
+        // the SINGLE entry-execution path shared by the GCD-dispatch
+        // (default-ON since the Phase-1 verdict), OMP, and serial
+        // branches -- the original placement in the OMP loop was dead
+        // code in production. Reports every ~5% of entries (min 1).
+        {
+            static const bool hf_progress = [] {
+                const char* e = std::getenv("HF_PROGRESS");
+                return e && e[0] == '1';
+            }();
+            if (hf_progress) {
+                static std::atomic<long> done{0};
+                const long n = static_cast<long>(input.size());
+                const long d = done.fetch_add(1,
+                    std::memory_order_relaxed) + 1;
+                const long stride = n > 20 ? n / 20 : 1;
+                if (d % stride == 0 || d == n) {
+                    std::fprintf(stderr,
+                        "[hf-progress]   entry %ld/%ld (var=%s)\n",
+                        d, n, ctx.vars()[var_idx].c_str());
+                    std::fflush(stderr);
+                }
+                if (d == n) done.store(0, std::memory_order_relaxed);
+            }
+        }
         // R24 rev 2 / chain 17 — OMP-iteration-body try/catch wrapper.
         // Catches `std::runtime_error` escape (e.g. `Rat::div: division
         // by zero` from a parse_or_none safe-failure zero substituted
@@ -2090,6 +2116,29 @@ RegulatorSym integration_step(const PolyCtx& ctx,
         #pragma omp parallel for schedule(static, 1) if(do_parallel) num_threads(max_active_slots)
 #endif
         for (long entry_i = 0; entry_i < static_cast<long>(input.size()); ++entry_i) {
+            // HF_PROGRESS heartbeat (2026-06-04): entries are the big
+            // work units; report every ~5% (min 1). Atomic counter,
+            // default-OFF, one branch when off.
+            {
+                static const bool hf_progress = [] {
+                    const char* e = std::getenv("HF_PROGRESS");
+                    return e && e[0] == '1';
+                }();
+                if (hf_progress) {
+                    static std::atomic<long> done{0};
+                    const long n = static_cast<long>(input.size());
+                    const long d = done.fetch_add(1,
+                        std::memory_order_relaxed) + 1;
+                    const long stride = n > 20 ? n / 20 : 1;
+                    if (d % stride == 0 || d == n) {
+                        std::fprintf(stderr,
+                            "[hf-progress]   entry %ld/%ld (var=%s)\n",
+                            d, n, ctx.vars()[var_idx].c_str());
+                        std::fflush(stderr);
+                    }
+                    if (d == n) done.store(0, std::memory_order_relaxed);
+                }
+            }
             // Track 4.2 iter-26 PoC: per-iteration scope guard for the
             // OMP parallel-for region.  Sets g_active_scope_mask bit on
             // entry, RAII pops on iteration-body exit.  Each OMP worker
@@ -2778,6 +2827,9 @@ RegulatorSym integration_step(const PolyCtx& ctx,
         // takes the only chunk directly. K>1 does log2(K) levels.
         // Iter-52 C0c.1 Increment β: pass _mt_tid so the lambda picks
         // the worker's per-thread ZWTable (Protocol A STEP 2).
+        // HF_ADDPF_PROBE (additive-parfrac Phase 0): addends-per-key at
+        // the fusion site. Read BEFORE the move below consumes chunks.
+        const std::size_t _addpf_n_chunks = mp.second->chunks.size();
         SymCoef c = apply_v1_roundtrip_symcoef(
             (mp.second->chunks.size() == 1)
                 ? std::move(mp.second->chunks[0])
@@ -2786,6 +2838,28 @@ RegulatorSym integration_step(const PolyCtx& ctx,
             _mt_tid);
         const auto _pm_iter_t1 = std::chrono::steady_clock::now();
         const long _out_n = static_cast<long>(c.terms().size());
+        if (addpf_probe::enabled()) {
+            std::size_t _max_num_terms = 0;
+            const std::size_t _nuser = addpf_probe::user_var_count();
+            for (const auto& _m : c.terms()) {
+                const std::size_t nt = _m.prefactor.num().n_terms();
+                if (nt > _max_num_terms) _max_num_terms = nt;
+                // Task 0.2 census: does this monomial's prefactor use
+                // any atom var (index >= kinematic prefix)?
+                bool _uses = false;
+                if (_nuser > 0) {
+                    for (std::size_t vi :
+                             _m.prefactor.num().used_var_indices())
+                        if (vi >= _nuser) { _uses = true; break; }
+                    if (!_uses)
+                        for (std::size_t vi :
+                                 _m.prefactor.den().used_var_indices())
+                            if (vi >= _nuser) { _uses = true; break; }
+                }
+                addpf_probe::record_monomial(_uses);
+            }
+            addpf_probe::record_drain_key(_addpf_n_chunks, _max_num_terms);
+        }
         {
             auto& _imv = merge_in_terms_storage();
             if (static_cast<size_t>(_mt_tid) < _imv.size())
@@ -2899,6 +2973,13 @@ RegulatorSym integration_step(const PolyCtx& ctx,
     const auto t_canon1 = std::chrono::steady_clock::now();
     g_integration_step_canon_s +=
         std::chrono::duration<double>(t_canon1 - t_canon0).count();
+    // HF_ADDPF_PROBE (additive-parfrac Phase 0): one JSONL summary per
+    // step, then reset, so the per-step attribution lines up with the
+    // step-trace timers. Default-OFF.
+    if (addpf_probe::enabled())
+        addpf_probe::emit_and_reset(
+            var_idx < ctx.vars().size() ? ctx.vars()[var_idx].c_str()
+                                        : "?");
     return canon;
 }
 

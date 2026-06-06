@@ -5,9 +5,18 @@
 //
 //   expr       := sum
 //   sum        := product (("+" | "-") product)*
-//   product    := power (("*" | "/") power)*
-//   power      := unary ("^" unary)?
-//   unary      := ("-" | "+") unary | call
+//   product    := unary (("*" | "/") unary)*
+//   unary      := ("-" | "+") unary | power
+//   power      := call ("^" unary)?
+//
+//   PRECEDENCE (fix d74f8c88a, 2026-06-04): '^' binds TIGHTER than
+//   unary minus, matching Mathematica/Maple: -f^n == -(f^n). The
+//   earlier grammar (power := unary ("^" unary)?) folded a leading
+//   minus into the base, computing (-f)^n and silently dropping the
+//   sign for every even n; subtraction counterterms emit exactly the
+//   exposed shape -(F)^(-2). Chained '^' is accepted RIGHT-
+//   associatively (a^b^c == a^(b^c), matching Mathematica) as a side
+//   effect of the exponent recursing through `unary`.
 //   call       := "Hlog[" expr "," "[" letterlist "]" "]"
 //               | "Log[" expr "]"
 //               | "PolyLog[" expr "," expr "]"   // accepted, flagged

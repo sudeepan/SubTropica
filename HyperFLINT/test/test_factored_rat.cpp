@@ -290,6 +290,97 @@ int main() {
         }
     }
 
+    // ---- peel_known_factors(): value preservation + structure ----
+    // (advisory A2, review of 5f62abe84). All value checks via value_equal:
+    // peel changes the representation (and hence content scaling), never the
+    // value. min_terms=1 forces the peel on small test numerators; the gate
+    // itself is tested separately in (iv).
+    {
+        Poly X = Poly::gen(ctx, 0);
+        Poly Y = Poly::gen(ctx, 1);
+        Poly one = Poly::one_of(ctx);
+        Poly base = X.add(Y).add(one);                       // x+y+1
+        Poly yp3 = Y.add(Poly::from_int(ctx, 3));            // y+3
+
+        // (i) PARTIAL peel: numerator base^2*(x+2) over {base^5, (y+3)^1}.
+        //     base exp must drop 5 -> 3 (exactly the two removable powers),
+        //     (y+3) must survive untouched, value unchanged.
+        {
+            Poly num = base.pow(2).mul(X.add(Poly::from_int(ctx, 2)));
+            FactoredRat fr = FactoredRat::from_rat(Rat(one, base)).pow(5)
+                                 .mul(FactoredRat::from_rat(Rat(one, yp3)))
+                                 .mul(FactoredRat::from_poly(num));
+            Rat before = fr.materialize_to_rat();
+            FactoredRat fp = fr;
+            fp.peel_known_factors(1);
+            CHECK(value_equal(fp.materialize_to_rat(), before));
+            bool base_ok = false, yp3_ok = false;
+            for (const auto& f : fp.den_factors()) {
+                if (f.base.equal(base)) base_ok = (f.exp == 3);
+                if (f.base.equal(yp3))  yp3_ok  = (f.exp == 1);
+            }
+            CHECK(base_ok);
+            CHECK(yp3_ok);
+            // numerator no longer divisible by base.
+            CHECK(!base.divides(fp.numerator()));
+        }
+
+        // (ii) FULL strip to empty denominator: base^4 over {base^3} peels
+        //      to numerator base^1 with NO factors left (exhausted factors
+        //      are erased so expand_denominator()/add() never see them).
+        {
+            FactoredRat fr = FactoredRat::from_rat(Rat(one, base)).pow(3)
+                                 .mul(FactoredRat::from_poly(base.pow(4)));
+            Rat before = fr.materialize_to_rat();
+            FactoredRat fp = fr;
+            fp.peel_known_factors(1);
+            CHECK(fp.den_factors().empty());
+            CHECK(fp.numerator().equal(base));
+            CHECK(value_equal(fp.materialize_to_rat(), before));
+        }
+
+        // (iii) Derivative-chain peel-vs-no-peel value equality (the B1.3b
+        //       pattern): expr = (x+2) / denBase^4 with denBase x-dependent,
+        //       chain derivs[t] = d^t/dx^t expr, peeling one arm after every
+        //       step. Mirrors partial_fractions.cpp's chain-peel call sites.
+        {
+            Poly denBase = X.mul(Y).add(X).add(one);         // x*y+x+1
+            FactoredRat expr =
+                FactoredRat::from_rat(Rat(one, denBase)).pow(4)
+                    .mul(FactoredRat::from_poly(X.add(Poly::from_int(ctx, 2))));
+            FactoredRat plain = expr;
+            FactoredRat peeled = expr;
+            peeled.peel_known_factors(1);
+            for (int t = 0; t < 4; ++t) {
+                CHECK(value_equal(peeled.materialize_to_rat(),
+                                  plain.materialize_to_rat()));
+                plain = plain.derivative(0);
+                peeled = peeled.derivative(0);
+                peeled.peel_known_factors(1);
+            }
+            CHECK(value_equal(peeled.materialize_to_rat(),
+                              plain.materialize_to_rat()));
+        }
+
+        // (iv) min_terms gate: a numerator below the threshold must be left
+        //      ENTIRELY untouched (no divides() attempt can alter structure;
+        //      exponents and numerator identical), even though base | num.
+        {
+            FactoredRat fr = FactoredRat::from_rat(Rat(one, base)).pow(2)
+                                 .mul(FactoredRat::from_poly(base));  // 3-term num
+            FactoredRat fp = fr;
+            fp.peel_known_factors();   // default kPeelMinTerms = 64 > 3 terms
+            CHECK(fp.numerator().equal(fr.numerator()));
+            CHECK(fp.den_factors().size() == fr.den_factors().size());
+            CHECK(fp.den_factors()[0].exp == fr.den_factors()[0].exp);
+            // and with the gate lowered it does peel:
+            fp.peel_known_factors(1);
+            CHECK(fp.den_factors()[0].exp == 1);
+            CHECK(value_equal(fp.materialize_to_rat(),
+                              fr.materialize_to_rat()));
+        }
+    }
+
     if (g_failures == 0) std::cout << "test_factored_rat: all passed\n";
     return g_failures;
 }

@@ -254,14 +254,14 @@ private:
         return Expr::plus(std::move(terms));
     }
 
-    // product := power (("*" | "/") power)*
+    // product := unary (("*" | "/") unary)*
     Expr parse_product() {
         std::vector<Expr> factors;
-        factors.push_back(parse_power());
+        factors.push_back(parse_unary());
         while (peek().kind == TokKind::Star || peek().kind == TokKind::Slash) {
             bool invert = (peek().kind == TokKind::Slash);
             consume();
-            Expr rhs = parse_power();
+            Expr rhs = parse_unary();
             if (invert) {
                 if (rhs.kind() == ExprKind::Leaf) {
                     rhs = Expr::leaf(rat_one() / rhs.leaf_rat());
@@ -282,9 +282,22 @@ private:
         return Expr::times(std::move(factors));
     }
 
-    // power := unary ("^" unary)?
+    // power := call ("^" unary)?
+    //
+    // PRECEDENCE FIX (2026-06-04): '^' binds TIGHTER than unary minus,
+    // matching Mathematica/Maple: -f^n == -(f^n). The previous grammar
+    // (power := unary ("^" unary)?) folded a leading minus into the BASE,
+    // computing (-f)^n, which silently equals +f^n for every EVEN n and
+    // so dropped the sign of any bare-unary-minus even power. Plain
+    // benchmark integrands always carry rational coefficients (the -1/18*
+    // Times path) and sums use binary minus, both unaffected; but the
+    // graph pipeline's subtraction counterterms emit exactly the exposed
+    // shape -(F)^(-2). Cost: a -4*zeta3/eps defect on the 2-loop
+    // triangle-ladder (faces ord_-1_face_3/4), caught against the library
+    // entry + pySecDec on 2026-06-04. The exponent side still parses via
+    // parse_unary so x^-2 / x^(-2) keep working.
     Expr parse_power() {
-        Expr base = parse_unary();
+        Expr base = parse_call();
         if (peek().kind != TokKind::Caret) return base;
         consume();
         Expr exp = parse_unary();
@@ -329,7 +342,8 @@ private:
         return Expr::power(std::move(base), n);
     }
 
-    // unary := ("-" | "+") unary | call
+    // unary := ("-" | "+") unary | power
+    // The sign wraps the whole power (see parse_power precedence note).
     Expr parse_unary() {
         if (peek().kind == TokKind::Plus) {
             consume();
@@ -344,7 +358,7 @@ private:
             Expr minus_one = Expr::leaf(rat_zero() - rat_one());
             return Expr::times({minus_one, std::move(inner)});
         }
-        return parse_call();
+        return parse_power();
     }
 
     // call := "Hlog[" expr "," "[" letterlist "]" "]"

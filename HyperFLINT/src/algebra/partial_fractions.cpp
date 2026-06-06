@@ -17,6 +17,8 @@
 // calls with O(m) derivatives.
 
 #include "hyperflint/algebra/partial_fractions.hpp"
+
+#include "hyperflint/core/addpf_probe.hpp"
 #include "hyperflint/algebra/env_flags.hpp"           // iter-71 §T7 sixth chunk: HF_FLAG_PF_* macro layer
 #include "hyperflint/core/operator_memo.hpp"
 #include "hyperflint/core/canonical_signature.hpp"
@@ -712,6 +714,15 @@ PartialFractionization partial_fractions(
         emit_pf_storage_stats(-1L, vn, "after_pf", &pf);
     };
 
+    // HF_ADDPF_PROBE (additive-parfrac Phase 0): unconditional call
+    // counter + nonzero-poly-part fraction (D6 eager poly-part fusion
+    // re-examination data). Counts every public call regardless of
+    // memo hits so the ON-arm estimate uses real call volume.
+    auto record_addpf = [&](const PartialFractionization& pf) {
+        if (addpf_probe::enabled())
+            addpf_probe::record_pf_call(!pf.polynomial_part.is_zero());
+    };
+
     if (operator_memo::pf_enabled()) {
         canonical_signature::PfKey key = canonical_signature::make_pf_key(
             f, var_idx, zw_tab.get(), introduce_algebraic_letters);
@@ -740,6 +751,7 @@ PartialFractionization partial_fractions(
             PartialFractionization result = *cached_sp;
             emit_probe(result);
             emit_storage_probe(result);
+            record_addpf(result);
             return result;
         }
         PartialFractionization result = partial_fractions_with_inner_cache(
@@ -748,12 +760,14 @@ PartialFractionization partial_fractions(
                                   PartialFractionization(result));
         emit_probe(result);
         emit_storage_probe(result);
+        record_addpf(result);
         return result;
     }
     PartialFractionization result = partial_fractions_with_inner_cache(
         f, var_idx, zw_tab, introduce_algebraic_letters);
     emit_probe(result);
     emit_storage_probe(result);
+    record_addpf(result);
     return result;
 }
 
@@ -1004,11 +1018,22 @@ PartialFractionization partial_fractions_impl(
             }
 
             // Derivative chain in FactoredRat: derivs[t] = d^t/dvar^t expr_k.
+            // HF_FR_MAT_PEEL: peel removable base powers off each chain
+            // numerator as it is built. FactoredRat::derivative never
+            // cancels, so without the peel the chain numerators swell with
+            // whole powers of the den bases and the downstream eval_poly
+            // homogenization pays huge fmpz_mpoly_mul calls (ord_-4_face_90:
+            // ~10 s residual after the materialize-side peel alone).
+            // Value-preserving: each peel step is an exact division applied
+            // to numerator and factored denominator alike.
             std::vector<FactoredRat> derivs;
             derivs.reserve(static_cast<size_t>(m));
             derivs.push_back(expr_fac);
+            if (FactoredRat::peel_enabled()) derivs.back().peel_known_factors();
             for (long t = 1; t < m; ++t) {
                 derivs.push_back(derivs.back().derivative(var_idx));
+                if (FactoredRat::peel_enabled())
+                    derivs.back().peel_known_factors();
             }
 
             PartialFractionPole pole{a, m, {}};

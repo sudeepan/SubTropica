@@ -1,7 +1,11 @@
 // Phase 6d-v-i: SymCoef implementation.
 
 #include "hyperflint/core/symcoef.hpp"
+#include "hyperflint/core/period_table.hpp"
 #include "hyperflint/algebra/poly_struct_hash.hpp"
+#include "hyperflint/core/addpf_probe.hpp"
+
+#include <chrono>
 #include "hyperflint/core/rat_split.hpp"
 #include "hyperflint/core/zw_table.hpp"
 #include "hyperflint/reduce/mzv_reduce.hpp"
@@ -12,6 +16,10 @@
 #include <unordered_map>
 
 namespace hyperflint {
+
+// Declared in hyperflint/reduce/period_scratch.hpp; forward-declared here
+// to avoid a core->reduce header dependency (review fold, 2026-06-04).
+bool period_tuples_enabled();
 
 // -------- SymMonomial --------
 
@@ -28,12 +36,18 @@ std::string SymMonomial::power_key() const {
     for (const auto& kv : delta_powers) {
         o << kv.first << ':' << kv.second << ',';
     }
+    o << '|';
+    o << 'Q';  // period-tuples Phase 1: opaque period generators
+    for (const auto& kv : period_powers) {
+        o << kv.first << ':' << kv.second << ',';
+    }
     return o.str();
 }
 
 bool SymMonomial::is_pure_rat() const {
     return pi_power == 0 && i_power == 0
-        && log_powers.empty() && delta_powers.empty();
+        && log_powers.empty() && delta_powers.empty()
+        && period_powers.empty();  // period-tuples: periods are NOT rats
 }
 
 std::pair<uint64_t, uint64_t> SymMonomial::power_hash() const {
@@ -66,6 +80,12 @@ std::pair<uint64_t, uint64_t> SymMonomial::power_hash() const {
         poly_struct_hash_mix(h1, h2, 0xfffffffffffffffeULL);
         poly_struct_hash_mix(h1, h2, static_cast<uint64_t>(kv.second));
     }
+    // Section: period_powers (sorted by id by std::map invariant).
+    poly_struct_hash_mix(h1, h2, 0x5100000000000000ULL);  // 'Q'
+    for (const auto& kv : period_powers) {
+        poly_struct_hash_mix(h1, h2, static_cast<uint64_t>(kv.first));
+        poly_struct_hash_mix(h1, h2, static_cast<uint64_t>(kv.second));
+    }
     return {h1, h2};
 }
 
@@ -83,6 +103,10 @@ std::string SymMonomial::to_string() const {
     for (const auto& kv : delta_powers) {
         if (kv.second == 1) o << "*delta[" << kv.first << "]";
         else                o << "*delta[" << kv.first << "]^" << kv.second;
+    }
+    for (const auto& kv : period_powers) {
+        if (kv.second == 1) o << "*Period[" << kv.first << "]";
+        else                o << "*Period[" << kv.first << "]^" << kv.second;
     }
     return o.str();
 }
@@ -157,6 +181,11 @@ SymCoef SymCoef::canonicalize() const & {
             if (it->second == 0) it = m.log_powers.erase(it);
             else                 ++it;
         }
+        for (auto it = m.period_powers.begin();
+             it != m.period_powers.end(); ) {
+            if (it->second == 0) it = m.period_powers.erase(it);
+            else                 ++it;
+        }
         for (auto it = m.delta_powers.begin(); it != m.delta_powers.end(); ) {
             const int reduced = ((it->second % 2) + 2) % 2;
             if (reduced == 0) it = m.delta_powers.erase(it);
@@ -218,6 +247,11 @@ SymCoef SymCoef::canonicalize() const & {
         // leave 0 in log/delta on some code paths).
         for (auto it = m.log_powers.begin(); it != m.log_powers.end(); ) {
             if (it->second == 0) it = m.log_powers.erase(it);
+            else                 ++it;
+        }
+        for (auto it = m.period_powers.begin();
+             it != m.period_powers.end(); ) {
+            if (it->second == 0) it = m.period_powers.erase(it);
             else                 ++it;
         }
         // delta[v] is a sign indicator (±1, per HyperIntica.wl:59), so
@@ -331,6 +365,11 @@ SymCoef SymCoef::canonicalize() && {
             if (it->second == 0) it = m.log_powers.erase(it);
             else                 ++it;
         }
+        for (auto it = m.period_powers.begin();
+             it != m.period_powers.end(); ) {
+            if (it->second == 0) it = m.period_powers.erase(it);
+            else                 ++it;
+        }
         for (auto it = m.delta_powers.begin(); it != m.delta_powers.end(); ) {
             const int reduced = ((it->second % 2) + 2) % 2;
             if (reduced == 0) it = m.delta_powers.erase(it);
@@ -388,6 +427,11 @@ SymCoef SymCoef::canonicalize() && {
         m.i_power = new_i;
         for (auto it = m.log_powers.begin(); it != m.log_powers.end(); ) {
             if (it->second == 0) it = m.log_powers.erase(it);
+            else                 ++it;
+        }
+        for (auto it = m.period_powers.begin();
+             it != m.period_powers.end(); ) {
+            if (it->second == 0) it = m.period_powers.erase(it);
             else                 ++it;
         }
         for (auto it = m.delta_powers.begin(); it != m.delta_powers.end(); ) {
@@ -489,7 +533,26 @@ SymCoef SymCoef::merge_sorted_canonical(const SymCoef& a,
             // Equal key: gather both sides' contributions. With
             // K=2 inputs, gathering is just summing the two heads.
             SymMonomial m = A[ia];
-            m.prefactor += B[ib].prefactor;
+            // HF_ADDPF_PROBE (additive-parfrac Phase 0): attribute the
+            // key-match fusion add by denominator equality. diff-den
+            // adds pay the cross-multiply + GCD; they are the class
+            // the additive-parfrac lever would relocate to residue
+            // space. Default-OFF; one branch on a static when off.
+            if (addpf_probe::enabled()) {
+                const bool same_den =
+                    m.prefactor.den().equal(B[ib].prefactor.den());
+                const std::size_t da = m.prefactor.den().n_terms();
+                const std::size_t db = B[ib].prefactor.den().n_terms();
+                const auto t0 = std::chrono::steady_clock::now();
+                m.prefactor += B[ib].prefactor;
+                addpf_probe::record_merge_add(
+                    same_den,
+                    std::chrono::duration<double>(
+                        std::chrono::steady_clock::now() - t0).count(),
+                    da, db, m.prefactor.den().n_terms());
+            } else {
+                m.prefactor += B[ib].prefactor;
+            }
             if (!m.prefactor.is_zero()) {
                 out.terms_.push_back(std::move(m));
             }
@@ -536,7 +599,22 @@ SymCoef SymCoef::merge_sorted_canonical(SymCoef&& a, SymCoef&& b) {
             ++ib;
         } else {
             SymMonomial m = std::move(A[ia]);
-            m.prefactor += B[ib].prefactor;
+            // HF_ADDPF_PROBE: same attribution as the const overload.
+            if (addpf_probe::enabled()) {
+                const bool same_den =
+                    m.prefactor.den().equal(B[ib].prefactor.den());
+                const std::size_t da = m.prefactor.den().n_terms();
+                const std::size_t db = B[ib].prefactor.den().n_terms();
+                const auto t0 = std::chrono::steady_clock::now();
+                m.prefactor += B[ib].prefactor;
+                addpf_probe::record_merge_add(
+                    same_den,
+                    std::chrono::duration<double>(
+                        std::chrono::steady_clock::now() - t0).count(),
+                    da, db, m.prefactor.den().n_terms());
+            } else {
+                m.prefactor += B[ib].prefactor;
+            }
             if (!m.prefactor.is_zero()) {
                 out.terms_.push_back(std::move(m));
             }
@@ -665,6 +743,11 @@ SymCoef SymCoef::mul(const SymCoef& o) const {
                 if (reduced == 0) c.delta_powers.erase(kv.first);
                 else              c.delta_powers[kv.first] = reduced;
             }
+            // Period-tuples Phase 2: free commutative monoid -- pure
+            // exponent addition, no reduction (spec 2026-06-04 §2.2).
+            c.period_powers = a.period_powers;
+            for (const auto& kv : b.period_powers)
+                c.period_powers[kv.first] += kv.second;
             ms.push_back(std::move(c));
         }
     }
@@ -752,6 +835,26 @@ SymCoef simplify_symcoef(const SymCoef& s, const MzvReductionTable& /*table*/) {
     // Pi^(2k) -> (6 * mzv_2)^k folds even powers of Pi into the Rat
     // prefactor. Requires "mzv_2" to be a variable in s.ctx().
     const PolyCtx& ctx = s.ctx();
+    // Period-tuples (binding review fold, 2026-06-04): under the slim
+    // ctx mzv_2 is not a ring var; fold Pi^(2k) -> 6^k * mzv_2^k into
+    // period_powers instead, preserving wide-path semantics.
+    if (period_tuples_enabled()) {
+        const std::uint32_t z2 = PeriodTable::instance().id_for("mzv_2");
+        SymCoef result(ctx);
+        std::vector<SymMonomial> ms;
+        for (auto m : s.terms()) {
+            const int k = m.pi_power / 2;
+            m.pi_power -= 2 * k;
+            if (k > 0) {
+                long six_k = 1;
+                for (int i = 0; i < k; ++i) six_k *= 6;
+                m.prefactor = m.prefactor * Rat::from_int(ctx, six_k);
+                m.period_powers[z2] += k;
+            }
+            ms.push_back(std::move(m));
+        }
+        return SymCoef::from_monomials(ctx, std::move(ms));
+    }
     if (find_mzv2_index(ctx) < 0) {
         return s;   // no mzv_2 in ctx, nothing to fold
     }
@@ -781,6 +884,18 @@ SymCoef simplify_symcoef(const SymCoef& s, const MzvReductionTable& /*table*/) {
             for (int i = 0; i < kv.second; ++i)
                 mono = mono.mul(SymCoef::delta_factor(ctx, kv.first));
         }
+        // Period-tuples: reattach period content dropped by the
+        // from_rat rebuild (defensive parity; review fold B2c).
+        if (!m.period_powers.empty()) {
+            SymCoef withp(ctx);
+            std::vector<SymMonomial> pm;
+            for (auto t : mono.terms()) {
+                for (const auto& kv : m.period_powers)
+                    t.period_powers[kv.first] += kv.second;
+                pm.push_back(std::move(t));
+            }
+            mono = SymCoef::from_monomials(ctx, std::move(pm));
+        }
         result = result.add(mono);
     }
     return result;
@@ -804,6 +919,11 @@ Rat reduce_to_rat(const SymCoef& s, const MzvReductionTable& table) {
         }
         if (!m.delta_powers.empty()) {
             throw std::runtime_error("reduce_to_rat: residual delta[var] factor");
+        }
+        if (!m.period_powers.empty()) {
+            throw std::runtime_error(
+                "reduce_to_rat: residual period generator (period-tuples "
+                "content cannot be reduced to a kinematic Rat)");
         }
     }
     if (!simplified.is_rat()) {

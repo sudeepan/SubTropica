@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <limits>
 #include <stdexcept>
 #include <string>
@@ -13,6 +15,8 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+#include "hyperflint/algebra/euler_filter.hpp"
 
 namespace hyperflint {
 namespace lr_search {
@@ -224,6 +228,21 @@ LrResult find_lr_orders(
     // Memoized order+score per subset.
     std::unordered_map<uint64_t, LrResult> orders_table;
 
+    // Doppio-C Euler chi-drop filter (HF_EULER_FILTER=1, default OFF;
+    // docs/env_flags.md): after the Fubini intersection at every subset,
+    // each surviving letter is tested against the genuine Euler
+    // discriminant of the S-marginal (chi_count_sectors via msolve) and
+    // fictitious letters are dropped.  OFF-mode is byte-identical (the
+    // branch below never runs).  Boundary monomials are exempt; the
+    // verdict is conservative (Indeterminate/failure keep), mirroring
+    // dpGenuineDKQ.  The per-call cache memoizes generic chi per
+    // (group, subset) marginal.
+    const char* euler_env = std::getenv("HF_EULER_FILTER");
+    const bool euler_filter_on =
+        euler_env != nullptr && *euler_env != '\0'
+        && std::strcmp(euler_env, "0") != 0;
+    std::vector<ChiFilterCache> chi_caches(euler_filter_on ? G : 0);
+
     const double INF = std::numeric_limits<double>::infinity();
 
     // Seed: set[g][{}] = group_polys[g] for every g, orders[{}] = ({}, 0).
@@ -255,6 +274,16 @@ LrResult find_lr_orders(
                         st_fubini_lr(prev_polys, xvar_indices[bit]));
                 }
                 set_for_bits[g] = intersect_proportional(preTable);
+                if (euler_filter_on && !set_for_bits[g].empty()) {
+                    std::vector<size_t> subset_vars;
+                    subset_vars.reserve(size);
+                    for (size_t b = 0; b < n; ++b)
+                        if (bits & (1ull << b))
+                            subset_vars.push_back(xvar_indices[b]);
+                    set_for_bits[g] = chi_filter_letters(
+                        group_polys[g], subset_vars, set_for_bits[g],
+                        chi_caches[g]);
+                }
             }
             set_table[bits] = std::move(set_for_bits);
 

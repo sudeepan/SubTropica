@@ -1065,7 +1065,8 @@ RegulatorSym hyperflint_sym(const PolyCtx& ctx,
                               const std::vector<size_t>& var_indices,
                               const MzvReductionTable& table,
                               bool introduce_algebraic_letters,
-                              bool check_divergences) {
+                              bool check_divergences,
+                              const std::vector<size_t>& spectator_var_indices) {
     // Phase-B B7 (design v2 §3.5a row 7 + §4.2 commit (7)). Two
     // driver-level adapter sites: (entry) split user input -- per-Rat
     // round-trip through SymCoef::from_rat -> SymCoefSplit::from_rat ->
@@ -1137,11 +1138,32 @@ RegulatorSym hyperflint_sym(const PolyCtx& ctx,
         mi_heap_visit && mi_heap_visit_abandoned
         && mi_heap_visit_disjoint_audit_enabled();
 
+    // HF_PROGRESS (2026-06-04): one-line stderr heartbeat per step so
+    // long runs are not a black box. Default-OFF; zero hot-path cost.
+    static const bool hf_progress = [] {
+        const char* e = std::getenv("HF_PROGRESS");
+        return e && e[0] == '1';
+    }();
     for (size_t step = 0; step + 1 < var_indices.size(); ++step) {
+        if (hf_progress) {
+            std::fprintf(stderr,
+                "[hf-progress] step %zu/%zu: integrating %s (entries=%zu)\n",
+                step + 1, var_indices.size(),
+                ctx.vars()[var_indices[step]].c_str(), current.size());
+            std::fflush(stderr);
+        }
         // Phase 5e-iii follow-up: pass remaining var_indices to the
         // divergence check for full-fibration zero testing.
+        // DP.3 spectator projection (2026-06-03): the zero test must
+        // also fibrate over the never-integrated user variables, or
+        // cross-letter cancellations that are functions of the free
+        // kinematic parameters stay invisible (false-positive
+        // "divergent" on generic convergent inputs). See hyper_int.hpp.
         std::vector<size_t> remaining(
             var_indices.begin() + step + 1, var_indices.end());
+        remaining.insert(remaining.end(),
+                         spectator_var_indices.begin(),
+                         spectator_var_indices.end());
         InputMetrics in_m;
         std::chrono::steady_clock::time_point t0;
         if (trace) {
@@ -1349,11 +1371,18 @@ RegulatorSym hyperflint_sym(const PolyCtx& ctx,
         }
         hyperflint::set_outer_step_context(lf_bytes, rs_bytes);
     }
+    if (hf_progress) {
+        std::fprintf(stderr,
+            "[hf-progress] final step %zu/%zu: integrating %s (entries=%zu)\n",
+            var_indices.size(), var_indices.size(),
+            ctx.vars()[var_indices.back()].c_str(), current.size());
+        std::fflush(stderr);
+    }
     RegulatorSym final_reg = integration_step_sym(
         ctx, current, var_indices.back(),
         table, zw_tab, check_divergences,
         introduce_algebraic_letters,
-        /*remaining_var_indices=*/{});
+        /*remaining_var_indices=*/spectator_var_indices);
     // Phase A commit (3): HF_RAT_SPLIT_VERIFY on the final-step output.
     verify_regulator_sym_rat_split(final_reg, ctx, var_indices,
                                    "hyperflint_sym/integration_step_sym");

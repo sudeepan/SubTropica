@@ -1809,8 +1809,19 @@ int handle_integration_step(const std::string& body) {
     size_t idx = 0;
     for (; idx < ctx_vars.size(); ++idx) if (ctx_vars[idx] == var) break;
 
-    // Phase 5e-iii: optional "check_divergences":true flag routes
-    // through the boundary-divergence scan inside integration_step.
+    // Phase 5e-iii: optional "check_divergences" flag routes through the
+    // boundary-divergence scan inside integration_step.
+    //
+    // DP.3 (divergence policy, 2026-06-03): the intended default for bare
+    // requests is TRUE (independent single-integral usage; silent wrong
+    // answers on divergent inputs are the worst failure mode), but the
+    // flip is BLOCKED on HF-DIVCHECK-PARITY: the scan currently
+    // false-positives on generic multi-pole CONVERGENT integrands (even
+    // 1/((x+1)(x+2)) over x, value ln 2), because test_zero_function_sym
+    // does not reduce cross-key bins to period VALUES the way the
+    // reference TestZeroFunction (HyperIntica.wl:5050) does -- it tests
+    // per-key after fibration over the supplied schedule vars only. See
+    // notes/hf_divcheck_parity.md. Flip this default only after parity.
     bool check_div = false;
     {
         std::regex re("\"check_divergences\"\\s*:\\s*(true|false)");

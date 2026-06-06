@@ -175,7 +175,11 @@ jobs:
           # Always override the FLINT archive (the librarylink-shared preset
           # hardcodes the arm64 third_party path; release-dist falls back to
           # the CMakeLists /opt/homebrew default).
-          FLAGS="-DHF_VERSION=1.2.1 -DHF_FLINT_STATIC_ARCHIVE=$FLINT_A"
+          # HF_VERSION derives from the tag (v1.2.2 / v1.2.2-rc1 -> 1.2.2):
+          # a HARDCODED version here stamped v1.2.2 binaries as 1.2.1, and the
+          # loader's version gate would silently CLI-fall-back forever.
+          HFV="${GITHUB_REF_NAME#v}"; HFV="${HFV%%-rc*}"
+          FLAGS="-DHF_VERSION=$HFV -DHF_FLINT_STATIC_ARCHIVE=$FLINT_A"
           # On the x86_64 leg the brew prefix is /usr/local, but the CMake
           # GMP/MPFR static-archive defaults point at /opt/homebrew, so they
           # must be overridden explicitly.
@@ -210,9 +214,12 @@ jobs:
         working-directory: HyperFLINT
         run: |
           # The VERSION manifest is written by stage_dist.sh from
-          # $SubTropicaVersion in SubTropica.wl (== 1.2.1); the baked
-          # HF_VERSION is guaranteed by -DHF_VERSION=1.2.1 above.
-          grep -q "1.2.1" "dist/${{ matrix.arch }}/VERSION"
+          # $SubTropicaVersion in SubTropica.wl; the baked HF_VERSION is
+          # guaranteed by the tag-derived -DHF_VERSION above.  Expect the
+          # tag version here too (v1.2.2 / v1.2.2-rc1 -> 1.2.2): a
+          # hardcoded grep failed the v1.2.2-rc1 cut on both macOS legs.
+          HFV="${GITHUB_REF_NAME#v}"; HFV="${HFV%%-rc*}"
+          grep -q "$HFV" "dist/${{ matrix.arch }}/VERSION"
           echo "VERSION manifest OK:"
           cat "dist/${{ matrix.arch }}/VERSION"
           # hyperflint has no --version flag; --help must exit 0.
@@ -306,7 +313,7 @@ jobs:
           cmake -S HyperFLINT -B HyperFLINT/build-cli-linux \
             -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-O3" \
             -DHF_OPENMP=ON -DHF_MIMALLOC=OFF -DHF_LIBRARYLINK=OFF -DHF_CLI_STATIC_DEPS=ON \
-            -DHF_VERSION=1.2.1 \
+            -DHF_VERSION="$(v="${GITHUB_REF_NAME#v}"; echo "${v%%-rc*}")" \
             -DHF_FLINT_STATIC_ARCHIVE="$HF_DEPS/lib/libflint.a" \
             -DHF_GMP_STATIC_ARCHIVE="$HF_DEPS/lib/libgmp.a" \
             -DHF_MPFR_STATIC_ARCHIVE="$HF_DEPS/lib/libmpfr.a" \
@@ -416,9 +423,13 @@ jobs:
         run: |
           import zipfile, os, re
 
-          # The add-on paclet pins version 1.2.1 (matches PacletInfo.wl and
-          # the baked HF_VERSION); the core paclet tracks the tag version.
-          addon_version = "1.2.1"
+          # The add-on paclet version tracks the tag (v1.2.2 / v1.2.2-rc1
+          # -> 1.2.2), matching paclet-hyperflint/PacletInfo.wl and the baked
+          # HF_VERSION.  It MUST bump per release: PacletInstall of an
+          # already-installed version is a no-op, so a same-version add-on
+          # would leave old binaries installed and the dylib version gate
+          # would silently fall back to the CLI.
+          addon_version = re.sub(r"-rc.*$", "", os.environ["GITHUB_REF_NAME"].lstrip("v"))
           name = "HyperFLINT"
           paclet_name = f"{name}-{addon_version}.paclet"
           prefix = f"{name}-{addon_version}"
@@ -493,10 +504,11 @@ jobs:
 
       - name: Create GitHub Release
         run: |
+          ADDON_VERSION="${GITHUB_REF_NAME#v}"; ADDON_VERSION="${ADDON_VERSION%%-rc*}"
           gh release create "$GITHUB_REF_NAME" \
             "assets/SubTropica-${VERSION}.paclet" \
             "assets/SubTropica.paclet" \
-            "HyperFLINT-1.2.1.paclet" \
+            "HyperFLINT-${ADDON_VERSION}.paclet" \
             "HyperFLINT.paclet" \
             --title "SubTropica v${VERSION}" \
             --notes "## Installation

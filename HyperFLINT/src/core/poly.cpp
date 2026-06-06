@@ -943,6 +943,12 @@ size_t Poly::total_bytes() const {
     return total_bytes_buckets().total();
 }
 
+// HF_ADDPF_PROBE (additive-parfrac Phase 0, 2026-06-03): public
+// term-count accessor; see poly.hpp.
+size_t Poly::n_terms() const {
+    return static_cast<size_t>(fmpq_mpoly_length(raw_, ctx_->raw()));
+}
+
 Poly Poly::discriminant_in_var(size_t var_idx) const {
     // Mathematica convention: Discriminant[p, x] = 1 when p is constant
     // in x (deg < 1).  Below that, the formula disc = Res(p, p', x)/lc
