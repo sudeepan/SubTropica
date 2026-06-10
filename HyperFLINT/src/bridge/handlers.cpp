@@ -23,6 +23,7 @@
 #include "hyperflint/reduce/mzv_expansion.hpp"   // HF basis-ctx campaign (PHASE_2 iter 10)
 #include "hyperflint/core/poly.hpp"
 #include "hyperflint/core/rat.hpp"
+#include "hyperflint/integrator/lr_scan.hpp"  // find_lr_orders_scan op (Doppio-port bridge, 2026-06-06)
 #include "hyperflint/core/addpf_probe.hpp"  // period-tuples Phase 0 census
 #include "hyperflint/core/symcoef.hpp"
 #include "hyperflint/integrator/ctx_probe.hpp"
@@ -654,11 +655,49 @@ std::string find_lr_orders(const std::string& body) {
             }
         }
 
+        // Carry-discharge (Doppio FindRoots) keep rule (2026-06-07),
+        // DEFAULT ON: absent => true.  Only active when algebraic_letters
+        // is on (deg-2 letters allowed); for the deg<=1 path it is a
+        // no-op.  An explicit "carry_discharge":false selects the Strict
+        // (terminal-only) subset-DP, byte-identical to the pre-change
+        // response (regression gate).  Mirrors fr_judge exactly via the
+        // shared lr_scan::step_fr_judge primitive — see find_lr_orders.
+        bool carry_discharge = true;
+        {
+            std::regex re("\"carry_discharge\"\\s*:\\s*(true|false)");
+            std::smatch m;
+            if (std::regex_search(body, m, re)) {
+                carry_discharge = (m[1] == "true");
+            }
+        }
+
+        // Order-resolved singularities (2026-06-07): optional emit_sings
+        // flag.  When set, a SingCollector is threaded through the LR
+        // walk and accumulates every IRREDUCIBLE kinematic divisor (free
+        // of all integration variables, ANY degree) encountered, in the
+        // engine's canonical proportionality form.  Absent => collector
+        // is nullptr, the walk takes its byte-identical path, and the
+        // response carries no "sings" field (gate #1).  The collector
+        // observes factors BEFORE/ASIDE from the deg-2 letter cap that
+        // bounds the VERDICT; it never alters control flow or the order.
+        bool emit_sings = false;
+        {
+            std::regex re("\"emit_sings\"\\s*:\\s*(true|false)");
+            std::smatch m;
+            if (std::regex_search(body, m, re)) {
+                emit_sings = (m[1] == "true");
+            }
+        }
+        hyperflint::lr_search::SingCollector sings_collector;
+        hyperflint::lr_search::SingCollector* sings_ptr =
+            emit_sings ? &sings_collector : nullptr;
+
         hyperflint::lr_search::LrResult result;
         double compute_s = 0.0;
         auto t0 = std::chrono::steady_clock::now();
         result = hyperflint::lr_search::find_lr_orders(
-            group_polys, xvar_indices, allow_al);
+            group_polys, xvar_indices, allow_al, sings_ptr,
+            carry_discharge);
         auto t1 = std::chrono::steady_clock::now();
         compute_s = std::chrono::duration<double>(t1 - t0).count();
 
@@ -752,12 +791,270 @@ std::string find_lr_orders(const std::string& body) {
             }
             o << "]";
         }
+        // Carry-discharge (Doppio FindRoots) profile of the chosen order.
+        // Emitted ONLY when the carry tier actually ran (algebraic_letters
+        // on AND carry_discharge on), so the Strict (carry_discharge:false)
+        // response stays byte-identical to the pre-change envelope (the
+        // regression gate).  These mirror lr_scan's ScanOrder counters:
+        // carried_sqrts = deferred sqrt-obligations folded along the path,
+        // kin_sqrts = pure-kinematic sqrt letters, terminal_quads =
+        // quadratics whose roots are letters of the final answer.  WL
+        // consumers read them via Lookup, so adding them to the default
+        // response is additive (no existing reader breaks).
+        if (allow_al && carry_discharge) {
+            o << ",\"carried_sqrts\":" << result.carried_sqrts
+              << ",\"kin_sqrts\":" << result.kin_sqrts
+              << ",\"terminal_quads\":" << result.terminal_quads;
+        }
+        // Order-resolved singularities: emit the collected canonical
+        // irreducible kinematic divisors and their count.  Only present
+        // when the caller set emit_sings (so the default response is
+        // byte-identical).  Order is first-encounter order in the DP
+        // walk (SingCollector::ordered), which is deterministic for a
+        // fixed input + memo configuration.
+        if (emit_sings) {
+            o << ",\"sings\":[";
+            for (size_t i = 0; i < sings_collector.ordered.size(); ++i) {
+                if (i) o << ",";
+                o << "\"" << json_escape(sings_collector.ordered[i]) << "\"";
+            }
+            o << "],\"sings_total\":" << sings_collector.ordered.size();
+        }
         o << "}";
         return o.str();
     } catch (const std::exception& e) {
         return error_json(e.what());
     } catch (...) {
         return error_json("unknown exception in find_lr_orders");
+    }
+}
+
+// ---------- find_lr_orders_scan ----------
+
+// Doppio-port phase 3 bridge op (2026-06-06): expose
+// lr_scan::find_lr_orders_scan — the projective Cheng-Wu GAUGE SCAN
+// with the Doppio keep rules (Strict / FindRoots carried-sqrt tiers).
+// This is the PRE-GAUGE engine: groups are the RAW factor lists of the
+// ungauged n-variable system (boundary monomials added internally),
+// and per-poly twist exponents a + b*eps are REQUIRED for the
+// projectivity gate (sum a_i d_i == -n, sum b_i d_i == 0).
+//
+// Request:
+//   {"op":"find_lr_orders_scan",
+//    "schema_version_min": 1,                  (optional fast-fail gate)
+//    "groups":[["<p1>", ...], ...],            (RAW groups)
+//    "xvars":["x1", ...],
+//    "coeff_vars":["s", ...],                  (optional)
+//    "exps":[[[a,b], ...], ...],               (REQUIRED; shape == groups)
+//    "keep_rule":"Strict"|"FindRoots",         (default "Strict")
+//    "euler_filter":true|false,                (default false; needs msolve)
+//    "max_orders":N}                           (default 8192)
+// Response:
+//   {"op":"find_lr_orders_scan", schema/version envelope,
+//    "projective":bool, "truncated":bool,
+//    "orders":[{"order":[...names...],"gauge":"<name>","score":F,
+//               "carried_sqrts":n,"kin_sqrts":n,"terminal_quads":n},...],
+//    "timing_compute_s":F, "nXVars":K, "nGroups":G}
+// orders is score-ascending; empty + projective=false means the input
+// failed the projectivity gate (NOT a NOLR verdict); empty +
+// projective=true means no admissible (gauge, order) pair exists under
+// the requested keep rule.
+std::string find_lr_orders_scan(const std::string& body) {
+    static const char* kOp = "find_lr_orders_scan";
+    try {
+        {
+            std::regex re_sv(R"~("schema_version_min"\s*:\s*([0-9]+))~");
+            std::smatch m_sv;
+            if (std::regex_search(body, m_sv, re_sv)) {
+                const int requested = std::stoi(m_sv[1]);
+                if (requested > kSchemaVersion) {
+                    return error_json_op(kOp,
+                        "schema_version_min=" + std::to_string(requested)
+                        + " exceeds supported schema_version="
+                        + std::to_string(kSchemaVersion)
+                        + " (hf_version=" + kHFVersion() + ")");
+                }
+            }
+        }
+
+        auto xvars = json_str_array(body, "xvars");
+        if (xvars.empty()) return error_json_op(kOp, "need \"xvars\"");
+        auto coeff_vars = json_str_array(body, "coeff_vars");
+
+        // groups: list of lists of poly strings (same parser shape as
+        // find_lr_orders, multi-group form only — the scan is defined
+        // on per-term groups).
+        std::vector<std::vector<std::string>> group_strs;
+        {
+            std::string groups_inner = extract_top_array(body, "groups");
+            if (groups_inner.empty())
+                return error_json_op(kOp, "need \"groups\"");
+            int depth = 0;
+            size_t start = 0;
+            for (size_t i = 0; i < groups_inner.size(); ++i) {
+                if (groups_inner[i] == '[') {
+                    if (depth == 0) start = i;
+                    depth++;
+                } else if (groups_inner[i] == ']') {
+                    depth--;
+                    if (depth == 0) {
+                        std::string sub_obj = "{\"xs\":" +
+                            groups_inner.substr(start, i - start + 1) + "}";
+                        group_strs.push_back(json_str_array(sub_obj, "xs"));
+                    }
+                }
+            }
+        }
+        if (group_strs.empty()) return error_json_op(kOp, "empty group list");
+
+        // exps: [[[a,b],...],...], shape matching groups.  Integer pairs.
+        std::vector<std::vector<hyperflint::lr_scan::ScanExponent>> exps;
+        {
+            std::string exps_inner = extract_top_array(body, "exps");
+            if (exps_inner.empty())
+                return error_json_op(kOp,
+                    "need \"exps\" (per-poly twist exponents [a,b]; "
+                    "the projectivity gate is load-bearing)");
+            int depth = 0;
+            size_t gstart = 0;
+            for (size_t i = 0; i < exps_inner.size(); ++i) {
+                if (exps_inner[i] == '[') {
+                    if (depth == 0) gstart = i;
+                    depth++;
+                } else if (exps_inner[i] == ']') {
+                    depth--;
+                    if (depth == 0) {
+                        // one group's [[a,b],[a,b],...]
+                        const std::string g =
+                            exps_inner.substr(gstart, i - gstart + 1);
+                        std::vector<hyperflint::lr_scan::ScanExponent> ge;
+                        int d2 = 0;
+                        size_t pstart = 0;
+                        for (size_t j = 1; j + 1 < g.size(); ++j) {
+                            if (g[j] == '[') {
+                                if (d2 == 0) pstart = j;
+                                d2++;
+                            } else if (g[j] == ']') {
+                                d2--;
+                                if (d2 == 0) {
+                                    const std::string pair =
+                                        g.substr(pstart + 1, j - pstart - 1);
+                                    const size_t comma = pair.find(',');
+                                    if (comma == std::string::npos)
+                                        return error_json_op(kOp,
+                                            "malformed exps pair: " + pair);
+                                    hyperflint::lr_scan::ScanExponent e;
+                                    e.a = std::stol(pair.substr(0, comma));
+                                    e.b = std::stol(pair.substr(comma + 1));
+                                    ge.push_back(e);
+                                }
+                            }
+                        }
+                        exps.push_back(std::move(ge));
+                    }
+                }
+            }
+        }
+        if (exps.size() != group_strs.size())
+            return error_json_op(kOp,
+                "exps group count (" + std::to_string(exps.size())
+                + ") != groups (" + std::to_string(group_strs.size()) + ")");
+        for (size_t g = 0; g < exps.size(); ++g)
+            if (exps[g].size() != group_strs[g].size())
+                return error_json_op(kOp,
+                    "exps[" + std::to_string(g) + "] length "
+                    + std::to_string(exps[g].size()) + " != group size "
+                    + std::to_string(group_strs[g].size()));
+
+        // keep_rule / euler_filter / max_orders
+        hyperflint::lr_scan::KeepRule rule =
+            hyperflint::lr_scan::KeepRule::Strict;
+        {
+            std::string kr = json_str_field(body, "keep_rule");
+            if (kr == "FindRoots")
+                rule = hyperflint::lr_scan::KeepRule::FindRoots;
+            else if (!kr.empty() && kr != "Strict")
+                return error_json_op(kOp, "unknown keep_rule: " + kr);
+        }
+        bool euler_filter = false;
+        {
+            std::regex re("\"euler_filter\"\\s*:\\s*(true|false)");
+            std::smatch m;
+            if (std::regex_search(body, m, re))
+                euler_filter = (m[1] == "true");
+        }
+        size_t max_orders = 8192;
+        {
+            std::regex re(R"~("max_orders"\s*:\s*([0-9]+))~");
+            std::smatch m;
+            if (std::regex_search(body, m, re))
+                max_orders = static_cast<size_t>(std::stoul(m[1]));
+        }
+
+        std::vector<std::string> all_vars = xvars;
+        for (const auto& cv : coeff_vars) all_vars.push_back(cv);
+        hyperflint::PolyCtx ctx(all_vars);
+        std::vector<size_t> xvar_indices;
+        xvar_indices.reserve(xvars.size());
+        for (const auto& v : xvars) xvar_indices.push_back(ctx.index_of(v));
+
+        std::vector<std::vector<hyperflint::Poly>> group_polys;
+        group_polys.reserve(group_strs.size());
+        for (size_t g = 0; g < group_strs.size(); ++g) {
+            std::vector<hyperflint::Poly> parsed;
+            parsed.reserve(group_strs[g].size());
+            for (const auto& s : group_strs[g]) {
+                try {
+                    parsed.emplace_back(ctx, s);
+                } catch (const std::exception& e) {
+                    return error_json_op(kOp,
+                        std::string("poly parse failed in group ")
+                        + std::to_string(g) + ": " + e.what());
+                }
+            }
+            group_polys.push_back(std::move(parsed));
+        }
+
+        auto t0 = std::chrono::steady_clock::now();
+        hyperflint::lr_scan::ScanResult result =
+            hyperflint::lr_scan::find_lr_orders_scan(
+                group_polys, xvar_indices, exps, rule, euler_filter,
+                max_orders);
+        auto t1 = std::chrono::steady_clock::now();
+        const double compute_s =
+            std::chrono::duration<double>(t1 - t0).count();
+
+        std::ostringstream o;
+        o << "{\"op\":\"" << kOp << "\""
+          << ",\"schema_version\":" << kSchemaVersion
+          << ",\"hf_version\":\"" << json_escape(kHFVersion()) << "\""
+          << ",\"projective\":" << (result.projective ? "true" : "false")
+          << ",\"truncated\":" << (result.truncated ? "true" : "false")
+          << ",\"orders\":[";
+        for (size_t i = 0; i < result.orders.size(); ++i) {
+            const auto& so = result.orders[i];
+            if (i) o << ",";
+            o << "{\"order\":[";
+            for (size_t j = 0; j < so.order.size(); ++j) {
+                if (j) o << ",";
+                o << "\"" << json_escape(all_vars[so.order[j]]) << "\"";
+            }
+            o << "],\"gauge\":\"" << json_escape(all_vars[so.gauge]) << "\""
+              << ",\"score\":" << so.score
+              << ",\"carried_sqrts\":" << so.carried_sqrts
+              << ",\"kin_sqrts\":" << so.kin_sqrts
+              << ",\"terminal_quads\":" << so.terminal_quads
+              << "}";
+        }
+        o << "],\"timing_compute_s\":" << compute_s
+          << ",\"nXVars\":" << xvars.size()
+          << ",\"nGroups\":" << group_polys.size()
+          << "}";
+        return o.str();
+    } catch (const std::exception& e) {
+        return error_json_op(kOp, e.what());
+    } catch (...) {
+        return error_json_op(kOp, "unknown exception in find_lr_orders_scan");
     }
 }
 

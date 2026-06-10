@@ -1,0 +1,18 @@
+{
+	"NickelIndex":"123|45|46|57|8|9|810|e911|12|e13|e12|1314|e|15|1516|17|e17|e|",
+	"Name":"elliptic-ladder_L5x3_massless-internal-dualconformal",
+	"PrimaryName":"Elliptic ladder (5,3)",
+	"Loops":8,
+	"Legs":6,
+	"Propagators":25,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"elliptic-ladder",
+			"parameter":[
+				5,
+				3
+			]
+		}
+	]
+}

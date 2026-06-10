@@ -1,0 +1,38 @@
+{
+	"CNickelIndex":"123|45|46|57|8|9|810|911|12|13|e1214|e13|e15|e|1516|17|e17|e|:000|00|00|00|0|0|00|00|0|0|000|10|00|2|00|0|30|4|",
+	"MassScales":13,
+	"FunctionClass":"elliptic multiple polylogarithms on a single fixed elliptic curve, all L",
+	"EpsilonOrder":"",
+	"edges":"{{{14, 10}, 0}, {{10, 6}, 0}, {{6, 2}, 0}, {{2, 5}, 0}, {{5, 9}, 0}, {{9, 13}, 0}, {{13, 16}, 0}, {{16, 18}, 0}, {{12, 8}, 0}, {{8, 4}, 0}, {{4, 1}, 0}, {{1, 3}, 0}, {{3, 7}, 0}, {{7, 11}, 0}, {{11, 15}, 0}, {{15, 17}, 0}, {{14, 12}, 0}, {{10, 8}, 0}, {{6, 4}, 0}, {{2, 1}, 0}, {{5, 3}, 0}, {{9, 7}, 0}, {{13, 11}, 0}, {{16, 15}, 0}, {{18, 17}, 0}}",
+	"nodes":"{{14, M[1]}, {13, 0}, {18, M[2]}, {12, M[3]}, {11, 0}, {17, M[4]}}",
+	"References":[
+		"arXiv:2301.07965",
+		"arXiv:2301.07834"
+	],
+	"Records":[
+		{
+			"reference":"arXiv:2301.07965",
+			"familyName":"elliptic-ladder_L6x2_massless-internal-dualconformal",
+			"description":"Elliptic ladder family, elliptic-ladder_L6x2_massless-internal-dualconformal. Family 1 of arXiv:2301.07965 (I_{L,R}): the (L+R)-cell ladder chain whose two distinguished massless legs p5, p10 attach to the SAME central rung (L cells left, R right); 4 off-shell corner legs; I_{L,R} = I_{R,L}; total loops L+R; lowest member I_{1,1} = the elliptic double box. Evaluated to elliptic multiple polylogarithms on ONE fixed elliptic curve at all loop orders. The staggered family I_{L,M,R} (legs M rungs apart) is known but not seeded.",
+			"method":[
+				"closed form"
+			],
+			"tools":[
+				"SubTropica seed_families"
+			],
+			"recordId":"fs_65529c19cadd",
+			"verified":false,
+			"verifiedAt":""
+		}
+	],
+	"Results":[],
+	"Names":[
+		"elliptic-ladder_L6x2_massless-internal-dualconformal"
+	],
+	"Source":[
+		"family-seed"
+	],
+	"Loops":8,
+	"NumPropagators":25,
+	"CanonicalName":"8-loop 6-point (25 propagators)"
+}

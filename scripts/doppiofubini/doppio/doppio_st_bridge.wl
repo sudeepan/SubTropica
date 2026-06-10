@@ -11,7 +11,9 @@
      STFubiniDoppio2[groupPoly, xvars, opts]
 
    with EXACTLY the per-face engine contract of stDispatchFubini2 /
-   STEspressoFubini2 / STFubiniAT2 (SubTropica.wl ~13686):
+   STEspressoFubini2 (locate by symbol in SubTropica.wl; STFubiniAT2,
+   the third engine when this bridge was written, was retired 2026-06-09
+   with AnTropica -- see attic/):
 
      FindRoots -> False   :  {order, score}        or {NOLR, Infinity}
      FindRoots truthy     :  {{order, score}, rootPolys}
@@ -48,7 +50,10 @@
    application (SubTropica.wl carries unrelated uncommitted changes).
    ------------------------------------------------------------------------- *)
 
-Get["/Users/smizera/Projects/SubTropica-branchSM/scripts/doppiofubini/doppio/doppio_lib.wl"];
+(* Portability (2026-06-06): resolve doppio_lib.wl relative to THIS
+   file so deployed trees (e.g. neso:~/st/scripts/...) load without a
+   Mac-absolute path. *)
+Get[FileNameJoin[{DirectoryName[$InputFileName], "doppio_lib.wl"}]];
 
 (* ----------------------------------------------------------------------
    dpRootPolysForOrder[table, ng, order, allVars]
@@ -79,14 +84,15 @@ dpRootPolysForOrder[table_Association, ng_Integer, order_List, allVars_List] :=
    STFubiniDoppio2[groupPoly, xvars, opts]  --  the per-face engine
    ---------------------------------------------------------------------- *)
 Options[STFubiniDoppio2] = {FindRoots -> False, Heuristic -> 1,
-   "Exponents" -> None};
+   "Exponents" -> None, "EulerFilter" -> False};
 
 STFubiniDoppio2[groupPoly_List, xvars_List, opts : OptionsPattern[]] :=
  Module[{frEff, res, best, rootPolys},
   frEff = (OptionValue[FindRoots] =!= False);   (* Automatic counts as True *)
   res = DoppioFubini[groupPoly, xvars, "Doppio" -> "C",
      "KeepRule" -> If[frEff, "FindRoots", "Strict"],
-     "Exponents" -> OptionValue["Exponents"]];
+     "Exponents" -> OptionValue["Exponents"],
+     "EulerFilter" -> OptionValue["EulerFilter"]];
   If[res["orders"] === {},
      Return[If[frEff, {{NOLR, Infinity}, {}}, {NOLR, Infinity}]]];
   best = First[res["orders"]];   (* score-minimal *)

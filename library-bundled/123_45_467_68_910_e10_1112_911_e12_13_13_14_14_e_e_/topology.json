@@ -1,0 +1,18 @@
+{
+	"NickelIndex":"123|45|467|68|910|e10|1112|911|e12|13|13|14|14|e|e|",
+	"Name":"basso-dixon_L4x2_massless-internal-offshell-external",
+	"PrimaryName":"Basso-Dixon fishnet B(4,2)",
+	"Loops":8,
+	"Legs":4,
+	"Propagators":22,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"basso-dixon",
+			"parameter":[
+				4,
+				2
+			]
+		}
+	]
+}

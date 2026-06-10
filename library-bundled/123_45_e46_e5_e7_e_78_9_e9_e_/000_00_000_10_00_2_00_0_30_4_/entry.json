@@ -1,0 +1,38 @@
+{
+	"CNickelIndex":"123|45|e46|e5|e7|e|78|9|e9|e|:000|00|000|10|00|2|00|0|30|4|",
+	"MassScales":13,
+	"FunctionClass":"elliptic multiple polylogarithms on a single fixed elliptic curve, all L",
+	"EpsilonOrder":"",
+	"edges":"{{{10, 8}, 0}, {{8, 5}, 0}, {{5, 2}, 0}, {{2, 6}, 0}, {{9, 7}, 0}, {{7, 3}, 0}, {{3, 1}, 0}, {{1, 4}, 0}, {{10, 9}, 0}, {{8, 7}, 0}, {{5, 3}, 0}, {{2, 1}, 0}, {{6, 4}, 0}}",
+	"nodes":"{{10, M[1]}, {5, 0}, {6, M[2]}, {9, M[3]}, {3, 0}, {4, M[4]}}",
+	"References":[
+		"arXiv:2301.07965",
+		"arXiv:2301.07834"
+	],
+	"Records":[
+		{
+			"reference":"arXiv:2301.07965",
+			"familyName":"elliptic-ladder_L2x2_massless-internal-dualconformal",
+			"description":"Elliptic ladder family, elliptic-ladder_L2x2_massless-internal-dualconformal. Family 1 of arXiv:2301.07965 (I_{L,R}): the (L+R)-cell ladder chain whose two distinguished massless legs p5, p10 attach to the SAME central rung (L cells left, R right); 4 off-shell corner legs; I_{L,R} = I_{R,L}; total loops L+R; lowest member I_{1,1} = the elliptic double box. Evaluated to elliptic multiple polylogarithms on ONE fixed elliptic curve at all loop orders. The staggered family I_{L,M,R} (legs M rungs apart) is known but not seeded.",
+			"method":[
+				"closed form"
+			],
+			"tools":[
+				"SubTropica seed_families"
+			],
+			"recordId":"fs_57db72a06075",
+			"verified":false,
+			"verifiedAt":""
+		}
+	],
+	"Results":[],
+	"Names":[
+		"elliptic-ladder_L2x2_massless-internal-dualconformal"
+	],
+	"Source":[
+		"family-seed"
+	],
+	"Loops":4,
+	"NumPropagators":13,
+	"CanonicalName":"4-loop 6-point (13 propagators)"
+}

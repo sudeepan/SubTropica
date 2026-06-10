@@ -1,0 +1,41 @@
+{
+  "CNickelIndex": "e12|e3|e4|e5|e6|e7|e7|e|:000|00|00|00|00|00|00|0|",
+  "MassScales": 20,
+  "FunctionClass": "MPL",
+  "EpsilonOrder": "",
+  "edges": "{{{2, 4}, 0}, {{4, 6}, 0}, {{6, 8}, 0}, {{8, 7}, 0}, {{7, 5}, 0}, {{5, 3}, 0}, {{3, 1}, 0}, {{1, 2}, 0}}",
+  "nodes": "{{2, 0}, {4, 0}, {6, 0}, {8, 0}, {7, 0}, {5, 0}, {3, 0}, {1, 0}}",
+  "References": [
+    "arXiv:hep-th/9709216",
+    "arXiv:1912.11067",
+    "arXiv:2306.04630",
+    "arXiv:hep-ph/9212308",
+    "arXiv:2201.03593"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:hep-th/9709216",
+      "familyName": "ngon_L8_massless",
+      "description": "$n$-gon family, ngon_L8_massless. The one-loop $n$-gon (or $A_n$ polygon) has $n$ massless internal propagators arranged in a cycle with $n$ massless external legs. In $D = n$ dimensions the integral is finite and evaluates to the volume of a hyperbolic $(n{-}1)$-simplex (Davydychev-Delbourgo 1997). For $n = 3$ (triangle) the result involves Clausen functions; for $n = 4$ (box) it is the Murakami-Yano formula in 16 dilogarithms. The family includes the bubble ($n = 2$), triangle, box, pentagon, hexagon, heptagon, and octagon.",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_3d37c98a7fcc",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Results": [],
+  "Names": [
+    "Massless octagon"
+  ],
+  "Source": [
+    "family-seed"
+  ],
+  "Loops": 1,
+  "NumPropagators": 8,
+  "CanonicalName": "Massless octagon"
+}

@@ -1,0 +1,47 @@
+{
+	"CNickelIndex": "123|24|e|e4|e|:123|45|6|78|9|",
+	"MassScales": 10,
+	"FunctionClass": "",
+	"EpsilonOrder": "",
+	"References": [
+		"arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+		"arXiv:2311.16219 (Comput.Phys.Commun. 303 (109278), 2024)"
+	],
+	"Records": [
+		{
+			"reference": "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+			"authors": "Fevola, C., Mizera, S., Telen, S.",
+			"description": "Landau singularities of the planar triangle-bubble with generic internal, generic external masses, computed via principal Landau determinants.",
+			"familyName": "PLD: pltrb"
+		},
+		{
+			"reference": "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+			"authors": "Fevola, C., Mizera, S., Telen, S.",
+			"description": "Landau singularities of the planar triangle-bubble with generic internal, equal external masses, computed via principal Landau determinants.",
+			"familyName": "PLD: pltrb",
+			"structural": {
+				"corrections": [
+					{
+						"date": "2026-06-10",
+						"action": "recanonicalized",
+						"from": "123|24|e|e4|e|:123|45|6|78|7|",
+						"note": "v1.2.3 release curation: re-keyed from non-canonical home"
+					}
+				]
+			}
+		}
+	],
+	"Names": [
+		"Triangle-box, 6-mass propagators, 3 distinct external masses"
+	],
+	"Source": "PLD",
+	"Loops": 2,
+	"NumPropagators": 6,
+	"edges": "{{{1, 2}, m[1]}, {{1, 3}, m[2]}, {{1, 4}, m[3]}, {{2, 3}, m[4]}, {{2, 5}, m[5]}, {{4, 5}, m[8]}}",
+	"nodes": "{{3, M[1]}, {4, M[2]}, {5, M[3]}}",
+	"CanonicalName": "Triangle-box, 6-mass propagators, 3 distinct external masses",
+	"commonNames": [],
+	"Subsectors": [],
+	"ParentSectors": [],
+	"Results": []
+}

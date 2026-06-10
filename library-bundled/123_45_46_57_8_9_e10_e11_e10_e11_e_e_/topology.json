@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"123|45|46|57|8|9|e10|e11|e10|e11|e|e|",
+	"Name":"pentaladder_L4_massless-internal-dualconformal",
+	"PrimaryName":"Pentagon ladder L4",
+	"Loops":4,
+	"Legs":6,
+	"Propagators":15,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"pentaladder",
+			"parameter":4
+		}
+	]
+}

@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"123|45|46|e7|8|e7|e9|e|e9|e|",
+	"Name":"pentaladder_L3_massless-internal-dualconformal",
+	"PrimaryName":"Pentagon ladder L3",
+	"Loops":3,
+	"Legs":6,
+	"Propagators":12,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"pentaladder",
+			"parameter":3
+		}
+	]
+}

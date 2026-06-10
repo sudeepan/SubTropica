@@ -1,0 +1,6376 @@
+{
+  "families": {
+    "zigzag": {
+      "displayName": "Zigzag",
+      "parameter": {
+        "name": "L",
+        "min": 3,
+        "max": 8
+      },
+      "definition": "The zigzag $Z_L$ is a vacuum graph and $\\phi^4$ primitive with $L$ loops and $2L$ propagators, formed by connecting vertices $1, \\ldots, L{+}1$ with nearest-neighbour and next-to-nearest-neighbour edges plus the closing edge $\\{1, L{+}1\\}$. Its period is a rational multiple of $\\zeta(2L{-}3)$ at every loop order. The smallest member $Z_3 = K_4$ coincides with the three-loop wheel $W_3$; note that parts of the older self-energy literature shift the loop count by one relative to the convention used here.",
+      "external": {
+        "legs": 0
+      },
+      "massConfig": "massless",
+      "functionClass": "rational $\\times$ $\\zeta(2L-3)$",
+      "functionClassLabel": "period (zeta value)",
+      "definingIntegral": {
+        "latex": "I_{Z_n} = \\int_{\\Delta} \\frac{\\Omega_{2n-1}}{\\Psi_{Z_n}^2}, \\qquad \\Psi_G = \\sum_{T \\subset G}\\ \\prod_{e \\notin T} \\alpha_e",
+        "note": "Projective $\\phi^4$ period (a VACUUM-period integral): $\\Psi_G$ is the first Symanzik (Kirchhoff) graph polynomial of the zigzag $Z_n$ ($2n$ edges, $n$ loops), $\\Omega_{2n-1}$ the projective volume form on the simplex $\\Delta\\subset\\mathbb{P}^{2n-1}$. Transcribed from Brown-Schnetz arXiv:1208.1890 Eq. (1.1) (Brown-Schnetz period convention)."
+      },
+      "familyKind": "vacuum-period",
+      "closedForm": {
+        "latex": "P_{Z_L} = 4\\frac{(2L-2)!}{L!\\,(L-1)!}\\Bigl(1-\\frac{1-(-1)^L}{2^{2L-3}}\\Bigr)\\zeta(2L-3)",
+        "wl": "(* Zigzag period: P_{Z_L} *)\nPZigzag[L_Integer] := 4 (2 L - 2)!/(L! (L - 1)!) (1 - (1 - (-1)^L)/2^(2 L - 3)) Zeta[2 L - 3]",
+        "normalization": "$\\phi^4$ projective period at $D = 4$, normalization factor $1$. This is the period of the graph, not a momentum-space integral."
+      },
+      "normalization": "$\\phi^4$ projective period at $D=4$; normalization factor $1$; NOT comparable to dim-reg momentum-space vacuum integrals (those are scaleless/divergent)",
+      "refs": [
+        {
+          "arxiv": "1208.1890",
+          "texkey": "Brown:2012ia",
+          "role": "proof",
+          "description": "Proves the zigzag conjecture: the period of the zigzag graph $Z_n$ is $(2n{-}3)!/(n!(n{-}1)!)$ times $4(1-(1-(-1)^n)/2^{2n-3})\\,\\zeta(2n{-}3)$, establishing the only infinite family of $\\phi^4$ primitives with known amplitudes."
+        },
+        {
+          "arxiv": "hep-ph/9504352",
+          "texkey": "Broadhurst:1995km",
+          "role": "conjecture",
+          "description": "Conjectures the zigzag period identity by evaluating all $\\phi^4$ primitive divergences to 7 loops, linking individual Feynman diagrams to knot-theoretic invariants and specific zeta values."
+        }
+      ],
+      "related": [
+        "wheel",
+        "generalised-ladder"
+      ],
+      "generator": "ZigzagGraph",
+      "batch": "pilot",
+      "previewParameter": 6,
+      "members": [
+        {
+          "parameter": 3,
+          "topology": "123_23_3__",
+          "primaryName": "Tetrahedron (K4)",
+          "loops": 3,
+          "sharedWith": [
+            {
+              "family": "wheel",
+              "parameter": 3
+            }
+          ],
+          "config": "000_00_0__",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "123_234_4_4__",
+          "primaryName": "Broadhurst wheel W4",
+          "loops": 4,
+          "sharedWith": [
+            {
+              "family": "wheel",
+              "parameter": 4
+            }
+          ],
+          "config": "000_000_0_0__",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "123_234_45_5_5__",
+          "primaryName": "Zigzag Z5",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "000_000_00_0_0__",
+          "layout": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "123_234_45_6_56_6__",
+          "primaryName": "Zigzag Z6",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "000_000_00_0_00_0__",
+          "layout": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              6.0,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "123_234_45_6_57_67_7__",
+          "primaryName": "Zigzag Z7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "000_000_00_0_00_00_0__",
+          "layout": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              7.0,
+              0.0
+            ],
+            [
+              6.0,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "123_234_45_6_57_78_78_8__",
+          "primaryName": "Zigzag Z8",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "000_000_00_0_00_00_00_0__",
+          "layout": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              8.0,
+              1.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              7.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "ladder4pt": {
+      "displayName": "4-mass ladder",
+      "parameter": {
+        "name": "L",
+        "min": 1,
+        "max": 8
+      },
+      "definition": "The planar $L$-rung box ladder has $L$ loops, $3L{+}1$ massless propagators, and four off-shell external legs at the corners of the ladder. Its value is the Usyukina-Davydychev function $\\Phi^{(L)}(x,y)$, a weight-$2L$ single-valued polylogarithm known in closed form at all loop orders. The $L = 1$ member is the four-mass box. These graphs also appear as the scalar skeleton of the Coronado octagon correlator in $\\mathcal{N} = 4$ SYM and of the Yangian-invariant massive tiling-cut deformation.",
+      "external": {
+        "legs": 4
+      },
+      "massConfig": "massless-internal-offshell-external",
+      "functionClass": "weight-$2L$ single-valued polylogarithms",
+      "functionClassLabel": "single-valued MPL",
+      "definingIntegral": {
+        "latex": "I_{\\mathrm{box}}^{(L)}(x_1,x_3,x_5,x_7) = \\int \\frac{d^4 x_r}{i\\pi^2}\\,\\frac{x_{15}^2\\,x_{37}^2}{x_{1r}^2\\,x_{3r}^2\\,x_{5r}^2\\,x_{7r}^2}\\,I_{\\mathrm{box}}^{(L-1)}(x_1,x_3,x_5,x_r)",
+        "note": "In dual coordinates $x_i$, with $x_{ij}^2=(x_i-x_j)^2$: the $L$-rung box ladder defined iteratively from the four-mass box $I^{(1)}=\\int d^4x_r/(i\\pi^2\\,x_{1r}^2 x_{3r}^2 x_{5r}^2 x_{7r}^2)$; its value is the Usyukina-Davydychev $\\Phi^{(L)}$ (Davydychev/UD, PLB 305 (1993) 136). Iterative dual form transcribed from Caron-Huot-Dixon et al. arXiv:1806.01361 Eqs. (2.12)-(2.13)."
+      },
+      "familyKind": "kinematic",
+      "closedForm": {
+        "latex": "\\begin{aligned}I_{\\text{box}}^{(L)} &= \\frac{\\Phi^{(L)}(x,y)}{s\\,t^L}, \\quad x = \\frac{p_1^2\\,p_3^2}{s\\,t},\\quad y = \\frac{p_2^2\\,p_4^2}{s\\,t} \\\\[6pt] \\Phi^{(L)}(x,y) &= -\\frac{1}{L!\\,\\lambda}\\sum_{j=L}^{2L}\\frac{(-1)^j\\,j!\\,[\\ln(y/x)]^{2L-j}}{(j-L)!\\,(2L-j)!}\\bigl[\\mathrm{Li}_j\\!\\bigl(-\\tfrac{1}{\\rho x}\\bigr)-\\mathrm{Li}_j(-\\rho y)\\bigr]\\end{aligned}",
+        "wl": "PhiDavydychev[L_Integer, x_, y_] := Module[{lambda, rho}, lambda = Sqrt[(1 - x - y)^2 - 4 x y]; rho = 2/(1 - x - y + lambda); -(1/(L! lambda)) Sum[((-1)^j j! Log[y/x]^(2 L - j))/((j - L)! (2 L - j)!) (PolyLog[j, -1/(rho x)] - PolyLog[j, -rho y]), {j, L, 2 L}]];\n\n(* 4-mass box ladder: I_box^(L)(s, t, p1sq, p2sq, p3sq, p4sq) *)\nIBox[L_Integer, s_, t_, p1sq_, p2sq_, p3sq_, p4sq_] := PhiDavydychev[L, p1sq p3sq/(s t), p2sq p4sq/(s t)] / (s t^L)",
+        "normalization": "$\\lambda=\\sqrt{(1{-}x{-}y)^2-4xy}$, $\\rho=\\frac{2}{1-x-y+\\lambda}$, $s=(p_1{+}p_2)^2$, $t=(p_2{+}p_3)^2$. Measure: $\\int \\prod_l d^4 k_l/(i\\pi^2) \\prod_e D_e^{-1}$."
+      },
+      "normalization": "Box dictionary: $G^{(L)}_{\\mathrm{box}}(s,t,p_i^2) = \\Phi^{(L)}(u,v)/(s\\,t^L)$ with $u=(p_1^2 p_3^2)/(s\\,t)$, $v=(p_2^2 p_4^2)/(s\\,t)$, $s=s_{12}$, $t=s_{23}$. Three-point reduction: $T^{(L)}(p_1^2,p_2^2,p_3^2) = \\Phi^{(L)}(x,y)/(p_3^2)^L$ with $x=p_1^2/p_3^2$, $y=p_2^2/p_3^2$.",
+      "refs": [
+        {
+          "journal": "Phys. Lett. B 298 (1993) 363",
+          "texkey": "Usyukina:1992jd",
+          "role": "defining",
+          "description": "Introduces an approach for evaluating three- and four-point massless ladder diagrams in terms of polylogarithms, using the uniqueness method and Mellin-Barnes representations."
+        },
+        {
+          "journal": "Phys. Lett. B 305 (1993) 136",
+          "texkey": "Usyukina:1993ch",
+          "role": "defining",
+          "description": "Derives the exact closed-form result $\\Phi^{(L)}(x,y)$ for three- and four-point ladder integrals with an arbitrary number of rungs, expressing them in terms of classical polylogarithms."
+        },
+        {
+          "arxiv": "hep-th/0607160",
+          "texkey": "Drummond:2006rz",
+          "role": "modern",
+          "description": "Establishes identities between classes of off-shell four-point conformal integrals (including box ladders), proving dual conformal invariance that later became central to the amplitudes program in $\\mathcal{N}=4$ SYM."
+        }
+      ],
+      "related": [
+        "basso-dixon",
+        "generalised-ladder",
+        "pentaladder"
+      ],
+      "variants": "3-pt triangle ladders share Phi^(L); seeded later as a mass-config variant, not a separate slug",
+      "generator": "LadderGraph",
+      "batch": "pilot",
+      "previewParameter": 3,
+      "members": [
+        {
+          "parameter": 1,
+          "topology": "e12_e3_e3_e_",
+          "primaryName": "Box",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "basso-dixon",
+              "parameter": [
+                1,
+                1
+              ]
+            },
+            {
+              "family": "ngon",
+              "parameter": 4
+            },
+            {
+              "family": "traintrack",
+              "parameter": 1
+            }
+          ],
+          "config": "100_20_30_4_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 2,
+          "topology": "123_45_e4_e5_e_e_",
+          "primaryName": "Double box",
+          "loops": 2,
+          "sharedWith": [
+            {
+              "family": "basso-dixon",
+              "parameter": [
+                2,
+                1
+              ]
+            }
+          ],
+          "config": "000_00_10_20_3_4_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 3,
+          "topology": "123_45_46_e5_7_e_e7_e_",
+          "primaryName": "Triple box",
+          "loops": 3,
+          "sharedWith": [
+            {
+              "family": "basso-dixon",
+              "parameter": [
+                3,
+                1
+              ]
+            }
+          ],
+          "config": "000_00_00_10_0_2_30_4_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "123_45_46_57_8_9_e8_e9_e_e_",
+          "primaryName": "Quadruple box",
+          "loops": 4,
+          "sharedWith": [
+            {
+              "family": "basso-dixon",
+              "parameter": [
+                4,
+                1
+              ]
+            }
+          ],
+          "config": "000_00_00_00_0_0_10_20_3_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "123_45_46_57_8_9_810_e9_11_e_e11_e_",
+          "primaryName": "4-mass ladder L5",
+          "loops": 5,
+          "sharedWith": [
+            {
+              "family": "basso-dixon",
+              "parameter": [
+                5,
+                1
+              ]
+            }
+          ],
+          "config": "000_00_00_00_0_0_00_10_0_2_30_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "123_45_46_57_8_9_810_911_12_13_e12_e13_e_e_",
+          "primaryName": "4-mass ladder L6",
+          "loops": 6,
+          "sharedWith": [
+            {
+              "family": "basso-dixon",
+              "parameter": [
+                6,
+                1
+              ]
+            }
+          ],
+          "config": "000_00_00_00_0_0_00_00_0_0_10_20_3_4_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "123_45_46_57_8_9_810_911_12_13_1214_e13_15_e_e15_e_",
+          "primaryName": "4-mass ladder L7",
+          "loops": 7,
+          "sharedWith": [
+            {
+              "family": "basso-dixon",
+              "parameter": [
+                7,
+                1
+              ]
+            }
+          ],
+          "config": "000_00_00_00_0_0_00_00_0_0_00_10_0_2_30_4_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              7.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "123_45_46_57_8_9_810_911_12_13_1214_1315_16_17_e16_e17_e_e_",
+          "primaryName": "4-mass ladder L8",
+          "loops": 8,
+          "sharedWith": [
+            {
+              "family": "basso-dixon",
+              "parameter": [
+                8,
+                1
+              ]
+            }
+          ],
+          "config": "000_00_00_00_0_0_00_00_0_0_00_00_0_0_10_20_3_4_",
+          "layout": [
+            [
+              4.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              7.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              8.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              8.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "wheel": {
+      "displayName": "Broadhurst wheel",
+      "parameter": {
+        "name": "L",
+        "min": 3,
+        "max": 8
+      },
+      "definition": "The Broadhurst wheel $W_L$ is a vacuum graph consisting of a central hub vertex connected by $L$ spokes to an outer $L$-cycle, giving $L$ loops and $2L$ propagators. It is a $\\phi^4$ primitive whose period equals $\\binom{2L{-}2}{L{-}1}\\,\\zeta(2L{-}3)$. The smallest member $W_3 = K_4$ coincides with the zigzag $Z_3$.",
+      "external": {
+        "legs": 0
+      },
+      "massConfig": "massless",
+      "functionClass": "rational $\\times$ $\\zeta(2L-3)$",
+      "functionClassLabel": "period (zeta value)",
+      "definingIntegral": {
+        "latex": "P_{W_n} = \\int_{\\Delta} \\frac{\\Omega_{2n-1}}{\\Psi_{W_n}^2}, \\qquad \\Psi_G = \\sum_{T \\subset G}\\ \\prod_{e \\notin T} \\alpha_e",
+        "note": "Projective $\\phi^4$ period (VACUUM-period integral): $\\Psi_G$ is the first Symanzik (Kirchhoff) polynomial of the wheel $W_n$ ($2n$ edges, $n$ loops), $\\Omega_{2n-1}$ the projective volume form on the simplex $\\Delta\\subset\\mathbb{P}^{2n-1}$. Same period machinery as zigzag; convention from Brown-Schnetz arXiv:1208.1890 Eq. (1.1), wheel periods in Broadhurst arXiv:1604.08027."
+      },
+      "familyKind": "vacuum-period",
+      "closedForm": {
+        "latex": "P_{W_L} = \\binom{2L-2}{L-1}\\,\\zeta(2L-3)",
+        "wl": "(* Wheel period: P_{W_L} *)\nPWheel[L_Integer] := Binomial[2 L - 2, L - 1] Zeta[2 L - 3]",
+        "normalization": "$\\phi^4$ projective period at $D = 4$, normalization factor $1$. This is the period of the graph, not a momentum-space integral."
+      },
+      "normalization": "$\\phi^4$ projective period at $D=4$; normalization factor $1$; same vacuum-period integral as zigzag, NOT comparable to dim-reg momentum-space vacuum integrals",
+      "refs": [
+        {
+          "arxiv": "1604.08027",
+          "texkey": "Broadhurst:1985tld",
+          "role": "defining",
+          "description": "Evaluates all 216 massless scalar diagrams through five loops using conformal invariance and recurrence relations, identifying the wheel periods as products of Riemann zeta values."
+        },
+        {
+          "arxiv": "1704.06350",
+          "texkey": "Crump:2017zvd",
+          "role": "modern",
+          "description": "Studies graph invariants of $\\phi^4$ primitives, including the wheel family, establishing that the Feynman period is preserved under planar duality, Schnetz twist, and vertex deletion."
+        }
+      ],
+      "related": [
+        "zigzag",
+        "generalised-ladder"
+      ],
+      "generator": "BroadhurstWheelGraph",
+      "batch": "core",
+      "previewParameter": 6,
+      "members": [
+        {
+          "parameter": 3,
+          "topology": "123_23_3__",
+          "primaryName": "Tetrahedron (K4)",
+          "loops": 3,
+          "sharedWith": [
+            {
+              "family": "zigzag",
+              "parameter": 3
+            }
+          ],
+          "config": "000_00_0__",
+          "layout": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              -0.5,
+              0.866
+            ],
+            [
+              -0.5,
+              -0.866
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "123_234_4_4__",
+          "primaryName": "Broadhurst wheel W4",
+          "loops": 4,
+          "sharedWith": [
+            {
+              "family": "zigzag",
+              "parameter": 4
+            }
+          ],
+          "config": "000_000_0_0__",
+          "layout": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              -0.0,
+              -1.0
+            ],
+            [
+              -1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "123_2345_4_5_5__",
+          "primaryName": "Broadhurst wheel W5",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "000_0000_0_0_0__",
+          "layout": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.309,
+              0.951
+            ],
+            [
+              0.309,
+              -0.951
+            ],
+            [
+              -0.809,
+              0.588
+            ],
+            [
+              -0.809,
+              -0.588
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "123_23456_4_5_6_6__",
+          "primaryName": "Broadhurst wheel W6",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "000_00000_0_0_0_0__",
+          "layout": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.5,
+              0.866
+            ],
+            [
+              0.5,
+              -0.866
+            ],
+            [
+              -0.5,
+              0.866
+            ],
+            [
+              -0.5,
+              -0.866
+            ],
+            [
+              -1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "123_234567_4_5_6_7_7__",
+          "primaryName": "Broadhurst wheel W7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "000_000000_0_0_0_0_0__",
+          "layout": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.623,
+              0.782
+            ],
+            [
+              0.623,
+              -0.782
+            ],
+            [
+              -0.223,
+              0.975
+            ],
+            [
+              -0.223,
+              -0.975
+            ],
+            [
+              -0.901,
+              0.434
+            ],
+            [
+              -0.901,
+              -0.434
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "123_2345678_4_5_6_7_8_8__",
+          "primaryName": "Broadhurst wheel W8",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "000_0000000_0_0_0_0_0_0__",
+          "layout": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.707,
+              0.707
+            ],
+            [
+              0.707,
+              -0.707
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              -0.0,
+              -1.0
+            ],
+            [
+              -0.707,
+              0.707
+            ],
+            [
+              -0.707,
+              -0.707
+            ],
+            [
+              -1.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "basso-dixon": {
+      "displayName": "4-mass fishnet",
+      "parameter": {
+        "name": "M",
+        "min": 1,
+        "max": 8,
+        "second": {
+          "name": "N",
+          "min": 1,
+          "max": 8
+        },
+        "productMax": 8
+      },
+      "definition": "The Basso-Dixon fishnet $B_{M,N}$ is an $M \\times N$ rectangular grid of massless propagators with four off-shell external legs at the corners, giving $MN$ loops. Its value is a determinant of Usyukina-Davydychev ladder functions $\\Phi^{(p)}$, and therefore a single-valued polylogarithm of weight $2MN$. The family is symmetric under $M \\leftrightarrow N$; the slice $B_{M,1}$ reduces to the $M$-rung box ladder. In two dimensions with unit propagator weights, the same graph computes the quantum volume of a Calabi-Yau $MN$-fold.",
+      "external": {
+        "legs": 4
+      },
+      "massConfig": "massless-internal-offshell-external",
+      "functionClass": "determinant of Usyukina-Davydychev ladders $\\Phi^{(L)}$",
+      "functionClassLabel": "single-valued MPL",
+      "definingIntegral": {
+        "latex": "G_{M,N}(x_i) = \\frac{g^{2MN}}{(x_{12}^2)^N\\,(x_{34}^2)^M}\\,\\Phi_{M,N}(u,v), \\qquad u = \\frac{x_{14}^2\\,x_{23}^2}{x_{12}^2\\,x_{34}^2},\\ v = \\frac{x_{13}^2\\,x_{24}^2}{x_{12}^2\\,x_{34}^2}",
+        "note": "In dual coordinates $x_i$ (conformal $M\\times N$ fishnet four-point function): $x_{ij}^2=(x_i-x_j)^2$, the four external operators sit at $x_1,\\dots,x_4$, all internal lines massless, $\\Phi_{M,N}$ the conformal block. Transcribed from Basso-Dixon arXiv:1705.03545 Eqs. (1)-(2); $\\Phi_{M,N}$ is the determinant of ladders $\\Phi^{(L)}$ per Eqs. (5)-(6)."
+      },
+      "familyKind": "kinematic",
+      "closedForm": {
+        "latex": "\\begin{aligned}I_{M,N} &= \\frac{1}{s\\,t^M}\\det_{1\\le i,j\\le N}\\!\\bigl[c_{ij}\\,\\Phi^{(M-N-1+i+j)}(x,y)\\bigr] \\\\c_{ij} &= \\frac{(M{-}N{-}1{+}i{+}j)!}{(i{-}1)!\\,(j{-}1)!\\,(M{-}j)!\\,(N{-}i)!}\\end{aligned}",
+        "wl": "PhiDavydychev[L_Integer, x_, y_] := Module[{lambda, rho}, lambda = Sqrt[(1 - x - y)^2 - 4 x y]; rho = 2/(1 - x - y + lambda); -(1/(L! lambda)) Sum[((-1)^j j! Log[y/x]^(2 L - j))/((j - L)! (2 L - j)!) (PolyLog[j, -1/(rho x)] - PolyLog[j, -rho y]), {j, L, 2 L}]];\n\nBDCoeff[i_, j_, M_, N_] := (M - N - 1 + i + j)!/((i - 1)! (j - 1)! (M - j)! (N - i)!);\n(* Basso-Dixon fishnet: I_{M,N}(s, t, p1sq, p2sq, p3sq, p4sq) *)\nIBassoDixon[M_Integer, N_Integer, s_, t_, p1sq_, p2sq_, p3sq_, p4sq_] := Det[Table[BDCoeff[i, j, M, N] PhiDavydychev[M - N - 1 + i + j, p1sq p3sq/(s t), p2sq p4sq/(s t)], {i, N}, {j, N}]] / (s t^M)",
+        "normalization": "where $x = \\frac{p_1^2 p_3^2}{s\\,t}$, $y = \\frac{p_2^2 p_4^2}{s\\,t}$, $s = (p_1{+}p_2)^2$, $t = (p_2{+}p_3)^2$, equivalently $x = z\\bar{z}$, $y = (1{-}z)(1{-}\\bar{z})$. The $(M,1)$ slice reduces to the 4-mass ladder: $I_{M,1} = I_{\\text{box}}^{(M)}$. Same measure convention."
+      },
+      "normalization": "Basso-Dixon convention (1705.03545 Eqs. 1-6); the seeded valueExact is the CONVENTION-FREE conformal determinant BassoDixonI[M,N,z,zb] $= \\det[c_{ij}\\,\\mathrm{PhiLadder}^{(M-N-1+i+j)}]$ over the validated Davydychev ladders at the pilot SVPL point $z=1/3$, $\\bar z=1/5$ (Eq. (3) strips BD's antisymmetric prefactor; derivation log notes/families_core_batch/bd_normalization.md). $(M,1)$ members reduce EXACTLY to PhiLadder[M] (the ladder4pt value convention on the shared entries). Momentum dictionary: derived and validated in plan Task 11 before any Results merge; the $(M,1)$ chain must reduce to the validated box dictionary $+\\Phi^{(M)}(u,v)/(s\\,t^M)$ with no refit",
+      "refs": [
+        {
+          "arxiv": "1705.03545",
+          "texkey": "Basso:2017jwq",
+          "role": "defining",
+          "description": "Introduces the Basso-Dixon fishnet correlator as a determinant of Usyukina-Davydychev ladder integrals $\\Phi^{(L)}$, conjecturing and verifying the representation at all loop orders using integrability and Steinmann relations."
+        },
+        {
+          "arxiv": "1811.10623",
+          "texkey": "Derkachov:2018rot",
+          "role": "proof",
+          "description": "Proves the Basso-Dixon determinant formula in two-dimensional fishnet CFT from first principles, using separation of variables for the integrable $\\mathrm{SL}(2,\\mathbb{C})$ spin chain."
+        },
+        {
+          "arxiv": "2007.15049",
+          "texkey": "Derkachov:2020zvv",
+          "role": "follow-up",
+          "description": "Extends the separation-of-variables approach to four-dimensional $\\chi$CFT$_4$ fishnet correlators on square and honeycomb lattices, reproducing the Basso-Dixon conjecture for the scalar-only sector."
+        },
+        {
+          "arxiv": "2310.08625",
+          "texkey": "Duhr:2023eld",
+          "role": "modern",
+          "description": "Shows that the Calabi-Yau varieties attached to two-dimensional fishnet integrals have Picard-Fuchs operators that are exterior powers of the ladder operators, recovering the Basso-Dixon formula from Calabi-Yau periods."
+        },
+        {
+          "arxiv": "2209.05291",
+          "texkey": "Duhr:2022pch",
+          "role": "modern",
+          "description": "Identifies the $\\ell$-loop Yangian-invariant fishnet integral in two dimensions as the quantum volume of the mirror Calabi-Yau $\\ell$-fold, with instanton corrections appearing from $\\ell = 3$ onward."
+        }
+      ],
+      "related": [
+        "ladder4pt",
+        "fishnet-multileg-2d"
+      ],
+      "generator": "BassoDixonGraph",
+      "batch": "core",
+      "previewParameter": [
+        2,
+        2
+      ],
+      "members": [
+        {
+          "parameter": [
+            1,
+            1
+          ],
+          "topology": "e12_e3_e3_e_",
+          "primaryName": "Box",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "ladder4pt",
+              "parameter": 1
+            },
+            {
+              "family": "ngon",
+              "parameter": 4
+            },
+            {
+              "family": "traintrack",
+              "parameter": 1
+            }
+          ],
+          "config": "100_20_30_4_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            2,
+            1
+          ],
+          "topology": "123_45_e4_e5_e_e_",
+          "primaryName": "Double box",
+          "loops": 2,
+          "sharedWith": [
+            {
+              "family": "ladder4pt",
+              "parameter": 2
+            }
+          ],
+          "config": "000_00_10_20_3_4_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              2.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              2.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            3,
+            1
+          ],
+          "topology": "123_45_46_e5_7_e_e7_e_",
+          "primaryName": "Triple box",
+          "loops": 3,
+          "sharedWith": [
+            {
+              "family": "ladder4pt",
+              "parameter": 3
+            }
+          ],
+          "config": "000_00_00_10_0_2_30_4_",
+          "layout": [
+            [
+              0.0,
+              2.0
+            ],
+            [
+              1.0,
+              2.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              3.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              3.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            2,
+            2
+          ],
+          "topology": "1234_56_57_68_78_e_e_e_e_",
+          "primaryName": "Basso-Dixon fishnet B(2,2)",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "0000_00_00_00_00_1_2_3_4_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              2.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              2.0
+            ],
+            [
+              2.0,
+              2.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            4,
+            1
+          ],
+          "topology": "123_45_46_57_8_9_e8_e9_e_e_",
+          "primaryName": "Quadruple box",
+          "loops": 4,
+          "sharedWith": [
+            {
+              "family": "ladder4pt",
+              "parameter": 4
+            }
+          ],
+          "config": "000_00_00_00_0_0_10_20_3_4_",
+          "layout": [
+            [
+              0.0,
+              2.0
+            ],
+            [
+              1.0,
+              2.0
+            ],
+            [
+              0.0,
+              3.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              3.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              4.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              4.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            5,
+            1
+          ],
+          "topology": "123_45_46_57_8_9_810_e9_11_e_e11_e_",
+          "primaryName": "4-mass ladder L5",
+          "loops": 5,
+          "sharedWith": [
+            {
+              "family": "ladder4pt",
+              "parameter": 5
+            }
+          ],
+          "config": "000_00_00_00_0_0_00_10_0_2_30_4_",
+          "layout": [
+            [
+              0.0,
+              3.0
+            ],
+            [
+              1.0,
+              3.0
+            ],
+            [
+              0.0,
+              2.0
+            ],
+            [
+              0.0,
+              4.0
+            ],
+            [
+              1.0,
+              2.0
+            ],
+            [
+              1.0,
+              4.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              5.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              5.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            3,
+            2
+          ],
+          "topology": "123_45_467_e6_89_e8_10_910_11_11_e_e_",
+          "primaryName": "Basso-Dixon fishnet B(3,2)",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "000_00_000_10_00_20_0_00_0_0_3_4_",
+          "layout": [
+            [
+              0.0,
+              2.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              2.0
+            ],
+            [
+              0.0,
+              3.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              3.0
+            ],
+            [
+              2.0,
+              2.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              3.0
+            ],
+            [
+              2.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            6,
+            1
+          ],
+          "topology": "123_45_46_57_8_9_810_911_12_13_e12_e13_e_e_",
+          "primaryName": "4-mass ladder L6",
+          "loops": 6,
+          "sharedWith": [
+            {
+              "family": "ladder4pt",
+              "parameter": 6
+            }
+          ],
+          "config": "000_00_00_00_0_0_00_00_0_0_10_20_3_4_",
+          "layout": [
+            [
+              0.0,
+              3.0
+            ],
+            [
+              1.0,
+              3.0
+            ],
+            [
+              0.0,
+              4.0
+            ],
+            [
+              0.0,
+              2.0
+            ],
+            [
+              1.0,
+              4.0
+            ],
+            [
+              1.0,
+              2.0
+            ],
+            [
+              0.0,
+              5.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              5.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              6.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              6.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            7,
+            1
+          ],
+          "topology": "123_45_46_57_8_9_810_911_12_13_1214_e13_15_e_e15_e_",
+          "primaryName": "4-mass ladder L7",
+          "loops": 7,
+          "sharedWith": [
+            {
+              "family": "ladder4pt",
+              "parameter": 7
+            }
+          ],
+          "config": "000_00_00_00_0_0_00_00_0_0_00_10_0_2_30_4_",
+          "layout": [
+            [
+              0.0,
+              4.0
+            ],
+            [
+              1.0,
+              4.0
+            ],
+            [
+              0.0,
+              3.0
+            ],
+            [
+              0.0,
+              5.0
+            ],
+            [
+              1.0,
+              3.0
+            ],
+            [
+              1.0,
+              5.0
+            ],
+            [
+              0.0,
+              2.0
+            ],
+            [
+              0.0,
+              6.0
+            ],
+            [
+              1.0,
+              2.0
+            ],
+            [
+              1.0,
+              6.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              7.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              7.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            4,
+            2
+          ],
+          "topology": "123_45_467_68_910_e10_1112_911_e12_13_13_14_14_e_e_",
+          "primaryName": "Basso-Dixon fishnet B(4,2)",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "000_00_000_00_00_10_00_00_20_0_0_0_0_3_4_",
+          "layout": [
+            [
+              0.0,
+              2.0
+            ],
+            [
+              0.0,
+              3.0
+            ],
+            [
+              1.0,
+              2.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              3.0
+            ],
+            [
+              0.0,
+              4.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              2.0,
+              2.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              3.0
+            ],
+            [
+              1.0,
+              4.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              4.0
+            ],
+            [
+              2.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            8,
+            1
+          ],
+          "topology": "123_45_46_57_8_9_810_911_12_13_1214_1315_16_17_e16_e17_e_e_",
+          "primaryName": "4-mass ladder L8",
+          "loops": 8,
+          "sharedWith": [
+            {
+              "family": "ladder4pt",
+              "parameter": 8
+            }
+          ],
+          "config": "000_00_00_00_0_0_00_00_0_0_00_00_0_0_10_20_3_4_",
+          "layout": [
+            [
+              0.0,
+              4.0
+            ],
+            [
+              1.0,
+              4.0
+            ],
+            [
+              0.0,
+              5.0
+            ],
+            [
+              0.0,
+              3.0
+            ],
+            [
+              1.0,
+              5.0
+            ],
+            [
+              1.0,
+              3.0
+            ],
+            [
+              0.0,
+              6.0
+            ],
+            [
+              0.0,
+              2.0
+            ],
+            [
+              1.0,
+              6.0
+            ],
+            [
+              1.0,
+              2.0
+            ],
+            [
+              0.0,
+              7.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              7.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              8.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              8.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "pentaladder": {
+      "displayName": "Pentagon ladder",
+      "parameter": {
+        "name": "L",
+        "min": 2,
+        "max": 8
+      },
+      "definition": "The double pentaladder $\\Omega^{(L)}$ consists of two pentagon end-caps joined by $L{-}2$ box cells, for a total of $L$ loops, six massless external legs in hexagon kinematics, and massless internal lines throughout. Its value is a pure multiple polylogarithm at every loop order, and the all-loop generating function is known in closed form via a Mellin-space finite-coupling representation. The single-pentagon variant (the penta-box ladder with five dual points) is a distinct family.",
+      "external": {
+        "legs": 6
+      },
+      "massConfig": "massless-internal-dualconformal",
+      "functionClass": "pure multiple polylogarithms, all $L$",
+      "functionClassLabel": "pure MPL",
+      "definingIntegral": {
+        "latex": "\\Omega^{(2)} \\propto \\int \\frac{d^4 x_r\\,d^4 x_s}{i\\pi^2\\,i\\pi^2}\\,\\frac{x_{ar}^2\\,x_{bs}^2}{(x_{1r}^2\\,x_{2r}^2\\,x_{3r}^2\\,x_{4r}^2)\\,x_{rs}^2\\,(x_{4s}^2\\,x_{5s}^2\\,x_{6s}^2\\,x_{1s}^2)}",
+        "note": "In dual coordinates $x_i$: the two-loop double pentaladder, two pentagon caps sharing the rung $x_{rs}^2$; the numerator $x_{ar}^2 x_{bs}^2$ with $x_a,x_b$ the null-separated points ($x_{a1}^2{=}\\cdots{=}x_{a4}^2{=}0$, $x_{b4}^2{=}\\cdots{=}x_{b1}^2{=}0$) makes it dual-conformal and IR-finite. The $L$-loop $\\Omega^{(L)}$ inserts $L{-}2$ box cells between the caps. Transcribed from Caron-Huot-Dixon et al. arXiv:1806.01361 Eq. (2.4) (numerator structure Eqs. (2.5)-(2.10))."
+      },
+      "familyKind": "kinematic",
+      "seedCaveat": "Scalar skeleton only: the defining integrals $\\Omega^{(L)}/\\tilde\\Omega^{(L)}$ carry a mandatory dual-conformal numerator (arXiv:1806.01361 eqs. 2.4-2.10); the seeded topology is the propagator skeleton, not the dressed integral, and carries no value.",
+      "refs": [
+        {
+          "arxiv": "1806.01361",
+          "texkey": "Caron-Huot:2018dsv",
+          "role": "defining",
+          "description": "Computes the double pentaladder integral to all loop orders via a finite-coupling Mellin integral over hypergeometric functions, providing the prototype for the Steinmann hexagon function space."
+        },
+        {
+          "arxiv": "2103.02796",
+          "texkey": "He:2021esx",
+          "role": "modern",
+          "description": "Studies the cluster-algebra structure of all-loop box-ladder, penta-box-ladder, and double-penta-ladder integrals, characterizing their symbol alphabets."
+        }
+      ],
+      "related": [
+        "ladder4pt"
+      ],
+      "generator": "PentaladderGraph",
+      "batch": "core",
+      "previewParameter": 3,
+      "members": [
+        {
+          "parameter": 2,
+          "topology": "123_45_e6_e7_e6_e7_e_e_",
+          "primaryName": "Double pentagon",
+          "loops": 2,
+          "sharedWith": [],
+          "config": "000_00_00_00_00_00_0_0_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              -1.0,
+              1.3
+            ],
+            [
+              1.0,
+              1.3
+            ],
+            [
+              -1.0,
+              -0.3
+            ],
+            [
+              1.0,
+              -0.3
+            ],
+            [
+              -1.5,
+              0.5
+            ],
+            [
+              1.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 3,
+          "topology": "123_45_46_e7_8_e7_e9_e_e9_e_",
+          "primaryName": "Pentagon ladder L3",
+          "loops": 3,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_00_00_0_00_0_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              -1.0,
+              1.3
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              -1.0,
+              -0.3
+            ],
+            [
+              2.0,
+              1.3
+            ],
+            [
+              -1.5,
+              0.5
+            ],
+            [
+              2.0,
+              -0.3
+            ],
+            [
+              2.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "123_45_46_57_8_9_e10_e11_e10_e11_e_e_",
+          "primaryName": "Pentagon ladder L4",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_00_00_00_0_0_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              -1.0,
+              1.3
+            ],
+            [
+              3.0,
+              1.3
+            ],
+            [
+              -1.0,
+              -0.3
+            ],
+            [
+              3.0,
+              -0.3
+            ],
+            [
+              -1.5,
+              0.5
+            ],
+            [
+              3.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "123_45_46_57_8_9_810_e11_12_e11_e13_e_e13_e_",
+          "primaryName": "Pentagon ladder L5",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_00_0_00_00_0_00_0_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              -1.0,
+              1.3
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              -1.0,
+              -0.3
+            ],
+            [
+              4.0,
+              1.3
+            ],
+            [
+              -1.5,
+              0.5
+            ],
+            [
+              4.0,
+              -0.3
+            ],
+            [
+              4.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "123_45_46_57_8_9_810_911_12_13_e14_e15_e14_e15_e_e_",
+          "primaryName": "Pentagon ladder L6",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_00_0_0_00_00_00_00_0_0_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              -1.0,
+              1.3
+            ],
+            [
+              5.0,
+              1.3
+            ],
+            [
+              -1.0,
+              -0.3
+            ],
+            [
+              5.0,
+              -0.3
+            ],
+            [
+              -1.5,
+              0.5
+            ],
+            [
+              5.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "123_45_46_57_8_9_810_911_12_13_1214_e15_16_e15_e17_e_e17_e_",
+          "primaryName": "Pentagon ladder L7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_00_0_0_00_00_0_00_00_0_00_0_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              -1.0,
+              1.3
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              -1.0,
+              -0.3
+            ],
+            [
+              6.0,
+              1.3
+            ],
+            [
+              -1.5,
+              0.5
+            ],
+            [
+              6.0,
+              -0.3
+            ],
+            [
+              6.5,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "123_45_46_57_8_9_810_911_12_13_1214_1315_16_17_e18_e19_e18_e19_e_e_",
+          "primaryName": "Pentagon ladder L8",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_00_0_0_00_00_0_0_00_00_00_00_0_0_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              -1.0,
+              1.3
+            ],
+            [
+              7.0,
+              1.3
+            ],
+            [
+              -1.0,
+              -0.3
+            ],
+            [
+              7.0,
+              -0.3
+            ],
+            [
+              -1.5,
+              0.5
+            ],
+            [
+              7.5,
+              0.5
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "elliptic-ladder": {
+      "displayName": "Elliptic ladder",
+      "parameter": {
+        "name": "L",
+        "min": 1,
+        "max": 7,
+        "second": {
+          "name": "R",
+          "min": 1,
+          "max": 7
+        },
+        "sumMax": 8
+      },
+      "definition": "The elliptic ladder $I_{L,R}$ is an $(L{+}R)$-cell ladder with two distinguished massless legs attached at a common central rung, $L$ cells to one side and $R$ to the other, together with four off-shell corner legs. It has $L{+}R$ loops, is symmetric under $L \\leftrightarrow R$, and evaluates to elliptic multiple polylogarithms on a single fixed elliptic curve at all loop orders. The simplest member $I_{1,1}$ is the elliptic double box.",
+      "external": {
+        "legs": 10
+      },
+      "massConfig": "massless-internal-dualconformal",
+      "functionClass": "elliptic multiple polylogarithms on a single fixed elliptic curve, all $L$",
+      "functionClassLabel": "elliptic MPL",
+      "definingIntegral": {
+        "latex": "I_{L,R} = \\int d^4 x_{l_1}\\cdots d^4 x_{l_{L+R}}\\ \\frac{x_{38}^2\\,(x_{15}^2)^R\\,(x_{6,10}^2)^L}{x_{l_1,3}^2\\ \\prod_{i=1}^{R} x_{l_i,1}^2\\,x_{l_i,5}^2\\,x_{l_i,l_{i+1}}^2\\ \\prod_{i=R+1}^{R+L} x_{l_i,10}^2\\,x_{l_i,6}^2\\,x_{l_i,l_{i+1}}^2\\ x_{l_{R+L},8}^2}",
+        "note": "In dual coordinates $x_i$ (Family 1 of the paper): the $(L{+}R)$-cell ladder chain over loop points $x_{l_i}$, with $x_{ij}^2=(x_i-x_j)^2$; the two distinguished legs $p_5,p_{10}$ attach at the central rung ($R$ cells left of $x_5$, $L$ cells right of $x_{10}$), the numerator restores dual conformality, $I_{L,R}=I_{R,L}$. Transcribed from McLeod et al. arXiv:2301.07965 Eq. (9)."
+      },
+      "familyKind": "kinematic",
+      "refs": [
+        {
+          "arxiv": "2301.07965",
+          "texkey": "McLeod:2023qdf",
+          "role": "defining",
+          "description": "Identifies two infinite families of ten-point Feynman diagrams generalizing the elliptic double box, proving they evaluate to elliptic multiple polylogarithms on a single fixed elliptic curve at all loop orders."
+        },
+        {
+          "arxiv": "2301.07834",
+          "texkey": "Cao:2023tpx",
+          "role": "modern",
+          "description": "Revisits maximal-codimension residues of traintrack and elliptic-ladder integrals via Cauchy and Schubert analysis in both Feynman-parameter and momentum-twistor space, identifying the Calabi-Yau geometry at each loop order."
+        }
+      ],
+      "related": [
+        "traintrack",
+        "ladder4pt"
+      ],
+      "generator": "EllipticLadderGraph",
+      "batch": "core",
+      "previewParameter": [
+        2,
+        2
+      ],
+      "members": [
+        {
+          "parameter": [
+            1,
+            1
+          ],
+          "topology": "e123_e45_e4_e5_e_e_",
+          "primaryName": "Double box",
+          "loops": 2,
+          "sharedWith": [
+            {
+              "family": "traintrack",
+              "parameter": 2
+            }
+          ],
+          "config": "0000_000_10_20_3_4_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            2,
+            1
+          ],
+          "topology": "123_45_e46_e5_e7_e_e7_e_",
+          "primaryName": "Elliptic ladder (2,1)",
+          "loops": 3,
+          "sharedWith": [],
+          "config": "000_00_000_10_00_2_30_4_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            2,
+            2
+          ],
+          "topology": "123_45_e46_e5_e7_e_78_9_e9_e_",
+          "primaryName": "Elliptic ladder (2,2)",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "000_00_000_10_00_2_00_0_30_4_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            3,
+            1
+          ],
+          "topology": "123_45_46_e57_8_e9_e8_e9_e_e_",
+          "primaryName": "Elliptic ladder (3,1)",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "000_00_00_000_0_00_10_20_3_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            3,
+            2
+          ],
+          "topology": "123_45_46_e57_8_e9_e8_910_e_11_e11_e_",
+          "primaryName": "Elliptic ladder (3,2)",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "000_00_00_000_0_00_10_00_2_0_30_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            4,
+            1
+          ],
+          "topology": "123_45_46_57_8_9_e810_e9_e11_e_e11_e_",
+          "primaryName": "Elliptic ladder (4,1)",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_000_10_00_2_30_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            3,
+            3
+          ],
+          "topology": "123_45_46_e57_8_e9_e8_910_e_11_1112_13_e13_e_",
+          "primaryName": "Elliptic ladder (3,3)",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "000_00_00_000_0_00_10_00_2_0_00_0_30_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              6.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            4,
+            2
+          ],
+          "topology": "123_45_46_57_8_9_e810_e9_e11_e_1112_13_e13_e_",
+          "primaryName": "Elliptic ladder (4,2)",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_000_10_00_2_00_0_30_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              6.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            5,
+            1
+          ],
+          "topology": "123_45_46_57_8_9_810_e911_12_e13_e12_e13_e_e_",
+          "primaryName": "Elliptic ladder (5,1)",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_000_0_00_10_20_3_4_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            4,
+            3
+          ],
+          "topology": "123_45_46_57_8_9_e810_e9_e11_e_1112_13_1314_15_e15_e_",
+          "primaryName": "Elliptic ladder (4,3)",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_000_10_00_2_00_0_00_0_30_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              7.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            5,
+            2
+          ],
+          "topology": "123_45_46_57_8_9_810_e911_12_e13_e12_1314_e_15_e15_e_",
+          "primaryName": "Elliptic ladder (5,2)",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_000_0_00_10_00_2_0_30_4_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              7.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            6,
+            1
+          ],
+          "topology": "123_45_46_57_8_9_810_911_12_13_e1214_e13_e15_e_e15_e_",
+          "primaryName": "Elliptic ladder (6,1)",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_00_0_0_000_10_00_2_30_4_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              7.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            4,
+            4
+          ],
+          "topology": "123_45_46_57_8_9_e810_e9_e11_e_1112_13_1314_15_1516_17_e17_e_",
+          "primaryName": "Elliptic ladder (4,4)",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_000_10_00_2_00_0_00_0_00_0_30_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              7.0,
+              0.0
+            ],
+            [
+              8.0,
+              1.0
+            ],
+            [
+              8.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            5,
+            3
+          ],
+          "topology": "123_45_46_57_8_9_810_e911_12_e13_e12_1314_e_15_1516_17_e17_e_",
+          "primaryName": "Elliptic ladder (5,3)",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_000_0_00_10_00_2_0_00_0_30_4_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              7.0,
+              0.0
+            ],
+            [
+              8.0,
+              1.0
+            ],
+            [
+              8.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            6,
+            2
+          ],
+          "topology": "123_45_46_57_8_9_810_911_12_13_e1214_e13_e15_e_1516_17_e17_e_",
+          "primaryName": "Elliptic ladder (6,2)",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_00_0_0_000_10_00_2_00_0_30_4_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              7.0,
+              0.0
+            ],
+            [
+              8.0,
+              1.0
+            ],
+            [
+              8.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": [
+            7,
+            1
+          ],
+          "topology": "123_45_46_57_8_9_810_911_12_13_1214_e1315_16_e17_e16_e17_e_e_",
+          "primaryName": "Elliptic ladder (7,1)",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_0_00_00_0_0_00_000_0_00_10_20_3_4_",
+          "layout": [
+            [
+              4.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              7.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              8.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              8.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "traintrack": {
+      "displayName": "Traintrack",
+      "parameter": {
+        "name": "L",
+        "min": 1,
+        "max": 8
+      },
+      "definition": "The traintrack integral is a planar chain of $L$ box cells with massless internal lines, four off-shell corner legs, and $2L{-}2$ massless legs along the rails. At $L$ loops it evaluates to a weight-$(L{+}1)$ hyperlogarithm whose periods live on a Calabi-Yau $(L{-}1)$-fold: the $L = 1$ member is the four-mass box, $L = 2$ is elliptic, $L = 3$ involves a K3 surface, and $L = 4$ a Calabi-Yau threefold.",
+      "external": {
+        "legs": "2L+2"
+      },
+      "massConfig": "massless-internal-offshell-external",
+      "functionClass": "weight-$(L{+}1)$ hyperlogarithms over a Calabi-Yau $(L{-}1)$-fold",
+      "functionClassLabel": "Calabi-Yau period",
+      "definingIntegral": {
+        "latex": "\\mathfrak{T}^{(L)} = \\int d^{4L}\\vec{\\ell}\\ \\frac{\\prod_{j=0}^{L}(a_j,b_j)}{(\\ell_1,a_0)\\,\\prod_{j=1}^{L}(\\ell_j,\\ell_{j+1})\\,(\\ell_j,a_j)\\,(\\ell_j,b_j)}, \\qquad (a,b)\\equiv(x_a-x_b)^2",
+        "note": "In dual coordinates: the planar $L$-box chain over loop points $\\ell_1,\\dots,\\ell_L$ ($\\ell_{L+1}\\equiv b_0$), with $(a,b)\\equiv(x_a-x_b)^2$ the squared dual separation; massless internal lines, off-shell legs $a_j,b_j$, and a dual-conformal numerator. Transcribed from Bourjaily et al. arXiv:1805.09326 Eq. (4)."
+      },
+      "familyKind": "kinematic",
+      "refs": [
+        {
+          "arxiv": "1805.09326",
+          "texkey": "Bourjaily:2018ycu",
+          "role": "defining",
+          "description": "Introduces the traintrack integral family and shows it involves weight-$(L{+}1)$ hyperlogarithms over Calabi-Yau $(L{-}1)$-folds at $L$ loops, identifying the K3 surface at three loops and a Calabi-Yau threefold at four loops."
+        },
+        {
+          "arxiv": "1910.01534",
+          "texkey": "Bourjaily:2019hmc",
+          "role": "follow-up",
+          "description": "Embeds the Calabi-Yau geometries arising from traintrack integrals as degree-$2k$ hypersurfaces in $k$-dimensional weighted projective space, providing a uniform geometric framework for the family."
+        },
+        {
+          "arxiv": "2005.08771",
+          "texkey": "Vergu:2020uur",
+          "role": "follow-up",
+          "description": "Describes the leading-singularity locus of the traintrack family directly in momentum-twistor space, recovering the elliptic curve at two loops and the K3 surface at three loops from twistor geometry."
+        },
+        {
+          "arxiv": "2306.11780",
+          "texkey": "McLeod:2023doa",
+          "role": "modern",
+          "description": "Extends the traintrack construction by sequentially intersecting traintrack diagrams, showing the resulting integrals involve $(L{-}1)$-dimensional Calabi-Yau varieties and possess a nested structure of second-order differential operators."
+        }
+      ],
+      "related": [
+        "elliptic-ladder",
+        "banana",
+        "ice-cone"
+      ],
+      "generator": "TraintrackGraph",
+      "batch": "core",
+      "previewParameter": 4,
+      "members": [
+        {
+          "parameter": 1,
+          "topology": "e12_e3_e3_e_",
+          "primaryName": "Box",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "basso-dixon",
+              "parameter": [
+                1,
+                1
+              ]
+            },
+            {
+              "family": "ladder4pt",
+              "parameter": 1
+            },
+            {
+              "family": "ngon",
+              "parameter": 4
+            }
+          ],
+          "config": "100_20_30_4_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 2,
+          "topology": "e123_e45_e4_e5_e_e_",
+          "primaryName": "Double box",
+          "loops": 2,
+          "sharedWith": [
+            {
+              "family": "elliptic-ladder",
+              "parameter": [
+                1,
+                1
+              ]
+            }
+          ],
+          "config": "0000_000_10_20_3_4_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 3,
+          "topology": "e123_e45_e46_e5_e7_e_e7_e_",
+          "primaryName": "3-loop traintrack",
+          "loops": 3,
+          "sharedWith": [],
+          "config": "0000_000_000_10_00_2_30_4_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "e123_e45_e46_e57_e8_e9_e8_e9_e_e_",
+          "primaryName": "4-loop traintrack (CY3)",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "0000_000_000_000_00_00_10_20_3_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "e123_e45_e46_e57_e8_e9_e810_e9_e11_e_e11_e_",
+          "primaryName": "Traintrack L5",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "0000_000_000_000_00_00_000_10_00_2_30_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "e123_e45_e46_e57_e8_e9_e810_e911_e12_e13_e12_e13_e_e_",
+          "primaryName": "Traintrack L6",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "0000_000_000_000_00_00_000_000_00_00_10_20_3_4_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "e123_e45_e46_e57_e8_e9_e810_e911_e12_e13_e1214_e13_e15_e_e15_e_",
+          "primaryName": "Traintrack L7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "0000_000_000_000_00_00_000_000_00_00_000_10_00_2_30_4_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              7.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "e123_e45_e46_e57_e8_e9_e810_e911_e12_e13_e1214_e1315_e16_e17_e16_e17_e_e_",
+          "primaryName": "Traintrack L8",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "0000_000_000_000_00_00_000_000_00_00_000_000_00_00_10_20_3_4_",
+          "layout": [
+            [
+              4.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              7.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              7.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              8.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              8.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "tardigrade": {
+      "displayName": "Tardigrade",
+      "parameter": {
+        "name": "L",
+        "min": 2,
+        "max": 8,
+        "parity": "even"
+      },
+      "definition": "The tardigrade is a nonplanar graph in the Calabi-Yau bestiary, defined at even loop order $L$ with $2(L{+}1)$ massless propagators, five external legs, and marginal power counting in $D = 4$. Its geometry saturates the maximal rigidity bound $2(L{-}1)$, verified through eleven loops. The two-loop member is a K3 surface of Picard rank 11 and has been studied with massive internal lines as a separate kinematic configuration.",
+      "external": {
+        "legs": 5
+      },
+      "massConfig": "massless-internal-offshell-external",
+      "functionClass": "Calabi-Yau periods, maximal rigidity $2(L-1)$",
+      "functionClassLabel": "Calabi-Yau period",
+      "definingIntegral": {
+        "latex": "I = \\int_{x_i \\ge 0} \\frac{[d^{2L+1}x_i]}{\\mathcal{F}^2}",
+        "note": "Massless marginal $\\phi^4$ integral in the Symanzik parametric form: projective integral over $\\mathbb{P}^{2L+1}$ ($E=2(L+1)$ Feynman parameters $x_i$), $\\mathcal{F}$ the second Symanzik polynomial of the tardigrade graph (linear in every $x_i$ in the all-massless case). Transcribed from Bourjaily-McLeod-von Hippel-Wilhelm arXiv:1810.07689 Eq. (5) (the bestiary integral; $\\mathcal{F}$ defined in Eq. (2))."
+      },
+      "familyKind": "kinematic",
+      "refs": [
+        {
+          "arxiv": "1810.07689",
+          "texkey": "Bourjaily:2018yfy",
+          "role": "defining",
+          "description": "Introduces the tardigrade as a nonplanar graph whose Feynman integral involves Calabi-Yau geometry at each even loop order, establishing the rigidity bound $2(L{-}1)$ and verifying saturation through eleven loops."
+        },
+        {
+          "arxiv": "2302.14840",
+          "texkey": "Doran:2023yzu",
+          "role": "modern",
+          "description": "Determines the Hodge structure of the two-loop tardigrade graph hypersurface, identifying its motive as that of a K3 surface with Picard number 11."
+        }
+      ],
+      "related": [
+        "paramecium",
+        "amoeba",
+        "banana"
+      ],
+      "generator": "TardigradeGraph",
+      "batch": "core",
+      "previewParameter": 4,
+      "members": [
+        {
+          "parameter": 2,
+          "topology": "e123_e4_e4_e4_e_",
+          "primaryName": "Non-planar double box",
+          "loops": 2,
+          "sharedWith": [],
+          "config": "0000_10_20_30_0_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.5
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "1234_e56_e56_e5_e5__e_",
+          "primaryName": "Tardigrade L4",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "0000_000_000_10_20__3_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "1234_567_567_e58_e58__e_e_e_",
+          "primaryName": "Tardigrade L6",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "0000_000_000_000_000__1_2_3_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "1234_567_567_589_589__e10_e10_e_e_e_",
+          "primaryName": "Tardigrade L8",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "0000_000_000_000_000__00_00_1_2_3_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.5
+            ]
+          ]
+        }
+      ],
+      "missing": [
+        {
+          "parameter": 3,
+          "why": "parity-excluded"
+        },
+        {
+          "parameter": 5,
+          "why": "parity-excluded"
+        },
+        {
+          "parameter": 7,
+          "why": "parity-excluded"
+        }
+      ]
+    },
+    "paramecium": {
+      "displayName": "Paramecium",
+      "parameter": {
+        "name": "L",
+        "min": 3,
+        "max": 7,
+        "parity": "odd"
+      },
+      "definition": "The paramecium is a nonplanar graph in the Calabi-Yau bestiary, defined at odd loop order $L$ with $2(L{+}1)$ massless propagators, six external legs (two off-shell and four massless), and marginal power counting in $D = 4$. It saturates the maximal rigidity bound $2(L{-}1)$ and is the odd-loop companion to the tardigrade. Nontrivial members begin at $L = 3$; the $L = 1$ case degenerates to the four-mass box.",
+      "external": {
+        "legs": 6
+      },
+      "massConfig": "massless-internal-offshell-external",
+      "functionClass": "Calabi-Yau periods, maximal rigidity $2(L-1)$",
+      "functionClassLabel": "Calabi-Yau period",
+      "definingIntegral": {
+        "latex": "I = \\int_{x_i \\ge 0} \\frac{[d^{2L+1}x_i]}{\\mathcal{F}^2}",
+        "note": "Massless marginal $\\phi^4$ integral in the Symanzik parametric form: projective integral over $\\mathbb{P}^{2L+1}$ ($E=2(L+1)$ Feynman parameters $x_i$), $\\mathcal{F}$ the second Symanzik polynomial of the paramecium graph (linear in every $x_i$ in the all-massless case). Transcribed from Bourjaily-McLeod-von Hippel-Wilhelm arXiv:1810.07689 Eq. (5) ($\\mathcal{F}$ defined in Eq. (2))."
+      },
+      "familyKind": "kinematic",
+      "refs": [
+        {
+          "arxiv": "1810.07689",
+          "texkey": "Bourjaily:2018yfy",
+          "role": "defining",
+          "description": "Introduces the paramecium as the odd-loop companion to the tardigrade in the Calabi-Yau bestiary, demonstrating maximal rigidity $2(L{-}1)$ at each odd loop order from six external legs."
+        }
+      ],
+      "related": [
+        "tardigrade",
+        "amoeba",
+        "banana"
+      ],
+      "generator": "ParameciumGraph",
+      "batch": "core",
+      "previewParameter": 5,
+      "members": [
+        {
+          "parameter": 3,
+          "topology": "e123_e45_e45_e4_e_e_",
+          "primaryName": "Paramecium L3",
+          "loops": 3,
+          "sharedWith": [],
+          "config": "0000_000_000_10_0_2_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              -1.0,
+              0.5
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "1234_e56_e56_e57_e57__e_e_",
+          "primaryName": "Paramecium L5",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "0000_000_000_000_000__1_2_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              -1.0,
+              0.5
+            ],
+            [
+              3.0,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "1234_567_567_e58_e58__e9_e9_e_e_",
+          "primaryName": "Paramecium L7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "0000_000_000_000_000__00_00_1_2_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              -1.0,
+              0.5
+            ],
+            [
+              4.0,
+              0.5
+            ]
+          ]
+        }
+      ],
+      "missing": [
+        {
+          "parameter": 4,
+          "why": "parity-excluded"
+        },
+        {
+          "parameter": 6,
+          "why": "parity-excluded"
+        }
+      ]
+    },
+    "amoeba": {
+      "displayName": "Amoeba",
+      "parameter": {
+        "name": "L",
+        "min": 3,
+        "max": 7,
+        "parity": "odd"
+      },
+      "definition": "The amoeba is a nonplanar graph in the Calabi-Yau bestiary, defined at odd loop order $L$ with $2(L{+}1)$ massless propagators and four off-shell external legs. It is marginal in $D = 4$; the three-loop member is the complete bipartite graph $K_{2,4}$ and has non-maximal rigidity, while the maximal bound $2(L{-}1)$ is saturated from $L = 5$ onward.",
+      "external": {
+        "legs": 4
+      },
+      "massConfig": "massless-internal-offshell-external",
+      "functionClass": "Calabi-Yau periods, rigidity up to $2(L-1)$",
+      "functionClassLabel": "Calabi-Yau period",
+      "definingIntegral": {
+        "latex": "I = \\int_{x_i \\ge 0} \\frac{[d^{2L+1}x_i]}{\\mathcal{F}^2}",
+        "note": "Massless marginal $\\phi^4$ integral in the Symanzik parametric form: projective integral over $\\mathbb{P}^{2L+1}$ ($E=2(L+1)$ Feynman parameters $x_i$), $\\mathcal{F}$ the second Symanzik polynomial of the amoeba graph (linear in every $x_i$ in the all-massless case). Transcribed from Bourjaily-McLeod-von Hippel-Wilhelm arXiv:1810.07689 Eq. (5) ($\\mathcal{F}$ defined in Eq. (2))."
+      },
+      "familyKind": "kinematic",
+      "refs": [
+        {
+          "arxiv": "1810.07689",
+          "texkey": "Bourjaily:2018yfy",
+          "role": "defining",
+          "description": "Introduces the amoeba as a nonplanar four-point graph in the Calabi-Yau bestiary with non-maximal rigidity at three loops ($K_{2,4}$) and saturation of the bound $2(L{-}1)$ from five loops onward."
+        }
+      ],
+      "related": [
+        "tardigrade",
+        "paramecium",
+        "banana"
+      ],
+      "generator": "AmoebaGraph",
+      "batch": "core",
+      "previewParameter": 5,
+      "members": [
+        {
+          "parameter": 3,
+          "topology": "1234_e5_e5_e5_e5__",
+          "primaryName": "Crown",
+          "loops": 3,
+          "sharedWith": [],
+          "config": "0000_10_20_30_40__",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "1234_567_567_e5_e5__e_e_",
+          "primaryName": "Amoeba L5",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "0000_000_000_10_20__3_4_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "1234_567_567_589_589__e_e_e_e_",
+          "primaryName": "Amoeba L7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "0000_000_000_000_000__1_2_3_4_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "missing": [
+        {
+          "parameter": 4,
+          "why": "parity-excluded"
+        },
+        {
+          "parameter": 6,
+          "why": "parity-excluded"
+        }
+      ]
+    },
+    "ice-cone": {
+      "displayName": "Ice-cream cone",
+      "parameter": {
+        "name": "L",
+        "min": 1,
+        "max": 8
+      },
+      "definition": "The ice-cream cone is a banana graph capped by a triangle: $L$ loops, $L{+}2$ propagators all carrying equal internal mass $m$, with two massless external legs at the banana endpoints and one off-shell leg at the apex carrying momentum $q$. It depends on the single dimensionless ratio $q^2/m^2$. In two dimensions it shares the same Calabi-Yau $(L{-}1)$-fold periods as the banana (two copies), and an all-loop master integral basis is known. The $L = 1$ member is the equal-mass triangle.",
+      "external": {
+        "legs": 3
+      },
+      "massConfig": "equal-mass-internal",
+      "functionClass": "Calabi-Yau $(L-1)$-fold periods (two banana copies in 2d)",
+      "functionClassLabel": "Calabi-Yau period",
+      "definingIntegral": {
+        "latex": "I^{(L)}(s) = \\int \\prod_{a=1}^{L}\\frac{d^d k_a}{i\\pi^{d/2}}\\ \\frac{1}{\\left(\\prod_{a=1}^{L}(k_a^2-m^2)\\right)\\bigl((K-p_1)^2-m^2\\bigr)\\bigl((K+p_2)^2-m^2\\bigr)}, \\quad K=\\sum_a k_a",
+        "note": "Momentum-space three-point ice cone, $L$ loops: $L$ equal-mass banana propagators $k_a^2-m^2$ plus the two triangle propagators carrying massless $p_1,p_2$ ($p_1^2{=}p_2^2{=}0$), off-shell apex $q{=}p_1{+}p_2$, $s{=}q^2$; depends on $s/m^2$. Transcribed from Duhr-Klemm-Nega-Tancredi arXiv:2212.09550 Eqs. (1) and (6)."
+      },
+      "familyKind": "kinematic",
+      "refs": [
+        {
+          "arxiv": "2212.09550",
+          "texkey": "Duhr:2022dxb",
+          "role": "defining",
+          "description": "Obtains fully analytic results for the equal-mass ice cone at all loop orders in two dimensions, showing its maximal cuts decompose into two copies of the banana Calabi-Yau periods, and solves the differential equations in terms of iterated integrals."
+        }
+      ],
+      "related": [
+        "banana",
+        "traintrack"
+      ],
+      "generator": "IceConeGraph",
+      "batch": "core",
+      "previewParameter": 4,
+      "members": [
+        {
+          "parameter": 1,
+          "topology": "e12_e2_e_",
+          "primaryName": "Triangle",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "fishnet-multileg-2d",
+              "parameter": 1
+            },
+            {
+              "family": "generalised-ladder",
+              "parameter": 1
+            },
+            {
+              "family": "ngon",
+              "parameter": 3
+            },
+            {
+              "family": "triangle-ladder",
+              "parameter": 1
+            }
+          ],
+          "config": "011_01_2_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.5,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 2,
+          "topology": "e112_e2_e_",
+          "primaryName": "Sunrise triangle",
+          "loops": 2,
+          "sharedWith": [],
+          "config": "0111_01_2_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.5,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 3,
+          "topology": "e1112_e2_e_",
+          "primaryName": "Bubble-bubble-triangle",
+          "loops": 3,
+          "sharedWith": [],
+          "config": "01111_01_2_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.5,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "e11112_e2_e_",
+          "primaryName": "Bubble-bubble-bubble-triangle",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "011111_01_2_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.5,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "e111112_e2_e_",
+          "primaryName": "Bubble-bubble-bubble-bubble-triangle",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "0111111_01_2_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.5,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "e1111112_e2_e_",
+          "primaryName": "Ice-cream cone L6",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "01111111_01_2_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.5,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "e11111112_e2_e_",
+          "primaryName": "Ice-cream cone L7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "011111111_01_2_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.5,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "e111111112_e2_e_",
+          "primaryName": "Ice-cream cone L8",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "0111111111_01_2_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.5,
+              1.0
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "banana": {
+      "displayName": "Banana",
+      "parameter": {
+        "name": "L",
+        "min": 1,
+        "max": 8
+      },
+      "definition": "The banana (sunrise) graph consists of two vertices joined by $L{+}1$ edges, giving $L$ loops with equal internal masses and a single kinematic scale $t = p^2/m^2$. Its Feynman integral evaluates to periods of a Calabi-Yau $(L{-}1)$-fold; the differential equation is $\\epsilon$-factorized at all loop orders, and the all-$L$ structure is governed by a GKZ system.",
+      "external": {
+        "legs": 2
+      },
+      "massConfig": "equal-mass-internal",
+      "functionClass": "Calabi-Yau $(L-1)$-fold periods, $\\epsilon$-factorized all $L$",
+      "functionClassLabel": "Calabi-Yau period",
+      "definingIntegral": {
+        "latex": "\\mathcal{F}_{\\sigma_L}(t) = \\int_{\\sigma_L} \\frac{\\mu_L}{\\left(t-\\bigl(\\sum_{i=1}^{L+1}x_i\\bigr)\\bigl(\\sum_{i=1}^{L+1}x_i^{-1}\\bigr)\\right)\\prod_{i=1}^{L+1}x_i}, \\qquad t=\\frac{p^2}{m^2}",
+        "note": "Equal-mass $L$-loop banana (sunset) in the maximal-cut / Symanzik parametric form: $L{+}1$ Feynman parameters $x_i$ (one per equal-mass propagator joining the two vertices), $\\mu_L$ the projective measure on the simplex $\\sigma_L$, single scale $t=p^2/m^2$. Transcribed from Bonisch-Fischbach-Klemm-Nega-Safari arXiv:2008.10574 Eq. (1) (equal-mass case $\\xi_i{=}1$)."
+      },
+      "familyKind": "kinematic",
+      "refs": [
+        {
+          "arxiv": "1912.06201",
+          "texkey": "Klemm:2019dbm",
+          "role": "defining",
+          "description": "Solves the $L$-loop banana amplitude with general masses via the GKZ system of the Barth-Nieto Calabi-Yau $(L{-}1)$-fold, constructing a complete basis of periods and computing explicit mass dependences through three loops."
+        },
+        {
+          "arxiv": "2008.10574",
+          "texkey": "Bonisch:2020qmm",
+          "role": "follow-up",
+          "description": "Determines the complete analytic structure of the all-loop banana amplitude with arbitrary masses, computing the leading logarithmic behavior from a novel $\\Gamma$-class evaluation and the imaginary part from the mirror Calabi-Yau."
+        },
+        {
+          "arxiv": "2212.08908",
+          "texkey": "Pogel:2022vat",
+          "role": "modern",
+          "description": "Casts the differential equation for the $L$-loop equal-mass banana into $\\epsilon$-factorized form at all loop orders, exploiting the self-duality of the underlying Calabi-Yau operator to obtain systematic $\\epsilon$-expansions."
+        }
+      ],
+      "related": [
+        "ice-cone",
+        "traintrack"
+      ],
+      "generator": "BananaGraph",
+      "batch": "core",
+      "previewParameter": 4,
+      "members": [
+        {
+          "parameter": 1,
+          "topology": "e11_e_",
+          "primaryName": "Bubble",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "ngon",
+              "parameter": 2
+            }
+          ],
+          "config": "122_1_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 2,
+          "topology": "e111_e_",
+          "primaryName": "Sunrise",
+          "loops": 2,
+          "sharedWith": [],
+          "config": "1222_1_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 3,
+          "topology": "e1111_e_",
+          "primaryName": "Banana",
+          "loops": 3,
+          "sharedWith": [],
+          "config": "12222_1_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "e11111_e_",
+          "primaryName": "Banana",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "122222_1_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "e111111_e_",
+          "primaryName": "Banana",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "1222222_1_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "e1111111_e_",
+          "primaryName": "Banana",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "12222222_1_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "e11111111_e_",
+          "primaryName": "Banana L7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "122222222_1_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "e111111111_e_",
+          "primaryName": "Banana L8",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "1222222222_1_",
+          "layout": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "fishnet-multileg-2d": {
+      "displayName": "Multi-leg fishnet",
+      "parameter": {
+        "name": "L",
+        "min": 1,
+        "max": 8
+      },
+      "definition": "The multi-leg fishnet is the triangle-track sequence $Z_L$ on the trivalent (hexagonal) tiling in $D = 2$: a strip of $L$ triangles with $L$ loops and $L{+}2$ off-shell external legs, where every propagator carries weight $2/3$. The simplest members $Z_2$ and $Z_3$ reduce to the box and pentagon by the star-triangle identity, while at higher $L$ the geometry involves Calabi-Yau periods; the lowest nontrivial case is a genus-two Picard curve.",
+      "external": {
+        "legs": "L+2"
+      },
+      "massConfig": "massless-internal-2d",
+      "definingIntegral": {
+        "latex": "I_G^{(D)}(\\bar\\alpha) = \\int \\prod_i d^D\\xi_i\\ \\prod_{i,j}\\frac{1}{\\bigl((\\xi_i-\\xi_j)^2\\bigr)^{D/V}}\\ \\prod_{i,j}\\frac{1}{\\bigl((\\xi_i-\\alpha_j)^2\\bigr)^{D/V}}, \\qquad V=3,\\ D=2",
+        "note": "In dual (position) coordinates $\\xi_i$ on the trivalent (hexagonal) tiling: every line carries power $D/V=2/3$ in $D{=}2$ (valency $V{=}3$); $\\alpha_j$ the external points, $\\bar\\alpha$ their collection. The seeded representative is the triangle-track $Z_L$. Transcribed from Duhr-Klemm-Loebbert-Nega-Porkert arXiv:2402.19034 Eq. (2.1)."
+      },
+      "functionClass": "multi-leg Calabi-Yau periods (Picard curve at lowest order)",
+      "functionClassLabel": "Calabi-Yau period",
+      "familyKind": "kinematic",
+      "refs": [
+        {
+          "arxiv": "2402.19034",
+          "texkey": "Duhr:2024hjf",
+          "role": "defining",
+          "description": "Generalizes the geometric analysis of square fishnet integrals to the hexagonal (three-point) tiling in two dimensions, identifying the simplest members as Picard curves and higher-loop members as Calabi-Yau varieties fixed by Yangian and permutation symmetries."
+        }
+      ],
+      "related": [],
+      "generator": "TriangleTrackGraph",
+      "batch": "sweep",
+      "previewParameter": 4,
+      "members": [
+        {
+          "parameter": 1,
+          "topology": "e12_e2_e_",
+          "primaryName": "Triangle",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "generalised-ladder",
+              "parameter": 1
+            },
+            {
+              "family": "ice-cone",
+              "parameter": 1
+            },
+            {
+              "family": "ngon",
+              "parameter": 3
+            },
+            {
+              "family": "triangle-ladder",
+              "parameter": 1
+            }
+          ],
+          "config": "100_20_3_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 2,
+          "topology": "e123_e23_e_e_",
+          "primaryName": "Double triangle (a)",
+          "loops": 2,
+          "sharedWith": [],
+          "config": "1000_200_3_4_",
+          "layout": [
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              1.5,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 3,
+          "topology": "e1234_e23_e4_e_e_",
+          "primaryName": "Multi-leg fishnet L3",
+          "loops": 3,
+          "sharedWith": [],
+          "config": "10000_200_30_4_5_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              1.5,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "e1234_e235_e4_e5_e_e_",
+          "primaryName": "Multi-leg fishnet L4",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "10000_2000_30_40_5_6_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.5,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              2.5,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "e1234_e235_e46_e5_e6_e_e_",
+          "primaryName": "Multi-leg fishnet L5",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "10000_2000_300_40_50_6_7_",
+          "layout": [
+            [
+              1.5,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              2.5,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              3.0,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "e1234_e235_e46_e57_e6_e7_e_e_",
+          "primaryName": "Multi-leg fishnet L6",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "10000_2000_300_400_50_60_7_8_",
+          "layout": [
+            [
+              1.5,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              2.5,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              3.5,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "e1234_e235_e46_e57_e68_e7_e8_e_e_",
+          "primaryName": "Multi-leg fishnet L7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "10000_2000_300_400_500_60_70_8_9_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              1.5,
+              0.0
+            ],
+            [
+              2.5,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              3.5,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.0,
+              1.0
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "e1234_e235_e46_e57_e68_e79_e8_e9_e_e_",
+          "primaryName": "Multi-leg fishnet L8",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "10000_2000_300_400_500_600_70_80_9_10_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.5,
+              0.0
+            ],
+            [
+              1.5,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              3.5,
+              0.0
+            ],
+            [
+              0.5,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              4.5,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "generalised-ladder": {
+      "displayName": "Generalised ladder",
+      "parameter": {
+        "name": "L",
+        "min": 1,
+        "max": 8
+      },
+      "definition": "The generalised ladder is a three-point integral indexed by the loop order $L$ and a binary word $m \\in \\{0,1\\}^{L-1}$, giving $2^{L-1}$ topologically distinct members at each $L$. The momentum-space graph is the fan $F_L$: a hub vertex joined to every vertex of an $L$-edge path, with three off-shell external legs. Its value is a single-valued polylogarithm, and the all-zeros word evaluates to the same $\\Phi^{(L)}$ as the four-point box ladder via the conformal three-to-four-point completion. The two-point vacuum limits of this family recover the zigzags and wheels.",
+      "external": {
+        "legs": 3
+      },
+      "massConfig": "massless-internal-offshell-external",
+      "functionClass": "single-valued polylogarithms (superset of ladders, wheels, zigzags)",
+      "functionClassLabel": "single-valued MPL",
+      "definingIntegral": {
+        "latex": "I_m(x_0,x_1,x_2) = \\frac{1}{\\pi^{2L}}\\int \\frac{1}{x_{2b_1}^2}\\ \\prod_{i=1}^{L-1}\\frac{d^4 x_{b_i}}{x_{b_i b_{i+1}}^2\\,x_{b_i a_i}^2}\\ \\frac{d^4 x_{b_L}}{x_{b_L 0}^2\\,x_{b_L 1}^2}",
+        "note": "In dual coordinates $x_i$ (Drummond's generalised three-point ladder): spine vertices $x_{b_1}\\dots x_{b_L}$, top attaches to $x_2$, bottom to both $x_0,x_1$, each intermediate $x_{b_i}$ to $x_{a_i}$ ($a_i\\in\\{0,1\\}$), $x_{ij}^2=(x_i-x_j)^2$; indexed by loop order $L$ and binary word $m=a_1\\cdots a_{L-1}$ ($2^{L-1}$ members, seeded at the all-zeros word). Transcribed from Drummond arXiv:1207.3824 Eq. (2.7)."
+      },
+      "normalization": "Fan $F_L$: $G^{(L)}(p_1^2,p_2^2,p_3^2) = \\Phi^{(L)}(x,y)/(p_3^2)^L$ with $x = p_1^2/p_3^2$, $y = p_2^2/p_3^2$; evaluates to the same $\\Phi^{(L)}$ as the 4-mass ladder",
+      "familyKind": "kinematic",
+      "closedForm": {
+        "latex": "I_{\\text{fan}}^{(L)} = \\frac{\\Phi^{(L)}(x,y)}{(p_3^2)^L}, \\qquad x = \\frac{p_1^2}{p_3^2},\\quad y = \\frac{p_2^2}{p_3^2}",
+        "wl": "PhiDavydychev[L_Integer, x_, y_] := Module[{lambda, rho}, lambda = Sqrt[(1 - x - y)^2 - 4 x y]; rho = 2/(1 - x - y + lambda); -(1/(L! lambda)) Sum[((-1)^j j! Log[y/x]^(2 L - j))/((j - L)! (2 L - j)!) (PolyLog[j, -1/(rho x)] - PolyLog[j, -rho y]), {j, L, 2 L}]];\n\n(* Generalised ladder (fan): I_fan^(L)(p1sq, p2sq, p3sq) *)\nIFan[L_Integer, p1sq_, p2sq_, p3sq_] := PhiDavydychev[L, p1sq/p3sq, p2sq/p3sq] / p3sq^L",
+        "normalization": "where $\\Phi^{(L)}$ is the same function as in the 4-mass ladder. Three off-shell external momenta $p_1, p_2, p_3$ with $p_1 + p_2 + p_3 = 0$. Same measure convention."
+      },
+      "refs": [
+        {
+          "arxiv": "1207.3824",
+          "texkey": "Drummond:2012bg",
+          "role": "defining",
+          "description": "Introduces and solves an infinite class of three-point loop integrals parametrized by a binary word, expressing them in terms of single-valued polylogarithms and relating the vacuum limits to zigzag and wheel periods."
+        }
+      ],
+      "related": [
+        "ladder4pt",
+        "wheel",
+        "zigzag"
+      ],
+      "generator": "GeneralisedLadderGraph",
+      "batch": "sweep",
+      "previewParameter": 4,
+      "members": [
+        {
+          "parameter": 1,
+          "topology": "e12_e2_e_",
+          "primaryName": "Triangle",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "fishnet-multileg-2d",
+              "parameter": 1
+            },
+            {
+              "family": "ice-cone",
+              "parameter": 1
+            },
+            {
+              "family": "ngon",
+              "parameter": 3
+            },
+            {
+              "family": "triangle-ladder",
+              "parameter": 1
+            }
+          ],
+          "config": "100_20_3_",
+          "layout": [
+            [
+              -0.94,
+              0.342
+            ],
+            [
+              0.94,
+              0.342
+            ],
+            [
+              0.0,
+              -0.35
+            ]
+          ]
+        },
+        {
+          "parameter": 2,
+          "topology": "123_e23_e_e_",
+          "primaryName": "Double triangle (b)",
+          "loops": 2,
+          "sharedWith": [],
+          "config": "000_100_2_3_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              -0.35
+            ],
+            [
+              -0.94,
+              0.342
+            ],
+            [
+              0.94,
+              0.342
+            ]
+          ]
+        },
+        {
+          "parameter": 3,
+          "topology": "123_24_e34_e_e_",
+          "primaryName": "Generalised ladder L3",
+          "loops": 3,
+          "sharedWith": [],
+          "config": "000_00_100_2_3_",
+          "layout": [
+            [
+              -0.396,
+              0.918
+            ],
+            [
+              0.396,
+              0.918
+            ],
+            [
+              0.0,
+              -0.35
+            ],
+            [
+              -0.94,
+              0.342
+            ],
+            [
+              0.94,
+              0.342
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "123_24_e345_5_e_e_",
+          "primaryName": "Generalised ladder L4",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "000_00_1000_0_2_3_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              -0.574,
+              0.819
+            ],
+            [
+              0.0,
+              -0.35
+            ],
+            [
+              0.574,
+              0.819
+            ],
+            [
+              -0.94,
+              0.342
+            ],
+            [
+              0.94,
+              0.342
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "123_24_e3456_5_6_e_e_",
+          "primaryName": "Generalised ladder L5",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "000_00_10000_0_0_2_3_",
+          "layout": [
+            [
+              -0.242,
+              0.97
+            ],
+            [
+              0.242,
+              0.97
+            ],
+            [
+              0.0,
+              -0.35
+            ],
+            [
+              -0.669,
+              0.743
+            ],
+            [
+              0.669,
+              0.743
+            ],
+            [
+              -0.94,
+              0.342
+            ],
+            [
+              0.94,
+              0.342
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "123_24_e34567_5_6_7_e_e_",
+          "primaryName": "Generalised ladder L6",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "000_00_100000_0_0_0_2_3_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              -0.396,
+              0.918
+            ],
+            [
+              0.0,
+              -0.35
+            ],
+            [
+              0.396,
+              0.918
+            ],
+            [
+              -0.727,
+              0.686
+            ],
+            [
+              0.727,
+              0.686
+            ],
+            [
+              -0.94,
+              0.342
+            ],
+            [
+              0.94,
+              0.342
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "123_24_e345678_5_6_7_8_e_e_",
+          "primaryName": "Generalised ladder L7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "000_00_1000000_0_0_0_0_2_3_",
+          "layout": [
+            [
+              -0.174,
+              0.985
+            ],
+            [
+              0.174,
+              0.985
+            ],
+            [
+              0.0,
+              -0.35
+            ],
+            [
+              -0.5,
+              0.866
+            ],
+            [
+              0.5,
+              0.866
+            ],
+            [
+              -0.766,
+              0.643
+            ],
+            [
+              0.766,
+              0.643
+            ],
+            [
+              -0.94,
+              0.342
+            ],
+            [
+              0.94,
+              0.342
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "123_24_e3456789_5_6_7_8_9_e_e_",
+          "primaryName": "Generalised ladder L8",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "000_00_10000000_0_0_0_0_0_2_3_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              -0.301,
+              0.954
+            ],
+            [
+              0.0,
+              -0.35
+            ],
+            [
+              0.301,
+              0.954
+            ],
+            [
+              -0.574,
+              0.819
+            ],
+            [
+              0.574,
+              0.819
+            ],
+            [
+              -0.793,
+              0.609
+            ],
+            [
+              0.793,
+              0.609
+            ],
+            [
+              -0.94,
+              0.342
+            ],
+            [
+              0.94,
+              0.342
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "triangle-ladder": {
+      "displayName": "Triangle ladder",
+      "parameter": {
+        "name": "L",
+        "min": 1,
+        "max": 8
+      },
+      "definition": "The Usyukina-Davydychev triangle ladder $T^{(L)}$ consists of $(L{-}1)$ box cells capped by a triangle at the apex, with two rails of $L$ edges converging to a shared apex vertex and $L$ rungs connecting the rails at each level. It has $2L{+}1$ vertices, $3L$ massless internal propagators, $L$ loops, and three off-shell external legs at the two base vertices and the apex. The triangle ladder evaluates to the same $\\Phi^{(L)}$ as the four-point box ladder and the generalised-ladder fan via the conformal magic identity, but is a genuinely different topology from both for $L \\ge 2$: the triangle ladder has $V = 2L{+}1$, $E = 3L$ versus $V = L{+}2$, $E = 2L{+}1$ for the fan. Only $L = 1$ (the triangle) is shared.",
+      "external": {
+        "legs": 3
+      },
+      "massConfig": "massless-internal-offshell-external",
+      "functionClass": "weight-$2L$ single-valued polylogarithms",
+      "functionClassLabel": "single-valued MPL",
+      "definingIntegral": {
+        "latex": "T^{(L)}(p_1^2,p_2^2,p_3^2) = \\frac{1}{(i\\pi^2)^L}\\int \\prod_{a=1}^{L}d^4 k_a\\ \\frac{1}{\\prod_{e=1}^{3L} q_e^2}",
+        "note": "Momentum-space $L$-loop triangle ladder: two rails of propagators converging to the apex vertex carrying $p_3$, $L$ rungs, all $3L$ internal lines massless, three off-shell external legs $p_1^2,p_2^2,p_3^2$ with $p_1{+}p_2{+}p_3{=}0$. Transcribed from Usyukina-Davydychev, PLB 298 (1993) 363 and PLB 305 (1993) 136."
+      },
+      "familyKind": "kinematic",
+      "closedForm": {
+        "latex": "I_{\\triangle}^{(L)} = \\frac{\\Phi^{(L)}(x,y)}{(p_3^2)^L}, \\qquad x = \\frac{p_1^2}{p_3^2},\\quad y = \\frac{p_2^2}{p_3^2}",
+        "wl": "PhiDavydychev[L_Integer, x_, y_] := Module[{lambda, rho}, lambda = Sqrt[(1 - x - y)^2 - 4 x y]; rho = 2/(1 - x - y + lambda); -(1/(L! lambda)) Sum[((-1)^j j! Log[y/x]^(2 L - j))/((j - L)! (2 L - j)!) (PolyLog[j, -1/(rho x)] - PolyLog[j, -rho y]), {j, L, 2 L}]];\n\n(* Triangle ladder: I_triangle^(L)(p1sq, p2sq, p3sq) *)\nITriangle[L_Integer, p1sq_, p2sq_, p3sq_] := PhiDavydychev[L, p1sq/p3sq, p2sq/p3sq] / p3sq^L",
+        "normalization": "where $\\Phi^{(L)}$ is the same function as in the 4-mass ladder. Three off-shell external momenta $p_1, p_2, p_3$ with $p_1 + p_2 + p_3 = 0$. Same measure convention."
+      },
+      "normalization": "$T^{(L)}(p_1^2,p_2^2,p_3^2) = \\Phi^{(L)}(x,y)/(p_3^2)^L$ with $x=p_1^2/p_3^2$, $y=p_2^2/p_3^2$; same $\\Phi^{(L)}$ as the 4-mass ladder and the generalised ladder fan",
+      "refs": [
+        {
+          "journal": "Phys. Lett. B 298 (1993) 363",
+          "texkey": "Usyukina:1992jd",
+          "role": "defining",
+          "description": "Introduces the method for evaluating massless three-point ladder integrals at arbitrary loop order, establishing the triangle-ladder family."
+        },
+        {
+          "journal": "Phys. Lett. B 305 (1993) 136",
+          "texkey": "Usyukina:1993ch",
+          "role": "defining",
+          "description": "Derives the exact closed-form result $\\Phi^{(L)}(x,y)$ for the $L$-loop triangle and box ladder integrals using the uniqueness method."
+        },
+        {
+          "arxiv": "1207.3824",
+          "texkey": "Drummond:2012bg",
+          "role": "modern",
+          "description": "Defines the generalised three-point ladders indexed by binary words and shows they evaluate to single-valued polylogarithms; the all-zeros word reduces to the triangle ladder."
+        }
+      ],
+      "related": [
+        "ladder4pt",
+        "generalised-ladder"
+      ],
+      "generator": "TriangleLadderGraph",
+      "batch": "core",
+      "previewParameter": 3,
+      "members": [
+        {
+          "parameter": 1,
+          "topology": "e12_e2_e_",
+          "primaryName": "Triangle",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "fishnet-multileg-2d",
+              "parameter": 1
+            },
+            {
+              "family": "generalised-ladder",
+              "parameter": 1
+            },
+            {
+              "family": "ice-cone",
+              "parameter": 1
+            },
+            {
+              "family": "ngon",
+              "parameter": 3
+            }
+          ],
+          "config": "100_20_3_",
+          "layout": [
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.5
+            ]
+          ]
+        },
+        {
+          "parameter": 2,
+          "topology": "123_24_e_e4_e_",
+          "primaryName": "Triangle-box",
+          "loops": 2,
+          "sharedWith": [],
+          "config": "000_00_1_20_3_",
+          "layout": [
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              2.0,
+              0.5
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 3,
+          "topology": "123_24_e_45_6_e6_e_",
+          "primaryName": "Non-planar triangle-pentagon-box",
+          "loops": 3,
+          "sharedWith": [],
+          "config": "000_00_1_00_0_20_3_",
+          "layout": [
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              3.0,
+              0.5
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 4,
+          "topology": "123_24_e_45_6_67_8_e8_e_",
+          "primaryName": "Non-planar triangle-pentagon-hexagon-box",
+          "loops": 4,
+          "sharedWith": [],
+          "config": "000_00_1_00_0_00_0_20_3_",
+          "layout": [
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              4.0,
+              0.5
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 5,
+          "topology": "123_24_e_45_6_67_8_89_10_e10_e_",
+          "primaryName": "Triangle ladder L5",
+          "loops": 5,
+          "sharedWith": [],
+          "config": "000_00_1_00_0_00_0_00_0_20_3_",
+          "layout": [
+            [
+              4.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              5.0,
+              0.5
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 6,
+          "topology": "123_24_e_45_6_67_8_89_10_1011_12_e12_e_",
+          "primaryName": "Triangle ladder L6",
+          "loops": 6,
+          "sharedWith": [],
+          "config": "000_00_1_00_0_00_0_00_0_00_0_20_3_",
+          "layout": [
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              6.0,
+              0.5
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 7,
+          "topology": "123_24_e_45_6_67_8_89_10_1011_12_1213_14_e14_e_",
+          "primaryName": "Triangle ladder L7",
+          "loops": 7,
+          "sharedWith": [],
+          "config": "000_00_1_00_0_00_0_00_0_00_0_00_0_20_3_",
+          "layout": [
+            [
+              6.0,
+              1.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              7.0,
+              0.5
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        },
+        {
+          "parameter": 8,
+          "topology": "123_24_e_45_6_67_8_89_10_1011_12_1213_14_1415_16_e16_e_",
+          "primaryName": "Triangle ladder L8",
+          "loops": 8,
+          "sharedWith": [],
+          "config": "000_00_1_00_0_00_0_00_0_00_0_00_0_00_0_20_3_",
+          "layout": [
+            [
+              7.0,
+              1.0
+            ],
+            [
+              7.0,
+              0.0
+            ],
+            [
+              8.0,
+              0.5
+            ],
+            [
+              6.0,
+              1.0
+            ],
+            [
+              6.0,
+              0.0
+            ],
+            [
+              5.0,
+              1.0
+            ],
+            [
+              5.0,
+              0.0
+            ],
+            [
+              4.0,
+              1.0
+            ],
+            [
+              4.0,
+              0.0
+            ],
+            [
+              3.0,
+              1.0
+            ],
+            [
+              3.0,
+              0.0
+            ],
+            [
+              2.0,
+              1.0
+            ],
+            [
+              2.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ],
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      ],
+      "missing": []
+    },
+    "ngon": {
+      "displayName": "n-gon",
+      "parameter": {
+        "name": "n",
+        "min": 2,
+        "max": 8
+      },
+      "definition": "The one-loop $n$-gon (or $A_n$ polygon) has $n$ massless internal propagators arranged in a cycle with $n$ massless external legs. In $D = n$ dimensions the integral is finite and evaluates to the volume of a hyperbolic $(n{-}1)$-simplex (Davydychev-Delbourgo 1997). For $n = 3$ (triangle) the result involves Clausen functions; for $n = 4$ (box) it is the Murakami-Yano formula in 16 dilogarithms. The family includes the bubble ($n = 2$), triangle, box, pentagon, hexagon, heptagon, and octagon.",
+      "external": {
+        "legs": null
+      },
+      "massConfig": "massless",
+      "functionClass": "MPL",
+      "functionClassLabel": "MPL",
+      "familyKind": "kinematic",
+      "closedForm": {
+        "latex": "I_n \\;=\\; \\frac{\\Gamma(n/2)}{\\sqrt{|\\det S\\,|}}\\;\\mathrm{Vol}_{n-1}(S), \\qquad S_{ij} = \\tfrac{1}{2}\\Bigl(\\sum_{k=i}^{j-1} p_k\\Bigr)^{\\!2}",
+        "normalization": "$\\mathrm{Vol}_{n-1}(S)$ is the volume of the ideal hyperbolic $(n{-}1)$-simplex determined by the $n \\times n$ kinematic matrix $S$ (with $S_{ii} = 0$ for massless external legs). Computed via the Schläfli formula: $d\\,\\mathrm{Vol}_{n-1} = -\\tfrac{1}{n{-}2}\\sum_{i<j} \\mathrm{Vol}_{n-3}(\\mathrm{face}_{ij})\\,d\\theta_{ij}$, where $\\theta_{ij}$ are dihedral angles. For even $n$: weight $n/2$ in polylogarithms (Li$_2$ at $n = 4$, Li$_3$ at $n = 6$). For odd $n$: reduces to even-dimensional sub-volumes. Measure: $I_n = e^{\\varepsilon\\gamma_E}\\mu^{2\\varepsilon}\\int d^n k/(i\\pi^{n/2})\\prod_e(-q_e^2)^{-1}$ at $\\varepsilon = 0$.",
+        "wl": null
+      },
+      "refs": [
+        {
+          "arxiv": "hep-th/9709216",
+          "texkey": "Davydychev:1997wa",
+          "role": "defining",
+          "description": "Establishes that the one-loop $n$-point integral in $D = n$ dimensions equals the volume of a geodesic simplex in hyperbolic space, providing the geometric interpretation that underlies all subsequent work on this family."
+        },
+        {
+          "arxiv": "1912.11067",
+          "texkey": "Bourjaily:2019exo",
+          "role": "defining",
+          "description": "Derives explicit closed-form evaluations of all-mass $n$-gon integrals in $n$ dimensions for $n = 2, 3, 4, 5$ using Schläfli-type volume formulas, and establishes the symbol structure for all $n$ via orthoscheme decomposition."
+        },
+        {
+          "arxiv": "2306.04630",
+          "texkey": "Ren:2023tuj",
+          "role": "result",
+          "description": "Gives the cleanest modern presentation of one-loop integrals as volumes of orthoschemes, with explicit evaluation of the massless hexagon in $D = 6$ via the Kellerhals formula."
+        },
+        {
+          "arxiv": "hep-ph/9212308",
+          "texkey": "Bern:1992em",
+          "role": "result",
+          "description": "Derives dimensionally-regulated one-loop integrals and the reduction of the $n$-point scalar integral to $(n{-}1)$-point integrals in $D = 4 - 2\\varepsilon$, establishing the standard framework for one-loop amplitude computations."
+        },
+        {
+          "arxiv": "2201.03593",
+          "texkey": "Weinzierl:2022saz",
+          "role": "review",
+          "description": "Comprehensive textbook on Feynman integrals; Appendix on scalar one-loop integrals lists all massless box mass configurations with explicit dilogarithmic formulas in $D = 4 - 2\\varepsilon$."
+        }
+      ],
+      "related": [],
+      "generator": "NgonGraph",
+      "batch": "core",
+      "previewParameter": 5,
+      "members": [
+        {
+          "parameter": 2,
+          "topology": "e11_e_",
+          "primaryName": "Bubble",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "banana",
+              "parameter": 1
+            }
+          ],
+          "config": "000_0_"
+        },
+        {
+          "parameter": 3,
+          "topology": "e12_e2_e_",
+          "primaryName": "Triangle",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "fishnet-multileg-2d",
+              "parameter": 1
+            },
+            {
+              "family": "generalised-ladder",
+              "parameter": 1
+            },
+            {
+              "family": "ice-cone",
+              "parameter": 1
+            },
+            {
+              "family": "triangle-ladder",
+              "parameter": 1
+            }
+          ],
+          "config": "000_00_0_"
+        },
+        {
+          "parameter": 4,
+          "topology": "e12_e3_e3_e_",
+          "primaryName": "Box",
+          "loops": 1,
+          "sharedWith": [
+            {
+              "family": "basso-dixon",
+              "parameter": [
+                1,
+                1
+              ]
+            },
+            {
+              "family": "ladder4pt",
+              "parameter": 1
+            },
+            {
+              "family": "traintrack",
+              "parameter": 1
+            }
+          ],
+          "config": "000_00_00_0_"
+        },
+        {
+          "parameter": 5,
+          "topology": "e12_e3_e4_e4_e_",
+          "primaryName": "Pentagon",
+          "loops": 1,
+          "sharedWith": [],
+          "config": "000_00_00_00_0_"
+        },
+        {
+          "parameter": 6,
+          "topology": "e12_e3_e4_e5_e5_e_",
+          "primaryName": "Hexagon",
+          "loops": 1,
+          "sharedWith": [],
+          "config": "000_00_00_00_00_0_"
+        },
+        {
+          "parameter": 7,
+          "topology": "e12_e3_e4_e5_e6_e6_e_",
+          "primaryName": "Heptagon",
+          "loops": 1,
+          "sharedWith": [],
+          "config": "000_00_00_00_00_00_0_"
+        },
+        {
+          "parameter": 8,
+          "topology": "e12_e3_e4_e5_e6_e7_e7_e_",
+          "primaryName": "Octagon",
+          "loops": 1,
+          "sharedWith": [],
+          "config": "000_00_00_00_00_00_00_0_"
+        }
+      ],
+      "missing": []
+    }
+  },
+  "_meta": {
+    "builtFrom": "data/families.json",
+    "familyCount": 16,
+    "memberCount": 119
+  }
+}

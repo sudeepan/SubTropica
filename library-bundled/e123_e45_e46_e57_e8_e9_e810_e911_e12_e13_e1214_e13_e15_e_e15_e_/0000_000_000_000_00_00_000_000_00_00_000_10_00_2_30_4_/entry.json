@@ -1,0 +1,40 @@
+{
+	"CNickelIndex":"e123|e45|e46|e57|e8|e9|e810|e911|e12|e13|e1214|e13|e15|e|e15|e|:0000|000|000|000|00|00|000|000|00|00|000|10|00|2|30|4|",
+	"MassScales":108,
+	"FunctionClass":"weight-(L+1) hyperlogarithms over a Calabi-Yau (L-1)-fold",
+	"EpsilonOrder":"",
+	"edges":"{{{16, 13}, 0}, {{13, 9}, 0}, {{9, 5}, 0}, {{5, 2}, 0}, {{2, 6}, 0}, {{6, 10}, 0}, {{10, 14}, 0}, {{15, 11}, 0}, {{11, 7}, 0}, {{7, 3}, 0}, {{3, 1}, 0}, {{1, 4}, 0}, {{4, 8}, 0}, {{8, 12}, 0}, {{16, 15}, 0}, {{13, 11}, 0}, {{9, 7}, 0}, {{5, 3}, 0}, {{2, 1}, 0}, {{6, 4}, 0}, {{10, 8}, 0}, {{14, 12}, 0}}",
+	"nodes":"{{16, M[1]}, {13, 0}, {9, 0}, {5, 0}, {2, 0}, {6, 0}, {10, 0}, {14, M[2]}, {15, M[3]}, {11, 0}, {7, 0}, {3, 0}, {1, 0}, {4, 0}, {8, 0}, {12, M[4]}}",
+	"References":[
+		"arXiv:1805.09326",
+		"arXiv:1910.01534",
+		"arXiv:2005.08771",
+		"arXiv:2306.11780"
+	],
+	"Records":[
+		{
+			"reference":"arXiv:1805.09326",
+			"familyName":"traintrack_L7_massless-internal-offshell-external",
+			"description":"Traintrack family, traintrack_L7_massless-internal-offshell-external. Planar chain of L boxes (cells), massless internal lines. External legs at every vertex: 4 off-shell corners (distinct masses, the collapsed pairs of the paper's 2L+6 massless particles) + 2L-2 massless middle legs; L=1 is the four-mass box. The L-loop traintrack is a weight-(L+1) hyperlogarithm over a Calabi-Yau (L-1)-fold: L=1 is a box, L=2 elliptic, L=3 a K3 surface, L=4 a Calabi-Yau threefold.",
+			"method":[
+				"closed form"
+			],
+			"tools":[
+				"SubTropica seed_families"
+			],
+			"recordId":"fs_afd3a5adc23a",
+			"verified":false,
+			"verifiedAt":""
+		}
+	],
+	"Results":[],
+	"Names":[
+		"traintrack_L7_massless-internal-offshell-external"
+	],
+	"Source":[
+		"family-seed"
+	],
+	"Loops":7,
+	"NumPropagators":22,
+	"CanonicalName":"7-loop 16-point (22 propagators)"
+}

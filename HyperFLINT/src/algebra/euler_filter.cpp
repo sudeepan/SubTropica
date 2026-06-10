@@ -145,8 +145,10 @@ bool chi_letter_genuine(const std::vector<Poly>& augmented_group,
     if (it != cache.chi_gen.end()) {
         chi_gen = it->second;
     } else {
+        chi_stats_count_sectors_call();
         ChiCount a = chi_count_sectors(fac_strs, exps, prop_names,
             param_names, "0", (unsigned long) (seed_tw + 1));
+        chi_stats_count_sectors_call();
         ChiCount b = chi_count_sectors(fac_strs, exps, prop_names,
             param_names, "0", (unsigned long) (seed_tw + 2));
         if (a.status == ChiStatus::Finite && b.status == ChiStatus::Finite)
@@ -172,6 +174,7 @@ bool chi_letter_genuine(const std::vector<Poly>& augmented_group,
     // ---- constrained chi: drop needs TWO independent no-drop draws ----
     const std::string lstr = letter.canonical_prop_form().to_string();
     const uint64_t seed_draw = seed_tw ^ fnv1a(lstr);
+    chi_stats_count_sectors_call();
     ChiCount on1 = chi_count_sectors(fac_strs, exps, prop_names,
         param_names, lstr, (unsigned long) (seed_draw + 3));
     if (on1.status == ChiStatus::PositiveDim) return true;  // Indet rule
@@ -185,12 +188,25 @@ bool chi_letter_genuine(const std::vector<Poly>& augmented_group,
         return true;
     }
     if (on1.count < chi_gen) return true;   // drop seen: genuine
+    chi_stats_count_sectors_call();
     ChiCount on2 = chi_count_sectors(fac_strs, exps, prop_names,
         param_names, lstr, (unsigned long) (seed_draw + 4));
     if (on2.status == ChiStatus::PositiveDim) return true;
     if (on2.status != ChiStatus::Finite) return true;
     return on2.count < chi_gen;
 }
+
+// Utility-study accounting (2026-06-06): letters judged / dropped /
+// boundary-exempted across a request, plus the chi_count_sectors call
+// count (the msolve cost driver).  Single-threaded by the same
+// argument as the lr_search trace; reset per request by the consumer.
+namespace {
+ChiFilterStats g_chi_stats;
+}
+
+ChiFilterStats chi_filter_stats() { return g_chi_stats; }
+void reset_chi_filter_stats() { g_chi_stats = ChiFilterStats{}; }
+void chi_stats_count_sectors_call() { ++g_chi_stats.msolve_calls; }
 
 std::vector<Poly> chi_filter_letters(
     const std::vector<Poly>& augmented_group,
@@ -202,10 +218,17 @@ std::vector<Poly> chi_filter_letters(
     std::vector<Poly> kept;
     kept.reserve(letters.size());
     for (const auto& L : letters) {
-        if (is_boundary_monomial(L) ||
-            chi_letter_genuine(augmented_group, subset_var_indices, L,
+        if (is_boundary_monomial(L)) {
+            ++g_chi_stats.boundary_exempt;
+            kept.push_back(L);
+            continue;
+        }
+        ++g_chi_stats.judged;
+        if (chi_letter_genuine(augmented_group, subset_var_indices, L,
                 cache, base_seed)) {
             kept.push_back(L);
+        } else {
+            ++g_chi_stats.dropped;
         }
     }
     return kept;

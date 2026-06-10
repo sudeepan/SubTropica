@@ -178,6 +178,29 @@ void   init_lf_cache_key_build_per_thread(int n_threads);
 void   reset_lf_cache_key_build_per_thread();
 double sum_lf_cache_key_build_per_thread();
 
+// 2026-06-09 (1m-tbox parity Phase 3): PERFPOW detector sub-timers.
+// The detector body was the only untimed region of `linear_factors`;
+// on 1m-tbox steps 1-2 it accounts for the entire unattributed
+// residual (29.4s and ~68s respectively). Split:
+//   lf_perfpow_s          : whole detector block (entry to exit).
+//   lf_perfpow_ratctor_s  : Rat cand_pole ctor (multivariate GCD
+//                           reduce on (d*c0, c1)) + lin construction.
+//   lf_perfpow_powdiv_s   : lin.pow(d) + p.divexact(lin^d) verify.
+//   lf_perfpow_fired      : count of detector hits (early returns).
+// Surfaced in HF_STEP_TRACE JSON under those names.
+void   init_lf_perfpow_per_thread(int n_threads);
+void   reset_lf_perfpow_per_thread();
+double sum_lf_perfpow_per_thread();
+void   init_lf_perfpow_ratctor_per_thread(int n_threads);
+void   reset_lf_perfpow_ratctor_per_thread();
+double sum_lf_perfpow_ratctor_per_thread();
+void   init_lf_perfpow_powdiv_per_thread(int n_threads);
+void   reset_lf_perfpow_powdiv_per_thread();
+double sum_lf_perfpow_powdiv_per_thread();
+void   init_lf_perfpow_fired_per_thread(int n_threads);
+void   reset_lf_perfpow_fired_per_thread();
+long   sum_lf_perfpow_fired_per_thread();
+
 // 2026-04-29 (Probe 2 — HF/Maple investigation): split the unaccounted
 // post-FLINT-factor extraction in `linear_factors`. By direct algebra
 // on the 3l3pt parity-1 ord_1_face_1 trace, ~289 CPU-s of step-7

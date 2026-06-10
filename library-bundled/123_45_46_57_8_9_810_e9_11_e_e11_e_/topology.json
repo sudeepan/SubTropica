@@ -1,0 +1,25 @@
+{
+	"NickelIndex":"123|45|46|57|8|9|810|e9|11|e|e11|e|",
+	"Name":"ladder4pt_L5_massless-internal-offshell-external",
+	"PrimaryName":"4-mass ladder L5",
+	"Loops":5,
+	"Legs":4,
+	"Propagators":16,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"ladder4pt",
+			"parameter":5
+		},
+		{
+			"family":"basso-dixon",
+			"parameter":[
+				5,
+				1
+			]
+		}
+	],
+	"Names":[
+		"5-rung planar ladder box"
+	]
+}

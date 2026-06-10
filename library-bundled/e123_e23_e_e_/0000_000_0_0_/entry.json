@@ -11,7 +11,9 @@
     "arXiv:1912.06561",
     "arXiv:2506.10456",
     "arXiv:2512.13794",
-    "arXiv:1709.06055 (Phys.Rev.D 96 (), 2017)"
+    "arXiv:1709.06055 (Phys.Rev.D 96 (), 2017)",
+    "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+    "arXiv:2311.16219 (Comput.Phys.Commun. 303 (109278), 2024)"
   ],
   "Records": [
     {
@@ -214,7 +216,7 @@
     {
       "reference": "arXiv:2512.13794",
       "authors": "Bargiela, Piotr, Frellesvig, Hjalte, Marzucca, Robin, Morales, Roger, Seefeld, Florian, Wilhelm, Matthias, Yang, Tong-Zhi",
-      "description": "$I_{2,1,2}$ two-loop topology with three internal paths of lengths a=2, b=1, c=2 (both v_L and v_R carry external legs); 4-point integral, planar (b=1). Geometry: 2 ISPs; at least elliptic; refer to special-case discussions in \u00a74",
+      "description": "$I_{2,1,2}$ two-loop topology with three internal paths of lengths a=2, b=1, c=2 (both v_L and v_R carry external legs); 4-point integral, planar (b=1). Geometry: 2 ISPs; at least elliptic; refer to special-case discussions in §4",
       "epsOrders": "",
       "familyName": "I_{2,1,2}",
       "method": "maximal_cut, Baikov",
@@ -225,7 +227,7 @@
       "masterCount": 0,
       "dimScheme": "d=4-2*eps",
       "computationLevel": "topology",
-      "location": "\u00a73.4 'Integrals with two ISPs' + \u00a74 special cases",
+      "location": "§3.4 'Integrals with two ISPs' + §4 special cases",
       "recordId": "bx_38cf5015ef11",
       "verified": false,
       "verifiedAt": ""
@@ -248,6 +250,12 @@
       "recordId": "bx_1d6161df39a8",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+      "authors": "Fevola, C., Mizera, S., Telen, S.",
+      "description": "Landau singularities of the acnode (triangle-box) computed via principal Landau determinants.",
+      "familyName": "PLD: acn"
     }
   ],
   "Names": [

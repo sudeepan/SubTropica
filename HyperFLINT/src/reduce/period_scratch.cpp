@@ -21,7 +21,7 @@ namespace hyperflint {
 bool period_tuples_enabled() {
     static const bool on = [] {
         const char* e = std::getenv("HF_PERIOD_TUPLES");
-        const bool v = e && e[0] == '1';
+        const bool v = !e || e[0] != '0';
         if (v) {
             const char* sr = std::getenv("HF_USE_SCALAR_REP");
             const char* bc = std::getenv("HF_USE_BASIS_CTX");

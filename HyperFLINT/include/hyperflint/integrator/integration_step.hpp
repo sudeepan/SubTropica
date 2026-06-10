@@ -288,6 +288,13 @@ double read_lf_lock_wait_s();
 // 2026-04-26 cache_key_build direct measurement: per-step wall inside
 // `linear_factors_cache_key()` + sqf-prefix concat (sum across threads).
 double read_lf_cache_key_build_s();
+// 2026-06-09 (1m-tbox parity Phase 3): PERFPOW detector sub-timers
+// (sum across threads). ratctor = cand-pole Rat ctor GCD reduce;
+// powdiv = lin.pow(d) + divexact verification; fired = hit count.
+double read_lf_perfpow_s();
+double read_lf_perfpow_ratctor_s();
+double read_lf_perfpow_powdiv_s();
+long   read_lf_perfpow_fired();
 // 2026-04-29 (Probe 2 — HF/Maple investigation): four sub-timers
 // splitting the unaccounted post-FLINT-factor extraction inside
 // `linear_factors`. Sum across threads = total per-step CPU. See

@@ -228,6 +228,30 @@ char* hf_find_lr_orders(const char* request_json) {
     }
 }
 
+char* hf_find_lr_orders_scan(const char* request_json) {
+    // Doppio-port phase 3 bridge (2026-06-06): typed C-ABI entry for the
+    // projective Cheng-Wu gauge scan, mirroring hf_find_lr_orders.  The
+    // handler emits the {schema_version, hf_version} envelope at the
+    // head of its response, so splice_envelope returns the body
+    // verbatim (branch 1), matching the CLI shim's stdout modulo the
+    // trailing newline.
+    try {
+        if (request_json == nullptr) {
+            return dup_to_owned(error_envelope(
+                "find_lr_orders_scan", "request_json is NULL"));
+        }
+        return dup_to_owned(splice_envelope(
+            hyperflint::handlers::find_lr_orders_scan(
+                std::string(request_json)),
+            "find_lr_orders_scan"));
+    } catch (const std::exception& e) {
+        return dup_to_owned(error_envelope("find_lr_orders_scan", e.what()));
+    } catch (...) {
+        return dup_to_owned(error_envelope(
+            "find_lr_orders_scan", "unknown exception"));
+    }
+}
+
 char* hf_hyperflint_sym(const char* request_json) {
     // Track 8.4-real-op-1 (iter-61): real delegation to the integrator
     // handler, mirroring the §T8.2 shape used by hf_partial_fractions

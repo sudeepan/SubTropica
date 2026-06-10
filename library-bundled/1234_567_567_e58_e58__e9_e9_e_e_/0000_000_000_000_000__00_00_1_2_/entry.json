@@ -1,0 +1,37 @@
+{
+	"CNickelIndex":"1234|567|567|e58|e58||e9|e9|e|e|:0000|000|000|000|000||00|00|1|2|",
+	"MassScales":11,
+	"FunctionClass":"Calabi-Yau periods, maximal rigidity 2(L-1)",
+	"EpsilonOrder":"",
+	"edges":"{{{10, 8}, 0}, {{10, 7}, 0}, {{8, 2}, 0}, {{7, 3}, 0}, {{8, 3}, 0}, {{7, 2}, 0}, {{2, 6}, 0}, {{3, 1}, 0}, {{2, 1}, 0}, {{3, 6}, 0}, {{6, 4}, 0}, {{1, 5}, 0}, {{6, 5}, 0}, {{1, 4}, 0}, {{4, 9}, 0}, {{5, 9}, 0}}",
+	"nodes":"{{8, 0}, {4, 0}, {7, 0}, {5, 0}, {10, M[1]}, {9, M[2]}}",
+	"References":[
+		"arXiv:1810.07689"
+	],
+	"Records":[
+		{
+			"reference":"arXiv:1810.07689",
+			"familyName":"paramecium_L7_massless-internal-offshell-external",
+			"description":"Paramecium family, paramecium_L7_massless-internal-offshell-external. Nonplanar Calabi-Yau bestiary graph at odd loop order L, with 2(L+1) MASSLESS propagators (arXiv:1810.07689). X-cell ladder body with an apex at BOTH ends; degree-keyed decoration: 2 off-shell legs (the apexes) + 4 massless legs (the end rail columns); 6 effective legs at every L (figure-pinned). Marginal in D=4 and saturates the maximal rigidity 2(L-1) (checked through 11 loops). The odd-L companion to the tardigrade; L=1 degenerates to the four-mass box, nontrivial members start at L=3.",
+			"method":[
+				"closed form"
+			],
+			"tools":[
+				"SubTropica seed_families"
+			],
+			"recordId":"fs_0b69ac4eae3f",
+			"verified":false,
+			"verifiedAt":""
+		}
+	],
+	"Results":[],
+	"Names":[
+		"paramecium_L7_massless-internal-offshell-external"
+	],
+	"Source":[
+		"family-seed"
+	],
+	"Loops":7,
+	"NumPropagators":16,
+	"CanonicalName":"7-loop 6-point (16 propagators)"
+}

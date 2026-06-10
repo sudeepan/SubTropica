@@ -238,6 +238,15 @@ int handle_find_lr_orders(const std::string& body) {
     return 0;
 }
 
+// Doppio-port phase 3 bridge op (2026-06-06): CLI shim for the
+// projective Cheng-Wu gauge scan.  Pure forward to the transport-
+// neutral handler (src/bridge/handlers.cpp::find_lr_orders_scan);
+// request/response schema documented there and in handlers.hpp.
+int handle_find_lr_orders_scan(const std::string& body) {
+    std::cout << hyperflint::handlers::find_lr_orders_scan(body) << "\n";
+    return 0;
+}
+
 // Phase β.1: discriminant of a polynomial with respect to a named
 // variable.  Matches Mathematica's `Discriminant[p, x]` up to an
 // integer sign `(-1)^{n(n-1)/2}` that doesn't matter for LR-search
@@ -3151,6 +3160,7 @@ int main(int argc, char** argv) {
             if (op == "factor")                 return handle_factor(body);
             if (op == "discriminant")           return handle_discriminant(body);
             if (op == "find_lr_orders")         return handle_find_lr_orders(body);
+            if (op == "find_lr_orders_scan")    return handle_find_lr_orders_scan(body);
             if (op == "add" || op == "sub" ||
                 op == "mul")                    return handle_binary(op, body);
             if (op == "neg")                    return handle_neg(body);

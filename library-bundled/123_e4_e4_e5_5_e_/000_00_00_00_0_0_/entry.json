@@ -17,7 +17,9 @@
     "arXiv:2508.04394 (Phys.Rev.D 113 (), 2026)",
     "hep-ph/9909506",
     "hep-ph/0003261",
-    "arXiv:2512.13794"
+    "arXiv:2512.13794",
+    "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+    "arXiv:2311.16219 (Comput.Phys.Commun. 303 (109278), 2024)"
   ],
   "Records": [
     {
@@ -309,6 +311,12 @@
       "recordId": "bx_5fe6dd71d20c",
       "verified": false,
       "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+      "authors": "Fevola, C., Mizera, S., Telen, S.",
+      "description": "Landau singularities of the non-planar double box computed via principal Landau determinants.",
+      "familyName": "PLD: npl-dbox"
     }
   ],
   "Names": [

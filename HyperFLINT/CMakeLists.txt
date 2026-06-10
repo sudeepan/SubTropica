@@ -133,6 +133,7 @@ set(HF_SOURCES
     src/algebra/algebraic_letters.cpp
     src/algebra/linear_factors.cpp
     src/algebra/partial_fractions.cpp
+    src/algebra/univar_rat.cpp
     src/algebra/shuffle.cpp
     src/algebra/convert.cpp
     src/algebra/diff.cpp
@@ -593,6 +594,19 @@ add_executable(hyperflint-test-period-tuples
 target_link_libraries(hyperflint-test-period-tuples PRIVATE hyperflint)
 add_test(NAME hf-period-tuples COMMAND hyperflint-test-period-tuples)
 
+add_executable(hyperflint-test-lf-perfpow test/test_lf_perfpow.cpp)
+target_link_libraries(hyperflint-test-lf-perfpow PRIVATE hyperflint)
+add_test(NAME hf-lf-perfpow COMMAND hyperflint-test-lf-perfpow)
+
+# CRT partial fractions (2026-06-09): UnivarRat type + Cauchy-product
+# power-series inversion unit tests. Gates the CRT PF wiring in
+# partial_fractions.cpp.
+add_executable(hyperflint-test-univar-rat test/test_univar_rat.cpp)
+target_link_libraries(hyperflint-test-univar-rat PRIVATE hyperflint)
+target_include_directories(hyperflint-test-univar-rat PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/algebra)
+add_test(NAME hf-univar-rat COMMAND hyperflint-test-univar-rat)
+
 # Doppio port phase 1 (2026-06-05): Euler-characteristic counter (DK
 # cleared-dlog core, msolve grevlex GBs over temp files).  The source is
 # compiled INTO the test target (not the hyperflint lib) so the main
@@ -892,6 +906,30 @@ add_executable(hyperflint-test-c-abi-find-lr-orders-cli-snapshot
 target_link_libraries(hyperflint-test-c-abi-find-lr-orders-cli-snapshot
                       PRIVATE hyperflint)
 
+# Doppio-port phase 3 bridge (2026-06-06): CLI vs C ABI byte-identical
+# snapshot for find_lr_orders_scan (the projective Cheng-Wu gauge scan).
+# Same inline-envelope shape as find_lr_orders (handler stamps
+# schema_version + hf_version; strip timing_compute_s only).  Also
+# locks the missing-exps error path to byte identity across transports
+# and the massless-box fixture's deterministic scan content.
+add_executable(hyperflint-test-c-abi-find-lr-orders-scan-cli-snapshot
+               test/unit/test_c_abi_find_lr_orders_scan_cli_snapshot.cpp)
+target_link_libraries(hyperflint-test-c-abi-find-lr-orders-scan-cli-snapshot
+                      PRIVATE hyperflint)
+
+# Order-resolved singularities pipeline (2026-06-07): CLI vs C ABI
+# byte-identical snapshot + collector pin for the `emit_sings` extension
+# of find_lr_orders.  Locks (a) the opt-in is byte-identical when absent
+# (no-option N1/G1), (b) the collector is transport-neutral when present
+# (C1), and (c) the massive-bubble fixture's exact sings list
+# {mm, s, s - 4*mm} (P1/P2).  Same inline-envelope shape as
+# find_lr_orders (handler stamps schema_version + hf_version; strip
+# timing_compute_s only).
+add_executable(hyperflint-test-c-abi-find-lr-orders-emit-sings-cli-snapshot
+               test/unit/test_c_abi_find_lr_orders_emit_sings_cli_snapshot.cpp)
+target_link_libraries(hyperflint-test-c-abi-find-lr-orders-emit-sings-cli-snapshot
+                      PRIVATE hyperflint)
+
 # Track 8.4-real-op-1 (iter-61): CLI vs C ABI byte-identical snapshot
 # for hyperflint_sym, locking the iter-61 promotion of hf_hyperflint_sym
 # from "not yet declared in c_abi.h" to a real delegating entry point
@@ -948,6 +986,8 @@ if(APPLE)
             hyperflint-test-c-abi-pfrac-cli-snapshot
             hyperflint-test-c-abi-linear-factors-cli-snapshot
             hyperflint-test-c-abi-find-lr-orders-cli-snapshot
+            hyperflint-test-c-abi-find-lr-orders-scan-cli-snapshot
+            hyperflint-test-c-abi-find-lr-orders-emit-sings-cli-snapshot
             hyperflint-test-c-abi-hyperflint-sym-cli-snapshot)
         target_link_options(${_hf_c_abi_test}
                             PRIVATE
@@ -986,6 +1026,34 @@ target_link_libraries(hyperflint-test-find-lr-orders-strategy-roundtrip
 # is small and we never want it to pull mimalloc in.
 if(APPLE)
     target_link_options(hyperflint-test-find-lr-orders-strategy-roundtrip
+                        PRIVATE
+        "-Wl,-U,_mi_collect"
+        "-Wl,-U,_mi_heap_collect"
+        "-Wl,-U,_mi_heap_main"
+        "-Wl,-U,_mi_heap_visit_abandoned_blocks"
+        "-Wl,-U,_mi_heap_visit_blocks"
+        "-Wl,-U,_mi_option_get"
+        "-Wl,-U,_mi_option_set"
+        "-Wl,-U,_mi_process_info"
+        "-Wl,-U,_mi_subproc_main"
+        "-Wl,-U,_mi_subproc_visit_heaps")
+endif()
+
+# Carry-discharge (FindRoots) keep rule in find_lr_orders (2026-06-07):
+# JSON-boundary battery for the "carry_discharge" request option (default
+# ON).  Posts request bodies to hyperflint::handlers::find_lr_orders and
+# asserts the three gates: (1) NOLR->LR flip on the real gauged-uq5
+# system (lr_scan FindRoots @ gauge x3 is the oracle, 24 admissible
+# orders; terminal-only find_lr_orders says NOLR) + a small synthetic;
+# (2) Strict (carry:false) NOLR-envelope byte-stability; (3) default-ON
+# (absent option == :true).  Same mimalloc weak-extern handling as the
+# strategy-roundtrip ctest (handlers.cpp TU pulls hyperflint_sym).
+add_executable(hyperflint-test-find-lr-orders-carry-discharge
+               test/unit/test_find_lr_orders_carry_discharge.cpp)
+target_link_libraries(hyperflint-test-find-lr-orders-carry-discharge
+                      PRIVATE hyperflint)
+if(APPLE)
+    target_link_options(hyperflint-test-find-lr-orders-carry-discharge
                         PRIVATE
         "-Wl,-U,_mi_collect"
         "-Wl,-U,_mi_heap_collect"
@@ -1714,6 +1782,16 @@ add_test(NAME hf-c-abi-linear-factors-cli-snapshot
 add_test(NAME hf-c-abi-find-lr-orders-cli-snapshot
          COMMAND hyperflint-test-c-abi-find-lr-orders-cli-snapshot
                  $<TARGET_FILE:hyperflint-cli>)
+add_test(NAME hf-c-abi-find-lr-orders-scan-cli-snapshot
+         COMMAND hyperflint-test-c-abi-find-lr-orders-scan-cli-snapshot
+                 $<TARGET_FILE:hyperflint-cli>)
+# Order-resolved singularities (2026-06-07): byte-identical CLI vs C ABI
+# snapshot + collector pin for the emit_sings extension of
+# find_lr_orders.  No-option byte identity (N1/G1), emit_sings transport
+# neutrality (C1), and the bubble fixture's exact sings list (P1/P2).
+add_test(NAME hf-c-abi-find-lr-orders-emit-sings-cli-snapshot
+         COMMAND hyperflint-test-c-abi-find-lr-orders-emit-sings-cli-snapshot
+                 $<TARGET_FILE:hyperflint-cli>)
 # Track 8.4-real-op-1 (iter-61): byte-identical CLI vs C ABI snapshot
 # for hyperflint_sym, locking the iter-61 promotion of hf_hyperflint_sym
 # to a real delegating entry point. Hybrid of the pfrac (envelope strip)
@@ -1745,6 +1823,11 @@ add_test(NAME hf-hyperflint-sym-response-determinism
 # that Mma callers consume via SubTropica.wl STFindLROrdersHF.
 add_test(NAME hf-find-lr-orders-strategy-roundtrip
          COMMAND hyperflint-test-find-lr-orders-strategy-roundtrip)
+# Carry-discharge (FindRoots) keep rule in find_lr_orders (2026-06-07):
+# NOLR->LR flip (gauged-uq5 oracle + synthetic), Strict byte-stability,
+# default-ON.  Tier-1 (~20 ms gauged-uq5 + sub-ms synthetic).
+add_test(NAME hf-find-lr-orders-carry-discharge
+         COMMAND hyperflint-test-find-lr-orders-carry-discharge)
 # Track 6.5b iter-42 (iter-40 binding rec B4): LibraryLink-boundary
 # roundtrip gate. Same 6 truth-table rows, but the entry path is
 # dlopen + dlsym of libhyperflint_librarylink.dylib instead of the

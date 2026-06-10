@@ -17,6 +17,69 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.3] — 2026-06-10
+
+AnTropica retirement; HyperFLINT multi-pole partial-fraction and
+PERFPOW performance wave; the issue #41 shadowing fix; n-gon family
+and a major library refresh; SubTropicaII preview.
+
+### Added
+
+- **`SubTropicaII.wl` (preview).**  A standalone companion package
+  with an LR scan and an improved Maple interface.  Ships in the
+  repository only; not loaded by the core paclet.
+- **HyperFLINT performance wave.**  FactoredRat-Cauchy multi-pole
+  partial fractions (`HF_FR_CAUCHY_PF`, default ON), a perfect-power
+  fast path (`HF_LF_PERFPOW_FAST`) with detector sub-timers, a
+  `UnivarRat` type for R(y)[x] polynomial arithmetic, and a strict
+  Euler-drop filter with the `HF_LR_MAX_DEG` cap for the LR-order
+  search.
+- **n-gon kinematic family** in the library, plus the inlined
+  box-ladder closed form (Davydychev $\Phi^{(L)}$) on the family
+  card.  Library counts: 424 topologies, 1,015 mass configurations,
+  1,816 literature records, 203 computed results.
+
+### Changed
+
+- **AnTropica retired** (dev 1.2.2.7).  The experimental BVSW
+  rationalization engine and all its SubTropica wiring are gone:
+  `MethodLR -> "AnTropica"`, `FindRoots -> "AnTropica"`,
+  `STFubiniWithAnTropica`, `STFubiniAT2`, and the `$STAnTropica*`
+  globals.  Superseded by the Doppio FindRoots tier and the HyperFLINT
+  carry-discharge port.  The package lives on unmaintained in `attic/`;
+  Doppio now uses an inlined `dpEulerConic` (parity-gated, t25).
+  `MethodLR` values are validated at option ingest: anything outside
+  `{"Lungo", "Espresso", "Doppio"}` aborts with `STIntegrate::badmlr`
+  instead of silently falling through to Espresso.
+
+### Fixed
+
+- **Front-end symbol shadowing after `Needs["SubTropica`"]`**
+  ([#41](https://github.com/SubTropica/SubTropica/issues/41)).  Bare
+  context-qualified tokens in the package source minted `Global`-context
+  twins of the public symbols `eps`, `M`, `m`, `MM`, `mm`, `l`, `p`, `s`,
+  `mzv` at load time (Wolfram Language creates a symbol the moment the
+  reader encounters its token, even inside code that never runs), so
+  notebooks highlighted those names as shadowed.  The symbols are now
+  constructed from name strings at run time and a fresh load no longer
+  creates any `Global` twin of an on-path public symbol, enforced by a
+  new regression test (`scripts/test_no_global_twin_mint.wl`).  For the
+  optional FIESTA / ginsh / IterInt backends the corresponding twins
+  (`l`, `p`, `mzv`) still appear at first backend use; this is inherent
+  to their `Global`-context interfaces.
+- **Library `MassScales` audit**: 11 entries carried `MassScales: 0`
+  despite massive kinematics; corrected from their mass configurations.
+- **`STFindSingularities`** now passes the full filtered candidate set
+  to `FindLetters` (previously truncated, losing odd-letter candidates).
+- **Collections UI**: member cards open the specific diagram (mass
+  configuration) rather than the bare topology; computed-result stars
+  require an actual computed result (family-closed-form seeds were
+  demoted from `Results[]`, hence 228 -> 203 computed results); period
+  badge takes precedence over MPL; wide member thumbnails keep the
+  graph aspect ratio; two-parameter families display both ranges.
+
+---
+
 ## [1.2.2] — 2026-06-05
 
 ### Added

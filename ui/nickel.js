@@ -215,12 +215,23 @@ class Nickel {
     // each '|'-separated group is the upper-triangular neighbor list of one
     // vertex; for the i-th group, every neighbor j must satisfy
     // groupIdx < j ≤ V-1, where V is the total vertex count (= number of
-    // groups).  We greedily take the longest digit prefix that fits.
+    // groups).  We take the SHORTEST digit prefix that fits (a single digit
+    // when it is in range), falling back to longer prefixes only when the
+    // single digit is out of range (e.g. '10' where the next vertices start
+    // at 10).
     //
     // Pre-fix this routine tokenized char-by-char, so '910' became [9,1,0]
     // and '11' became [1,1], producing a bogus over-edged graph for any
     // ≥10-vertex topology.  See commit f9a77b1f8 for the parallel Python
     // fix in scripts/quarantine_unphysical.py.
+    //
+    // A later greedy-LONGEST attempt over-corrected: it parsed '123|...' as
+    // [12, 3] instead of [1, 2, 3], silently mis-graphing every ≥13-vertex
+    // member (wheel W8, ladder/traintrack/basso-dixon/elliptic-ladder, ...)
+    // and producing the tangled thumbnails this layout work addresses.
+    // Validated across all 406 library topologies: only the shortest-valid-
+    // prefix reading reproduces the stored Propagators count (and matches the
+    // BFS-canonical interpretation in scripts/_build_families_json.py).
     let V = (str.match(/\|/g) || []).length;
     if (str.length > 0 && str[str.length - 1] !== '|') V++;
 
@@ -247,7 +258,7 @@ class Nickel {
         const maxV = Math.max(V - 1, 0);
         let consumed = 0;
         let value = -1;
-        for (let len = Math.min(runLen, 3); len >= 1; len--) {
+        for (let len = 1; len <= Math.min(runLen, 3); len++) {
           const v = parseInt(str.substr(i, len), 10);
           if (v >= minV && v <= maxV) {
             consumed = len;

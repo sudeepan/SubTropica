@@ -2123,17 +2123,19 @@ inline bool use_qunderscore_rat_div() {
 // the saved fmpq_mpoly_gcd_cofactors cost dominates and the rep-swap
 // wins. On light-ctx workloads (STBenchmark Long: avg ~3-5 wide-ctx
 // vars, +3% net) the transduction overhead exceeds the saving.
-// Route adds with nvars < threshold to `add_legacy`. Default 50 keeps
-// parity-1 / tst2 on the fast path while letting Long-suite light
-// cases stay on legacy. Tunable via `HF_REPSWAP_NVARS_MIN`; set to 0
-// to force rep-swap unconditionally, or to a very large value to
-// force legacy unconditionally. Resolved once at first call.
+// Route adds with nvars < threshold to `add_legacy`. Default 0 forces
+// rep-swap unconditionally — the q_underscore path is value-equivalent
+// and faster in the PT-slim-ctx regime (~11 vars). Accepts ~3%
+// regression on light-ctx (3-5 var) STBenchmark Long workloads.
+// Tunable via `HF_REPSWAP_NVARS_MIN`; set to 50 to restore legacy
+// gating, or to a very large value to force legacy unconditionally.
+// Resolved once at first call.
 inline size_t repswap_nvars_min() {
     static const size_t v = []{
         const char* s = HF_FLAG_REPSWAP_NVARS_MIN;
-        if (!s || !s[0]) return static_cast<size_t>(50);
+        if (!s || !s[0]) return static_cast<size_t>(0);
         try { return static_cast<size_t>(std::stoul(s)); }
-        catch (...) { return static_cast<size_t>(50); }
+        catch (...) { return static_cast<size_t>(0); }
     }();
     return v;
 }

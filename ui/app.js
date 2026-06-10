@@ -1130,6 +1130,12 @@ async function loadLibrary() {
     return null;
   }
 
+  // NOTE (review P2-2): unlike loadFamilies(), this loader runs eagerly at init
+  // BEFORE detectBackendMode()'s ping resolves, so _apiAvailable is not yet
+  // known here and cannot gate the probe without awaiting the ping (which would
+  // delay the first library load on every page, including the kernel server).
+  // The one /api/library 404 on a static/public build is therefore left as-is;
+  // it falls through to the static chain exactly as before.
   try {
     const resp = await fetch('/api/library');
     if (resp.ok) {
@@ -1150,10 +1156,85 @@ async function loadLibrary() {
   onGraphChanged();
 }
 
+// ─── Families catalog (all-loop family pages) ───────────────────────
+//
+// ui/families.json is the public projection of data/families.json +
+// library membership (built by scripts/_build_families_json.py). Shape:
+//   { "families": { "<slug>": { displayName, definition, functionClass,
+//       familyKind, parameter{...}, closedForm{latex,wl}?, normalization?,
+//       refs[{arxiv|journal, texkey, role}], related[], batch,
+//       members[{parameter, topology, primaryName}],
+//       missing[{parameter, why}] } }, "_meta": {...} }
+// Loaded lazily on the first open of the Families tab. Resolution chain
+// mirrors loadLibrary(): /api/families -> same-origin -> jsdelivr CDN.
+let families = null;          // the parsed families.json, or null until loaded
+let _familiesLoading = null;  // in-flight promise (dedup concurrent opens)
+// Counter (not boolean) incremented before each programmatic hash write and
+// decremented in the corresponding setTimeout(0); the hashchange listener
+// skips when counter > 0.  A boolean was racy when two writes fired in close
+// succession before the first timeout cleared the flag.
+let _suppressHashOpen = 0;
+// When a topology detail is opened by drilling into a collection member tile,
+// this holds the originating collection slug so closeDetailPanel() can return
+// the visitor to that collection instead of the bare index (review P0-4).
+// Null for every other topology-detail open (Topologies/Diagrams tabs), so
+// those closes are unaffected. Cleared on every close.
+let _returnToCollection = null;
+
+async function loadFamilies() {
+  if (families) return families;
+  if (_familiesLoading) return _familiesLoading;
+  const PUBLIC_FAMILIES_URL =
+    'https://cdn.jsdelivr.net/gh/SubTropica/SubTropica@main/ui/families.json';
+  async function tryStaticChain() {
+    for (const url of ['families.json', PUBLIC_FAMILIES_URL]) {
+      try {
+        const r = await fetch(url);
+        if (r.ok) return await r.json();
+      } catch (_) { /* try next */ }
+    }
+    return null;
+  }
+  _familiesLoading = (async () => {
+    let data = null;
+    // Skip the /api/families probe on a static/public build (review P2-2): the
+    // catalog is loaded lazily on the first Collections-tab open, by which time
+    // the detectBackendMode() ping has resolved, so _apiAvailable is known. When
+    // it is known-false we go straight to the static chain and avoid a 404
+    // console line; when alive (review server) we hit /api/families as before;
+    // when still unknown (undefined) we keep the original /api-first behaviour.
+    if (_apiAvailable === false) {
+      data = await tryStaticChain();
+    } else {
+      try {
+        const resp = await fetch('/api/families');
+        if (resp.ok) data = await resp.json();
+        else data = await tryStaticChain();
+      } catch (e) {
+        data = await tryStaticChain();
+      }
+    }
+    _familiesLoading = null;
+    if (data !== null) {
+      // Successful fetch (even if the catalog is genuinely empty).
+      families = data;
+    }
+    // On total failure (data === null) leave `families` null so the next tab
+    // open retries the full fetch chain rather than serving a stale empty object.
+    return families;
+  })();
+  return _familiesLoading;
+}
+
 // ─── Backend Mode ───────────────────────────────────────────────────
 
 let backendMode = 'lite';  // 'lite' or 'full'
 let backendDeps = {};      // dependency status from kernel: {pySecDec: "ok", FIESTA: "missing", ...}
+// Tri-state knowledge of whether an /api/* backend exists, set once the ping in
+// detectBackendMode() resolves: undefined = not yet known, true = kernel alive,
+// false = static/public build (no backend). Lets lazy loaders skip a doomed
+// /api fetch (and its 404 console line) on the public build (review P2-2).
+let _apiAvailable;
 const _sessionSalt = 1 + Math.floor(Math.random() * 999);
 
 const kernel = {
@@ -1182,6 +1263,7 @@ const kernel = {
 
 async function detectBackendMode() {
   const pingData = await kernel.ping();
+  _apiAvailable = !!pingData;  // now known: gates lazy /api fetches (P2-2)
   if (pingData) {
     backendMode = 'full';
     document.body.classList.add('mode-full');
@@ -5145,29 +5227,105 @@ function generateThumbnail(topoNickel, configKey, options) {
   const numInt = sortedInternal.length;
   const R = 28;
 
-  // Initial circular layout
+  // Deterministic layout hint (ui/families.json): one [x, y] per internal
+  // vertex, indexed by Nickel vertex order. When supplied and well-formed we
+  // pin the internal vertices to it (skipping the force layout, which tangles
+  // for the large members) and place each external leg deterministically.
+  const layoutHint = (options && Array.isArray(options.layout)
+    && options.layout.length === numInt) ? options.layout : null;
+
+  // Internal vertex positions live in `laid` indexed by node id (laid[nd]);
+  // external-leg vertices are appended after. `nv` tracks the leg start.
   const initVerts = [];
-  for (let i = 0; i <= Math.max(...sortedInternal, 0); i++) {
-    const ang = (2 * Math.PI * i) / numInt - Math.PI / 2;
-    // Add jitter proportional to R to break symmetry
-    initVerts.push({
-      x: R * Math.cos(ang) + (Math.random() - 0.5) * R * 0.3,
-      y: R * Math.sin(ang) + (Math.random() - 0.5) * R * 0.3
-    });
-  }
-
-  // Add external leg vertices
   const layoutEdges = [];
-  let nv = initVerts.length;
-  edgeList.forEach(([a, b]) => {
-    let la = a, lb = b;
-    if (la < 0) { la = nv; initVerts.push({ x: initVerts[lb].x * 1.5, y: initVerts[lb].y * 1.5 }); nv++; }
-    if (lb < 0) { lb = nv; initVerts.push({ x: initVerts[la].x * 1.5, y: initVerts[la].y * 1.5 }); nv++; }
-    layoutEdges.push({ a: Math.min(la, lb), b: Math.max(la, lb) });
-  });
+  let nv;
+  let laid;
 
-  // Run force layout
-  const laid = computeForceLayout(initVerts, layoutEdges);
+  if (layoutHint) {
+    // Pin internal vertices from the hint (Nickel vertex order == node id).
+    for (let i = 0; i <= Math.max(...sortedInternal, 0); i++) {
+      const p = layoutHint[i] || [0, 0];
+      initVerts.push({ x: p[0], y: p[1] });
+    }
+    nv = initVerts.length;
+    // Median internal edge length sets the deterministic leg length.
+    const bodyLens = [];
+    edgeList.forEach(([a, b]) => {
+      if (a >= 0 && b >= 0) {
+        const dx = initVerts[a].x - initVerts[b].x;
+        const dy = initVerts[a].y - initVerts[b].y;
+        bodyLens.push(Math.sqrt(dx * dx + dy * dy));
+      }
+    });
+    bodyLens.sort((p, q) => p - q);
+    const legLen = bodyLens.length
+      ? bodyLens[Math.floor(bodyLens.length / 2)] || 1 : 1;
+    // Centroid of all internal vertices (radial fallback direction).
+    let gcx = 0, gcy = 0;
+    sortedInternal.forEach(nd => { gcx += initVerts[nd].x; gcy += initVerts[nd].y; });
+    gcx /= numInt || 1; gcy /= numInt || 1;
+    // Centroid of each vertex's internal neighbours (primary leg direction).
+    const nbrSum = {};
+    edgeList.forEach(([a, b]) => {
+      if (a >= 0 && b >= 0) {
+        (nbrSum[a] || (nbrSum[a] = { x: 0, y: 0, n: 0 }));
+        nbrSum[a].x += initVerts[b].x; nbrSum[a].y += initVerts[b].y; nbrSum[a].n++;
+        (nbrSum[b] || (nbrSum[b] = { x: 0, y: 0, n: 0 }));
+        nbrSum[b].x += initVerts[a].x; nbrSum[b].y += initVerts[a].y; nbrSum[b].n++;
+      }
+    });
+    // Fan multiple legs on one vertex at +/-25 degree steps around its dir.
+    const legSeen = {};
+    edgeList.forEach(([a, b]) => {
+      let parent = -1;
+      if (a < 0 && b >= 0) parent = b;
+      else if (b < 0 && a >= 0) parent = a;
+      else { layoutEdges.push({ a, b }); return; }
+      const pp = initVerts[parent];
+      // Direction = away from the centroid of the parent's internal neighbours.
+      let dx, dy;
+      const ns = nbrSum[parent];
+      if (ns && ns.n > 0) { dx = pp.x - ns.x / ns.n; dy = pp.y - ns.y / ns.n; }
+      else { dx = pp.x - gcx; dy = pp.y - gcy; }
+      let dl = Math.sqrt(dx * dx + dy * dy);
+      if (dl < 1e-9) { dx = pp.x - gcx; dy = pp.y - gcy; dl = Math.sqrt(dx * dx + dy * dy); }
+      if (dl < 1e-9) { dx = 0; dy = 1; dl = 1; }  // last-resort radial
+      dx /= dl; dy /= dl;
+      const k = legSeen[parent] || 0;
+      legSeen[parent] = k + 1;
+      // Fan: 0, +25, -25, +50, -50, ... degrees off the base direction.
+      const step = Math.ceil(k / 2) * (k % 2 === 1 ? 1 : -1) * (25 * Math.PI / 180);
+      const ca = Math.cos(step), sa = Math.sin(step);
+      const fx = dx * ca - dy * sa, fy = dx * sa + dy * ca;
+      const li = nv++;
+      initVerts.push({ x: pp.x + fx * legLen, y: pp.y + fy * legLen });
+      layoutEdges.push({ a: Math.min(parent, li), b: Math.max(parent, li) });
+    });
+    // No force step: the pinned positions are the layout.
+    laid = initVerts;
+  } else {
+    // Initial circular layout
+    for (let i = 0; i <= Math.max(...sortedInternal, 0); i++) {
+      const ang = (2 * Math.PI * i) / numInt - Math.PI / 2;
+      // Add jitter proportional to R to break symmetry
+      initVerts.push({
+        x: R * Math.cos(ang) + (Math.random() - 0.5) * R * 0.3,
+        y: R * Math.sin(ang) + (Math.random() - 0.5) * R * 0.3
+      });
+    }
+
+    // Add external leg vertices
+    nv = initVerts.length;
+    edgeList.forEach(([a, b]) => {
+      let la = a, lb = b;
+      if (la < 0) { la = nv; initVerts.push({ x: initVerts[lb].x * 1.5, y: initVerts[lb].y * 1.5 }); nv++; }
+      if (lb < 0) { lb = nv; initVerts.push({ x: initVerts[la].x * 1.5, y: initVerts[la].y * 1.5 }); nv++; }
+      layoutEdges.push({ a: Math.min(la, lb), b: Math.max(la, lb) });
+    });
+
+    // Run force layout
+    laid = computeForceLayout(initVerts, layoutEdges);
+  }
 
   // Shrink external-leg stubs toward their internal partner. The shared FR
   // layout places each leg vertex at distance ~k*0.8 from its partner,
@@ -5191,11 +5349,17 @@ function generateThumbnail(topoNickel, configKey, options) {
     }
   }
 
-  // Normalize to fit thumbnail: center and scale to [-35, 35]
+  // Normalize to fit thumbnail: center and scale into the fit box.
+  // The box is square by default (60x60 inside the 80-unit viewBox below); an
+  // opt-in aspect hint (options.aspect = width/height) widens it WITHOUT
+  // touching the layout/force math, so wide ladders fit a wide box instead of
+  // being crushed into a square (review P1-2). aspect=1 is byte-identical to
+  // the prior behaviour, so the Topologies/Diagrams callers are unaffected.
+  const aspect = (options && options.aspect > 0) ? options.aspect : 1;
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   laid.forEach(v => { minX = Math.min(minX, v.x); maxX = Math.max(maxX, v.x); minY = Math.min(minY, v.y); maxY = Math.max(maxY, v.y); });
   const rangeX = maxX - minX || 1, rangeY = maxY - minY || 1;
-  const scale = Math.min(60 / rangeX, 60 / rangeY);
+  const scale = Math.min((60 * aspect) / rangeX, 60 / rangeY);
   const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
   laid.forEach(v => { v.x = (v.x - midX) * scale; v.y = (v.y - midY) * scale; });
 
@@ -5237,10 +5401,14 @@ function generateThumbnail(topoNickel, configKey, options) {
   sortedInternal.forEach(nd => { cx += pos[nd].x; cy += pos[nd].y; });
   cx /= numInt || 1; cy /= numInt || 1;
 
-  // Build SVG
+  // Build SVG. The viewBox height is the constant node-size reference; an
+  // aspect>1 widens the viewBox in lockstep with the fit box above, so a wide
+  // ladder spreads horizontally while node radius/stroke stay the same size
+  // (review P1-2). aspect=1 reproduces the original square viewBox exactly.
   const size = showLabels ? 100 : 80;
+  const vbW = size * aspect;
   const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('viewBox', `-${size/2} -${size/2} ${size} ${size}`);
+  svg.setAttribute('viewBox', `-${vbW/2} -${size/2} ${vbW} ${size}`);
   svg.setAttribute('width', '100%');
   svg.setAttribute('height', '100%');
   svg.style.display = 'block';
@@ -6354,10 +6522,13 @@ function functionBadge(fc) {
   // Priority order: higher complexity wins
   const KEYWORDS = [
     { re: /Calabi[–-]?Yau/i,   label: 'Calabi\u2013Yau', cls: 'badge-royalblue' },
+    { re: /higher.genus|hyperelliptic/i, label: 'higher genus', cls: 'badge-purple' },
     { re: /elliptic/i,          label: 'elliptic',         cls: 'badge-purple' },
     { re: /MZV/,                label: 'MZV',              cls: 'badge-blue' },
     { re: /MPL/,                label: 'MPL',              cls: 'badge-blue' },
-    { re: /mixed/i,             label: 'mixed',            cls: 'badge-purple' },
+    { re: /zeta/i,              label: 'MPL',              cls: 'badge-blue' },
+    { re: /polylogarithm/i,    label: 'MPL',              cls: 'badge-blue' },
+    { re: /determinant/i,      label: 'MPL',              cls: 'badge-blue' },
     { re: /logarithm/i,        label: 'MPL',              cls: 'badge-blue' },
     { re: /rational|Gamma/i,   label: 'rational',         cls: 'badge-muted' },
   ];
@@ -6510,6 +6681,7 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
   // ── Build popup content ──
   const content = $('detail-configs');
   content.innerHTML = '';
+  content.classList.remove('fam-detail');  // shed any family-page styling
 
   // Header: thumbnail + title block
   const header = document.createElement('div');
@@ -6548,8 +6720,16 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
     const titleAttr = aliases.length > 0 ? ` title="Also known as: ${aliases.join(', ')}"` : '';
     const cNickel = cfg.CNickelIndex || cfg.CNickel || cfg.nickel || `${topoKey}:${configKey}`;
     titleBlock.innerHTML = `<div class="popup-name"${titleAttr}>${renderInlineMathString(primaryName)}</div>`;
-    titleBlock.innerHTML += `<div class="popup-topo-line">${renderInlineMathString(topoName)} topology</div>`;
-    titleBlock.innerHTML += `<div class="popup-nickel">${cNickel}</div>`;
+    const topoLine = document.createElement('div');
+    topoLine.className = 'popup-topo-line popup-topo-link';
+    topoLine.innerHTML = `${renderInlineMathString(topoName)} topology`;
+    topoLine.title = 'Open topology';
+    topoLine.addEventListener('click', () => _openTopologyByKey(topoKey));
+    titleBlock.appendChild(topoLine);
+    const nickelDiv = document.createElement('div');
+    nickelDiv.className = 'popup-nickel';
+    nickelDiv.textContent = cNickel;
+    titleBlock.appendChild(nickelDiv);
     $('detail-header-title').innerHTML = renderInlineMathString(primaryName);
   } else {
     // Topology-only popup
@@ -6627,6 +6807,42 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
   }
 
   content.appendChild(header);
+
+  // ── Family membership cross-link ──
+  // When this topology is a member of one or more all-loop families,
+  // surface "Member of: <DisplayName> (L=n)" links into the family page.
+  // DisplayName resolves from the families global if it is loaded; else
+  // the slug stands in (and resolves on a subsequent open after the
+  // Families tab has been visited). Lazily kick off a families load so a
+  // later re-open shows the proper display name.
+  const topoFamilies = (topo && topo.families) || [];
+  if (Array.isArray(topoFamilies) && topoFamilies.length > 0) {
+    const fmSec = document.createElement('div');
+    fmSec.className = 'popup-section fam-memberof';
+    function _renderMemberLinks() {
+      const links = topoFamilies.map(fm => {
+        const slug = fm.family;
+        const param = fm.parameter;
+        const fam = families && families.families ? families.families[slug] : null;
+        const disp = (fam && fam.displayName) || slug;
+        const pName = (fam && fam.parameter && fam.parameter.name) || 'L';
+        const label = (param !== undefined && param !== null)
+          ? `${escapeHtml(disp)} (${escapeHtml(pName)}=${param})`
+          : escapeHtml(disp);
+        return `<a class="fam-memberof-link" href="#collection=${encodeURIComponent(slug)}" data-family="${escapeHtml(slug)}">${label}</a>`;
+      }).join(', ');
+      fmSec.innerHTML = `<span class="fam-memberof-label">Member of:</span> ${links}`;
+      fmSec.querySelectorAll('.fam-memberof-link').forEach(a => {
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          openFamilyDetail(a.getAttribute('data-family'), { fromBrowser: fromBrowser, pushHash: true });
+        });
+      });
+    }
+    _renderMemberLinks();
+    content.appendChild(fmSec);
+    if (!families) loadFamilies().then(() => { if (fmSec.isConnected) _renderMemberLinks(); });
+  }
 
   // ── Content body ──
   if (cfg) {
@@ -6964,6 +7180,14 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
 
     // ── Computed Results section ──
     let results = cfg.results || cfg.Results || [];
+    // Ristretto proposal records (operator decision 2026-06-07): the
+    // "singularities" and "proposed-alphabet" resultTypes are NOT ordinary
+    // computed Laurent results. Split them off so the main result loop
+    // never builds a malformed card for them; they render in their own
+    // section at the BOTTOM of the list (see renderProposalRecords below).
+    const PROPOSAL_TYPES = new Set(['singularities', 'proposed-alphabet']);
+    const proposalRecords = results.filter(r => PROPOSAL_TYPES.has(r && r.resultType));
+    results = results.filter(r => !(r && PROPOSAL_TYPES.has(r.resultType)));
     if (results.length > 0) {
       // Sort newest first
       results = results.slice().sort((a, b) =>
@@ -7063,6 +7287,14 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
             ? `Numerically verified${method ? ' via ' + method : ''} on ${r.verifiedAt}`
             : `Numerically verified${method ? ' via ' + method : ''}`;
           badges.push(`<span class="badge badge-green" title="${tip}">\u2713 Verified</span>`);
+        }
+
+        // Period badge (operator feedback Item 4): a Result carrying
+        // period:true is a phi^4 projective period at D=4, NOT a dim-reg
+        // momentum-space value. Dormant until family-seed Results carry
+        // the flag; the badge appears the moment one does.
+        if (r.period === true) {
+          badges.push(`<span class="badge badge-purple badge-period" title="\u03c6\u2074 projective period at D=4; not a dim-reg momentum-space value">period</span>`);
         }
 
         // Disagreement warning: when results for the same (D, ε) from different contributors differ
@@ -7253,6 +7485,14 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
 
       content.appendChild(resultsSection);
     }
+
+    // Ristretto proposal records render LAST, in their own section, so a
+    // singular-locus / proposed-alphabet proposal is never confused with a
+    // numerically verified computed result. Fires whenever proposals are
+    // present, including the proposals-only case (no ordinary results).
+    if (proposalRecords.length > 0) {
+      renderProposalRecords(content, proposalRecords);
+    }
   } else {
     // Topology-only popup: show gallery of all diagrams (mass configurations)
     const configKeys = Object.keys(configs);
@@ -7362,9 +7602,32 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
 }
 
 function closeDetailPanel() {
+  const _dc = $('detail-configs');
+  // Drill-down return (review P0-4): if this close is dismissing a TOPOLOGY
+  // detail that was opened from a collection member tile, re-open that
+  // collection instead of falling through to the bare index. A collection
+  // page carries .fam-detail; a topology detail does not, so the class
+  // distinguishes "closing the drilled-in topology" (return to collection)
+  // from "closing the collection page itself" (clear the hash normally).
+  if (_returnToCollection && _dc && !_dc.classList.contains('fam-detail')
+      && (families && (families.families || {})[_returnToCollection.slug])) {
+    const ret = _returnToCollection;
+    _returnToCollection = null;
+    openFamilyDetail(ret.slug, { fromBrowser: ret.fromBrowser, pushHash: true });
+    return;
+  }
+  _returnToCollection = null;
   $('detail-panel').classList.remove('open');
   $('detail-panel').classList.remove('above-browser');
   $('detail-panel').style.left = '';  // reset position
+  if (_dc) _dc.classList.remove('fam-detail');  // shed family-page styling
+  // If a family page set the #family hash, clear it on close so back/forward
+  // and a re-open behave (without re-triggering openFamilyDetail).
+  if (_collectionHashSlug(window.location.hash) !== null) {
+    _suppressHashOpen++;
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+    setTimeout(() => { _suppressHashOpen--; }, 0);
+  }
   $('detail-backdrop').classList.remove('open');
   $('detail-backdrop').classList.remove('above-browser');
   // Remove toast highlight and browsing mode — clear on both stack and sheet body
@@ -7889,7 +8152,7 @@ function openAbout() {
       for (const ck in configs) {
         nConfigs++;
         const resultsList = configs[ck].results||configs[ck].Results||[];
-        const hasResults = resultsList.length > 0;
+        const hasResults = resultsList.some(r => r && (r.resultCompressed || r.resultTeX));
         nResults += resultsList.length;
         scatterPoints.push({ loops, legs, computed: hasResults });
         const src = configs[ck].source || configs[ck].Source || '';
@@ -7931,7 +8194,7 @@ function openAbout() {
     <div class="about-stat"><div class="about-stat-val">${isFull ? coconuts : _sessionSalt}</div><div class="about-stat-label"><span class="mascot-emoji">${mascotEmoji()}</span> earned</div></div>
   `;
 
-  let footerHTML = 'Data sourced from <a href="https://arxiv.org" target="_blank" rel="noopener">arXiv</a>, <a href="https://inspirehep.net" target="_blank" rel="noopener">INSPIRE-HEP</a>, <a href="https://loopedia.mpp.mpg.de" target="_blank" rel="noopener">Loopedia</a>, and <a href="https://qcdloop.fnal.gov" target="_blank" rel="noopener">QCDLoop</a>.<br/>Library data licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>.';
+  let footerHTML = 'Data sourced from <a href="https://arxiv.org" target="_blank" rel="noopener">arXiv</a>, <a href="https://inspirehep.net" target="_blank" rel="noopener">INSPIRE-HEP</a>, <a href="https://loopedia.mpp.mpg.de" target="_blank" rel="noopener">Loopedia</a>, <a href="https://qcdloop.fnal.gov" target="_blank" rel="noopener">QCDLoop</a>, and the <a href="https://mathrepo.mis.mpg.de/PLD/" target="_blank" rel="noopener">PLD database</a>.<br/>Library data licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>.';
   if (isFull) footerHTML = `Last sync: ${lastSync}<br/>` + footerHTML;
 
   body.innerHTML = `
@@ -7958,20 +8221,32 @@ function drawScatterPlot(canvasId, points) {
   const W = canvas.width, H = canvas.height;
   const pad = { top: 10, right: 15, bottom: 28, left: 32 };
 
-  // Compute axis ranges
-  const maxLoops = Math.max(1, ...points.map(p => p.loops));
-  const maxLegs = Math.max(2, ...points.map(p => p.legs));
+  // Fixed 8×8 grid (loops × legs), independent of the data, per operator
+  // request.  Loops axis is pinned to 1..8; the legs axis keeps its historical
+  // start value of 0 and is pinned to 0..7 (8 ticks each).  Points that fall
+  // outside this window are simply not drawn (no clamping into edge cells).
+  const loopsMin = 1, loopsMax = 8;   // loops ticks 1..8
+  const legsMin = 0, legsMax = 8;     // legs ticks 0..8 (operator request 2026-06-07)
 
   const plotW = W - pad.left - pad.right;
   const plotH = H - pad.top - pad.bottom;
 
-  function toX(legs) { return pad.left + (legs - 0) / (maxLegs + 1) * plotW; }
-  function toY(loops) { return pad.top + plotH - (loops - 0) / (maxLoops + 1) * plotH; }
+  // Map a value onto the plot so that the tick range [min..max] occupies the
+  // interior, leaving one unit of margin on each side (mirrors the prior
+  // 0..max+1 framing so bubbles never sit on the axis lines).
+  function toX(legs) { return pad.left + (legs - (legsMin - 1)) / ((legsMax + 1) - (legsMin - 1)) * plotW; }
+  function toY(loops) { return pad.top + plotH - (loops - (loopsMin - 1)) / ((loopsMax + 1) - (loopsMin - 1)) * plotH; }
 
-  // Count total and computed points at each (loops, legs)
+  function inWindow(loops, legs) {
+    return loops >= loopsMin && loops <= loopsMax && legs >= legsMin && legs <= legsMax;
+  }
+
+  // Count total and computed points at each (loops, legs), dropping anything
+  // outside the fixed 8×8 window.
   const counts = {};
   const computed = {};
   for (const p of points) {
+    if (!inWindow(p.loops, p.legs)) continue;
     const k = p.loops + ',' + p.legs;
     counts[k] = (counts[k] || 0) + 1;
     if (p.computed) computed[k] = (computed[k] || 0) + 1;
@@ -7983,10 +8258,10 @@ function drawScatterPlot(canvasId, points) {
   // Grid lines
   ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--border') || '#e0d8cf';
   ctx.lineWidth = 0.5;
-  for (let l = 0; l <= maxLoops; l++) {
+  for (let l = loopsMin; l <= loopsMax; l++) {
     ctx.beginPath(); ctx.moveTo(pad.left, toY(l)); ctx.lineTo(W - pad.right, toY(l)); ctx.stroke();
   }
-  for (let g = 0; g <= maxLegs; g++) {
+  for (let g = legsMin; g <= legsMax; g++) {
     ctx.beginPath(); ctx.moveTo(toX(g), pad.top); ctx.lineTo(toX(g), H - pad.bottom); ctx.stroke();
   }
 
@@ -7995,12 +8270,12 @@ function drawScatterPlot(canvasId, points) {
   ctx.fillStyle = textColor;
   ctx.font = '9px system-ui, sans-serif';
   ctx.textAlign = 'center';
-  for (let g = 0; g <= maxLegs; g++) {
+  for (let g = legsMin; g <= legsMax; g++) {
     ctx.fillText(g, toX(g), H - pad.bottom + 14);
   }
   ctx.fillText('legs', pad.left + plotW / 2, H - 2);
   ctx.textAlign = 'right';
-  for (let l = 0; l <= maxLoops; l++) {
+  for (let l = loopsMin; l <= loopsMax; l++) {
     ctx.fillText(l, pad.left - 5, toY(l) + 3);
   }
   ctx.save();
@@ -8388,6 +8663,16 @@ function _buildRequestPaperToast(currentSearchText) {
   return card;
 }
 
+// Keep aria-selected on the role=tab library tabs in sync with the active
+// tab (review P2-6). Mirrors the .active class toggles below.
+function _syncBrowserTabAria(tab) {
+  [['browser-tab-topos', 'topos'], ['browser-tab-diagrams', 'diagrams'],
+   ['browser-tab-families', 'families']].forEach(([id, name]) => {
+    const el = $(id);
+    if (el) el.setAttribute('aria-selected', tab === name ? 'true' : 'false');
+  });
+}
+
 function openBrowser() {
   if (!library || !library.topologies) return;
   // Show sync button only in full (Mathematica) mode
@@ -8396,6 +8681,9 @@ function openBrowser() {
   // Restore saved tab
   $('browser-tab-topos').classList.toggle('active', _browserTab === 'topos');
   $('browser-tab-diagrams').classList.toggle('active', _browserTab === 'diagrams');
+  const famTabBtn = $('browser-tab-families');
+  if (famTabBtn) famTabBtn.classList.toggle('active', _browserTab === 'families');
+  _syncBrowserTabAria(_browserTab);
   $('browser-overlay').classList.add('visible');
   populateBrowser();
 }
@@ -8409,11 +8697,41 @@ function switchBrowserTab(tab) {
   localStorage.setItem('subtropica-browser-tab', tab);
   $('browser-tab-topos').classList.toggle('active', tab === 'topos');
   $('browser-tab-diagrams').classList.toggle('active', tab === 'diagrams');
+  const famTabBtn = $('browser-tab-families');
+  if (famTabBtn) famTabBtn.classList.toggle('active', tab === 'families');
+  _syncBrowserTabAria(tab);
+  if (tab === 'families') {
+    // Lazy-load on first open of the Families tab, then re-render.
+    if (!families) {
+      const body = $('browser-body');
+      if (body) body.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">Loading collections…</div>';
+      $('browser-count').textContent = '';
+      loadFamilies().then(() => { if (_browserTab === 'families') populateBrowser(); });
+      return;
+    }
+  }
   populateBrowser();
+}
+
+// A config has a "real" computed result iff at least one Result carries
+// resultCompressed or resultTeX (an actual integration output, not just
+// a seed value or period stamp). Module-scoped so both populateBrowser
+// and openFamilyDetail can use it.
+function _cfgHasComputedResult(cfg) {
+  return (cfg.results || cfg.Results || []).some(
+    r => r && (r.resultCompressed || r.resultTeX));
 }
 
 function populateBrowser() {
   const body = $('browser-body');
+
+  // Families tab: a separate render path (catalog-driven, no topology
+  // filters). The chip filters and search box do not apply here, so hide
+  // the topology/diagram-specific filter groups and bail early.
+  if (_browserTab === 'families') {
+    populateFamiliesBrowser();
+    return;
+  }
 
   // A topology is waitlisted iff ALL of its configs are waitlisted — if any
   // config is public, the topology is too (the waitlisted configs will be
@@ -8428,7 +8746,7 @@ function populateBrowser() {
   const topos = [];
   for (const key in library.topologies) {
     const t = library.topologies[key];
-    const hasResults = Object.values(t.configs||{}).some(c => (c.results||c.Results||[]).length > 0);
+    const hasResults = Object.values(t.configs||{}).some(_cfgHasComputedResult);
     const isLocal = backendMode === 'full' && Object.values(t.configs||{}).some(c => (c.source||c.Source||'') === 'SubTropica');
     // Collect all diagram names/aliases under this topology for search
     const _diagramNames = [];
@@ -8439,22 +8757,32 @@ function populateBrowser() {
       if (cName) _diagramNames.push(cName.toLowerCase());
     }
     const isWaitlisted = topoIsFullyWaitlisted(key, t);
-    topos.push({ key, name: t.primaryName||t.name||t.Name||key, loops: t.loops??t.L??0, legs: t.legs??0, props: t.props??0, topo: t, configs: Object.keys(t.configs||{}).length, hasResults, isLocal, isWaitlisted, _diagramNames });
+    const isPeriod = Object.values(t.configs||{}).some(_cfgIsPeriod);
+    topos.push({ key, name: t.primaryName||t.name||t.Name||key, loops: t.loops??t.L??0, legs: t.legs??0, props: t.props??0, topo: t, configs: Object.keys(t.configs||{}).length, hasResults, isLocal, isWaitlisted, isPeriod, _diagramNames });
   }
 
   // Classify function class into canonical categories
+  // A config is a "period" iff any of its Results carries period:true (a
+  // phi^4 projective period at D=4, not a dim-reg momentum-space value).
+  // Unifies the period label across Topologies / Diagrams / Collections
+  // (operator request 2026-06-07): one pill reading "period" everywhere.
+  function _cfgIsPeriod(cfg) {
+    return (cfg.results || cfg.Results || []).some(r => r && r.period === true);
+  }
+
   function classifyFC(fc) {
     if (!fc || fc === 'None' || fc === 'unknown' || fc === 'Unknown') return null;
     const KEYWORDS = [
       [/Calabi[–\-]?Yau/i, 'Calabi-Yau'],
+      [/higher.genus|hyperelliptic/i, 'higher genus'],
       [/elliptic/i, 'elliptic'],
       [/hypergeometric/i, 'hypergeometric'],
       [/MZV/, 'MPL'], [/MPL/, 'MPL'], [/logarithm/i, 'MPL'],
-      [/mixed/i, 'mixed'],
+      [/polylogarithm/i, 'MPL'], [/zeta/i, 'MPL'], [/determinant/i, 'MPL'],
       [/rational|Gamma/i, 'rational'],
     ];
     for (const [re, label] of KEYWORDS) { if (re.test(fc)) return label; }
-    return 'other';
+    return null;
   }
 
   // Build diagram (config) list
@@ -8478,7 +8806,8 @@ function populateBrowser() {
         isWaitlisted: _waitlistConfigSet.has(waitlistKey(key, ck)),
         massScales: cfg.MassScales ?? cfg.massScales ?? null,
         fcClass: classifyFC(fc),
-        hasResults: (cfg.results||cfg.Results||[]).length > 0,
+        hasResults: _cfgHasComputedResult(cfg),
+        isPeriod: _cfgIsPeriod(cfg),
         compLevel: (() => { const recs = cfg.Records||cfg.records||[]; for (const r of recs) { const cl = r.computationLevel||r.computation_level; if (cl) return cl.replace(/_/g,' '); } return null; })(),
       });
     }
@@ -8541,9 +8870,9 @@ function populateBrowser() {
   }
 
   const loopVals = [...new Set(items.map(t=>t.loops))].sort((a,b)=>a-b);
-  const legVals = [...new Set(items.map(t=>t.legs))].sort((a,b)=>a-b);
+  const legVals = [...new Set(items.map(t => Math.min(t.legs, 8)))].sort((a,b)=>a-b);
   filters.loops = buildChipGroup('browser-filter-loops', loopVals);
-  filters.legs = buildChipGroup('browser-filter-legs', legVals);
+  filters.legs = buildChipGroup('browser-filter-legs', legVals, v => v >= 8 ? '≥8' : `${v}`);
 
   // Precomputed toggle — restore from localStorage, default on for full mode
   const precomputedCb = $('browser-precomputed-cb');
@@ -8558,9 +8887,9 @@ function populateBrowser() {
 
   if (_browserTab === 'diagrams') {
     const fcVals = [...new Set(diagrams.map(d=>d.fcClass).filter(Boolean))].sort();
-    const msVals = [...new Set(diagrams.map(d=>d.massScales).filter(v=>v!=null))].sort((a,b)=>a-b);
+    const msVals = [...new Set(diagrams.map(d => d.massScales != null ? Math.min(d.massScales, 10) : null).filter(v=>v!=null))].sort((a,b)=>a-b);
     filters.fc = buildChipGroup('browser-filter-fc', fcVals);
-    filters.ms = buildChipGroup('browser-filter-ms', msVals, v => `${v}`);
+    filters.ms = buildChipGroup('browser-filter-ms', msVals, v => v >= 10 ? '≥10' : `${v}`);
     $('browser-filter-fc').style.display = fcVals.length > 0 ? '' : 'none';
     $('browser-filter-ms').style.display = msVals.length > 0 ? '' : 'none';
   } else {
@@ -8654,7 +8983,7 @@ function populateBrowser() {
         if (localOnly && !t.isLocal) return false;
         if (!isReviewMode && t.isWaitlisted) return false;
         if (fLoops.size > 0 && !fLoops.has(t.loops)) return false;
-        if (fLegs.size > 0 && !fLegs.has(t.legs)) return false;
+        if (fLegs.size > 0 && !fLegs.has(Math.min(t.legs, 8))) return false;
         if (sf && !t.name.toLowerCase().includes(sf) && !t.key.toLowerCase().includes(sf) && !(t._diagramNames && t._diagramNames.some(n => n.includes(sf)))) return false;
         return true;
       });
@@ -8720,9 +9049,9 @@ function populateBrowser() {
         if (localOnly && !d.isLocal) return false;
         if (!isReviewMode && d.isWaitlisted) return false;
         if (fLoops.size > 0 && !fLoops.has(d.loops)) return false;
-        if (fLegs.size > 0 && !fLegs.has(d.legs)) return false;
+        if (fLegs.size > 0 && !fLegs.has(Math.min(d.legs, 8))) return false;
         if (fFC.size > 0 && !fFC.has(d.fcClass)) return false;
-        if (fMS.size > 0 && !fMS.has(d.massScales)) return false;
+        if (fMS.size > 0 && !fMS.has(d.massScales != null ? Math.min(d.massScales, 10) : null)) return false;
         if (sf && !d.name.toLowerCase().includes(sf) && !d.topoName.toLowerCase().includes(sf) && !d.topoKey.toLowerCase().includes(sf) && !d.configKey.toLowerCase().includes(sf)) return false;
         return true;
       });
@@ -8753,6 +9082,7 @@ function populateBrowser() {
         if (ms !== undefined && ms !== null) badges += `<span class="badge badge-accent">${ms} scale${ms !== 1 ? 's' : ''}</span>`;
         const fc = d.cfg.FunctionClass || d.cfg.functionClass;
         if (fc && fc !== 'None' && fc !== 'Unknown' && fc !== 'unknown') badges += functionBadge(fc);
+        if (d.isPeriod) badges += '<span class="badge badge-purple badge-period" title="φ⁴ projective period at D=4; not a dim-reg momentum-space value">period</span>';
         badges += refCountBadge(d.cfg);
         // Verified badge removed from toast — now per-result only.
         const dResultStar = d.hasResults
@@ -8784,6 +9114,775 @@ function populateBrowser() {
 
   search.oninput = renderList;
   renderList();
+}
+
+// ════════════════════════════════════════════════════════════════════
+// FAMILIES TAB + PER-FAMILY PAGES
+// ════════════════════════════════════════════════════════════════════
+//
+// Public surface for the all-loop family catalog (ui/families.json).
+// The index lives in the library-browser overlay (Families tab); each
+// family opens a detail page in the shared #detail-panel (the same
+// right-sliding panel topology/diagram detail uses). Member resolution
+// is fully data-driven: members[] may be empty (pre-merge) or populated.
+
+// Batch chip styling: pilot (maroon), core (royal blue), sweep (muted).
+// (review A4: the second batch was renamed 'wilhelm' -> 'core'.)
+function _famBatchChip(batch) {
+  if (!batch) return '';
+  const cls = { pilot: 'fam-chip-pilot', core: 'fam-chip-core',
+                sweep: 'fam-chip-sweep' }[batch] || 'fam-chip-sweep';
+  return `<span class="fam-chip ${cls}" title="seed batch: ${escapeHtml(batch)}">${escapeHtml(batch)}</span>`;
+}
+
+// Period-collection chip + header-note text. AR-A1: the phi^4 prose used to be
+// hardcoded, which contradicted brick-wall's own normalization (toroidal
+// vacuum graphs, NOT phi^4 periods). Read the family's `normalization` string
+// when present; fall back to the phi^4 wording only for the original
+// vacuum-period collections (zigzag/wheel) that carry no normalization note.
+const _FAM_PHI4_BODY =
+  'Values are φ⁴ projective periods at D = 4 (not dim-reg momentum-space values).';
+const _FAM_PHI4_TITLE =
+  'phi^4 projective period at D=4; not a dim-reg momentum-space value';
+function _famPeriodText(fam) {
+  const norm = fam && typeof fam.normalization === 'string'
+    ? fam.normalization.trim() : '';
+  if (norm) return { title: norm, body: norm };
+  return { title: _FAM_PHI4_TITLE, body: _FAM_PHI4_BODY };
+}
+
+// Member parameter label: ints render "L=3", grid pairs "(2,2)".
+function _famParamLabel(pName, parameter) {
+  if (Array.isArray(parameter)) return `(${parameter.join(',')})`;
+  return `${pName}=${parameter}`;
+}
+
+// Representative member for the index-row diagram preview (operator
+// request 2026-06-06): prefer loops == 2, then 3, then the lowest.
+function _famPreviewMember(fam) {
+  const ms = (fam.members || []).filter(m => m.topology);
+  if (!ms.length) return null;
+  // Per-collection preview choice (operator request 2026-06-07: the global
+  // L=2-then-3 rule undersells some families; e.g. the wheel only looks
+  // like a wheel from W5-W6 up). Catalog field previewParameter (scalar or
+  // [A, B]); fallback to the old heuristic when absent or unresolved.
+  const want = fam.previewParameter;
+  if (want != null) {
+    const eq = (a, b) => Array.isArray(a) && Array.isArray(b)
+      ? a.length === b.length && a.every((x, i) => x === b[i])
+      : a === b;
+    const hit = ms.find(m => eq(m.parameter, want));
+    if (hit) return hit;
+  }
+  const byLoops = l => ms.find(m => m.loops === l);
+  return byLoops(2) || byLoops(3)
+    || ms.slice().sort((a, b) => (a.loops ?? 99) - (b.loops ?? 99))[0];
+}
+
+// Collection thumbnails use ONE uniform width (operator request
+// 2026-06-07: "make them all the same width"). The wide box keeps the
+// high-L ladders legible (the original review P1-2 win); compact members
+// (banana, wheel) are fit-to-content and centered with horizontal
+// whitespace by the renderer's Math.min scale, so they are not distorted,
+// just uniformly framed. Every member tile and index preview is the same
+// width.
+const _FAM_THUMB_UNIFORM_ASPECT = 1.9;
+// Retained for reference; no longer used now that tiles are uniform width.
+const _FAM_THUMB_ASPECT_MAX = 1.95;
+function _famThumbAspect(m) {
+  if (m && Array.isArray(m.layout) && m.layout.length >= 2) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const p of m.layout) {
+      if (!Array.isArray(p) || p.length < 2) continue;
+      if (p[0] < minX) minX = p[0];
+      if (p[0] > maxX) maxX = p[0];
+      if (p[1] < minY) minY = p[1];
+      if (p[1] > maxY) maxY = p[1];
+    }
+    const dx = maxX - minX, dy = maxY - minY;
+    if (isFinite(dx) && isFinite(dy) && dx > 0 && dy > 0) {
+      // Damp the raw bbox ratio (legs + node radii pad the real render, so the
+      // body ratio overstates the needed width); cap at the max.
+      const raw = dx / dy;
+      return Math.max(1, Math.min(_FAM_THUMB_ASPECT_MAX, 1 + (raw - 1) * 0.7));
+    }
+  }
+  // Layout-free proxy: wider with loop count for chain-like families.
+  const loops = m && m.loops != null ? m.loops : 0;
+  if (loops >= 6) return 1.8;
+  if (loops >= 4) return 1.5;
+  if (loops >= 3) return 1.3;
+  return 1;
+}
+
+// Small SVG diagram for a family member, via the Diagrams-tab renderer
+// (generateThumbnail needs the global `library`; the browser overlay has
+// loaded it by the time the Families tab renders, but guard anyway).
+function _famMemberThumb(m, size, label) {
+  if (!m || !m.topology || typeof generateThumbnail !== 'function'
+      || !library || !library.topologies) return null;
+  const topoKey = m.topology.replace(/_/g, '|');
+  if (!library.topologies[topoKey]) return null;
+  try {
+    // Uniform-width tile (operator request 2026-06-07): every collection
+    // thumbnail is the same wide box. The renderer fits each graph to its
+    // content and centers it (Math.min scale), so wide ladders fill the box
+    // and compact members sit centered without distortion.
+    const aspect = _FAM_THUMB_UNIFORM_ASPECT;
+    const genOpts = { aspect };
+    if (m.layout) genOpts.layout = m.layout;
+    const svg = generateThumbnail(topoKey,
+      m.config ? m.config.replace(/_/g, '|') : null,
+      genOpts);
+    if (svg) {
+      const wrap = document.createElement('div');
+      wrap.className = 'fam-thumb';
+      if (size) { wrap.style.width = Math.round(size * aspect) + 'px'; wrap.style.height = size + 'px'; }
+      if (typeof svg === 'string') {
+        wrap.innerHTML = svg;
+      } else {
+        // Label the decorative SVG for screen readers (review P1-4): a <title>
+        // child plus role=img/aria-label naming the member or primary name.
+        const lbl = (label || m.primaryName || '').toString().trim();
+        if (lbl) {
+          svg.setAttribute('role', 'img');
+          svg.setAttribute('aria-label', lbl);
+          const titleEl = document.createElementNS(SVG_NS, 'title');
+          titleEl.textContent = lbl;
+          svg.insertBefore(titleEl, svg.firstChild);
+        }
+        wrap.appendChild(svg);
+      }
+      return wrap;
+    }
+  } catch (e) { /* preview is decorative; never break the page */ }
+  return null;
+}
+
+// Parameter-range label for a collection. Integer ranges use a Unicode
+// en-dash, not "..", so "1-8" does not read as a decimal (review P2-1).
+// Parity-restricted families (even/odd L) enumerate the actual orders so a
+// 3-member "L=3,5,7" no longer reads as missing orders 4 and 6 (review P1-3).
+const _EN_DASH = '–';
+function _famParamRange(fam) {
+  const p = fam.parameter || {};
+  const name = p.name || 'L';
+  if (p.second) {
+    const s = p.second;
+    if (p.min === s.min && p.max === s.max)
+      return `${escapeHtml(name)}, ${escapeHtml(s.name || 'N')} = ${p.min}${_EN_DASH}${p.max}`;
+    return `${escapeHtml(name)} = ${p.min}${_EN_DASH}${p.max}, ${escapeHtml(s.name || 'N')} = ${s.min}${_EN_DASH}${s.max}`;
+  }
+  if (p.min === p.max) return `${escapeHtml(name)} = ${p.min}`;
+  // Parity-aware single parameter: list the realised orders explicitly.
+  if ((p.parity === 'even' || p.parity === 'odd')
+      && Number.isInteger(p.min) && Number.isInteger(p.max)) {
+    const vals = [];
+    for (let k = p.min; k <= p.max; k += 2) vals.push(k);
+    if (vals.length) return `${escapeHtml(name)} = ${vals.join(', ')}`;
+  }
+  return `${escapeHtml(name)} = ${p.min}${_EN_DASH}${p.max}`;
+}
+
+function _truncate(s, n) {
+  s = (s || '').trim();
+  return s.length > n ? s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : s;
+}
+
+// Spacetime-dimension marker for fishnet families (review P1-5). The
+// Basso-Dixon (4D) and Yangian (2D) fishnet cards otherwise show identical
+// 3x3-grid thumbnails AND identical "M=1..8 x N=1..8, 11 members", reading as
+// duplicates. The 2D side comes from the clean catalog field
+// massConfig (contains "2d"); the 4D side is the remaining fishnet family.
+// NOTE for the catalog owner: there is no dedicated dimension field, so the
+// "is a fishnet" gate keys off the user-facing displayName ("...fishnet").
+// A proper `spacetimeDim` field on data/families.json would let this drop the
+// name match. Returns '' for non-fishnet families (no tag, stays subtle).
+function _famDimTag(fam) {
+  const dn = (fam.displayName || '').toLowerCase();
+  if (!dn.includes('fishnet')) return '';
+  const mc = (fam.massConfig || '').toLowerCase();
+  return mc.includes('2d') ? '2D' : '4D';
+}
+
+function populateFamiliesBrowser() {
+  const body = $('browser-body');
+  // The chip filters / search apply only to topologies & diagrams; hide
+  // them on the families index (a flat catalog with its own ordering).
+  ['browser-filter-loops', 'browser-filter-legs', 'browser-filter-fc',
+   'browser-filter-ms', 'browser-filter-verified', 'browser-filter-local']
+    .forEach(id => { const el = $(id); if (el) el.style.display = 'none'; });
+  const precompWrap = $('browser-filter-precomputed');
+  if (precompWrap) precompWrap.style.display = 'none';
+
+  if (!families) {
+    body.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">Loading collections…</div>';
+    loadFamilies().then(() => {
+      if (_browserTab !== 'families') return;
+      if (!families) {
+        // All fetch attempts failed; render a distinct failure state with retry.
+        body.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">' +
+          '<span style="cursor:pointer;text-decoration:underline" id="families-retry-link">' +
+          'Couldn’t load collections. Click to retry.</span></div>';
+        const retryLink = document.getElementById('families-retry-link');
+        if (retryLink) retryLink.addEventListener('click', () => { loadFamilies().then(() => { if (_browserTab === 'families') populateFamiliesBrowser(); }); });
+      } else {
+        populateFamiliesBrowser();
+      }
+    });
+    return;
+  }
+
+  const fmap = families.families || {};
+  const fams = Object.keys(fmap).map(slug => ({ slug, ...fmap[slug] }));
+  fams.sort((a, b) => (a.displayName || a.slug).localeCompare(b.displayName || b.slug));
+
+  $('browser-count').textContent = fams.length + ' collection' + (fams.length !== 1 ? 's' : '');
+  body.innerHTML = '';
+  if (fams.length === 0) {
+    body.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">No collections.</div>';
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'browser-list fam-list';
+  fams.forEach(fam => {
+    const row = document.createElement('div');
+    row.className = 'browser-toast fam-row';
+    const memberCount = (fam.members || []).length;
+    const isUmbrella = fam.familyKind === 'umbrella';
+    const isPeriod = fam.familyKind === 'vacuum-period';
+    const periodChip = isPeriod
+      ? `<span class="fam-chip fam-chip-period" title="${escapeHtml(_famPeriodText(fam).title)}">period</span>`
+      : '';
+    const umbrellaChip = isUmbrella
+      ? '<span class="fam-chip fam-chip-umbrella" title="umbrella meta-collection: cross-links related collections, no members of its own">umbrella</span>'
+      : '';
+    const closedChip = fam.closedForm
+      ? '<span class="fam-chip fam-chip-closed" title="closed form known for all ' + escapeHtml((fam.parameter || {}).name || 'L') + '">closed form</span>'
+      : '';
+    // Concise researched function-class label (operator request
+    // 2026-06-07: a clean canonical label, not the verbose functionClass
+    // string that was removed earlier). notes/families_function_classes.md.
+    // Use the same functionBadge() as the diagram toasts so the pill
+    // style and short labels (MPL, Calabi-Yau, elliptic) match exactly.
+    // If the collection is a vacuum-period AND the functionBadge would
+    // render "MPL" (because zeta values map to MPL), prefer "period" since
+    // the period chip is already shown and "MPL" would be redundant/confusing.
+    const fcLabelChip = (fam.functionClassLabel && !isPeriod)
+      ? functionBadge(fam.functionClassLabel)
+      : '';
+    // Umbrella collections suppress the member-count stat entirely (no
+    // members by definition; "0 members" would read as an empty collection).
+    const memberStat = isUmbrella
+      ? ''
+      : `<span><span class="notif-stat-val">${memberCount}</span> member${memberCount !== 1 ? 's' : ''}</span>`;
+    // Dimension marker disambiguates the otherwise-identical fishnet cards
+    // (review P1-5): Basso-Dixon (4D) vs Yangian / Multi-leg (2D).
+    const dim = _famDimTag(fam);
+    const dimMark = dim
+      ? `<span class="fam-dim-mark" title="${dim === '2D' ? 'two-dimensional fishnet' : 'four-dimensional fishnet'}">${dim}</span>`
+      : '';
+    // Visual language mirrors the Topologies/Diagrams cards (notif-title +
+    // notif-stats). Operator feedback 2026-06-07: NO definition prose on
+    // the toast (the page carries it), NO function-class pill (too
+    // descriptive), NO batch pill (pilot/core/sweep is dev information;
+    // the admin UI keeps it).
+    // dimMark (4D/2D) moved to the badge row so the stat line fits in one line.
+    const dimBadge = dim
+      ? `<span class="badge badge-muted" title="${dim === '2D' ? 'two-dimensional' : 'four-dimensional'}">${dim}</span>`
+      : '';
+    row.innerHTML = `
+      <div class="notif-body fam-row-body">
+        <div class="notif-title">${renderInlineMathString(fam.displayName || fam.slug)}</div>
+        <div class="notif-stats fam-row-stats">
+          <span><span class="notif-stat-val">${_famParamRange(fam)}</span></span>
+          ${memberStat}
+        </div>
+        <div class="fam-row-chips">
+          ${fcLabelChip}${dimBadge}${umbrellaChip}${periodChip}${closedChip}
+        </div>
+      </div>`;
+    // Diagram preview (operator request 2026-06-06): one example member
+    // per row, preferring L=2 then L=3, with the seeded mass coloring.
+    // Framed like the Topologies-card thumbnails; collections without a
+    // preview (umbrella, not yet seeded) get an empty frame so titles align.
+    // 64px matches the Topologies/Diagrams .notif-thumb so the three tabs read
+    // as one card language (review P2-4).
+    const _pvMember = _famPreviewMember(fam);
+    const _pvName = (fam.displayName || fam.slug || '').replace(/\$[^$]*\$/g, '').trim();
+    const pv = _famMemberThumb(_pvMember, 64,
+      (_pvMember && _pvMember.primaryName) || _pvName);
+    if (pv) {
+      pv.classList.add('fam-row-thumb');
+      row.insertBefore(pv, row.firstChild);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'fam-thumb fam-row-thumb fam-thumb-empty';
+      ph.title = 'no seeded members yet';
+      row.insertBefore(ph, row.firstChild);
+    }
+    // Keyboard + screen-reader access (review P1-4): the card is a button.
+    // aria-label carries the display name and member count (omitted for
+    // umbrella collections, which suppress the count stat above).
+    const dnPlain = (fam.displayName || fam.slug || '').replace(/\$[^$]*\$/g, '').trim();
+    const aria = isUmbrella
+      ? `Open collection: ${dnPlain}`
+      : `Open collection: ${dnPlain}, ${memberCount} member${memberCount !== 1 ? 's' : ''}`;
+    row.setAttribute('role', 'button');
+    row.setAttribute('tabindex', '0');
+    row.setAttribute('aria-label', aria);
+    const openRow = () => openFamilyDetail(fam.slug, { fromBrowser: true, pushHash: true });
+    row.addEventListener('click', openRow);
+    row.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openRow(); }
+    });
+    list.appendChild(row);
+  });
+  body.appendChild(list);
+}
+
+// Open the per-family detail page in the shared #detail-panel. Sets the
+// #family=<slug> hash unless pushHash === false (used on hash-restore so
+// we don't re-write the hash we are responding to).
+function openFamilyDetail(slug, opts) {
+  opts = opts || {};
+  if (!families) {
+    loadFamilies().then(() => openFamilyDetail(slug, opts));
+    return;
+  }
+  const fam = (families.families || {})[slug];
+  if (!fam) { console.warn('Unknown family slug:', slug); return; }
+
+  // A direct collection open is never itself a drill-return target; clear any
+  // stale drill marker unless this very call is the P0-4 return (the close
+  // handler clears it before calling, so this is a no-op in that path).
+  if (_returnToCollection && _returnToCollection.slug !== slug) _returnToCollection = null;
+
+  const panel = $('detail-panel');
+  const content = $('detail-configs');
+  content.innerHTML = '';
+  content.classList.add('fam-detail');
+
+  const pName = (fam.parameter || {}).name || 'L';
+  $('detail-header-title').innerHTML = escapeHtml(fam.displayName || slug);
+
+  // ── Hero: labeled diagram thumbnail + title + chips ──
+  // Matches the topology detail hero: .popup-thumb (200px, labels) on
+  // the left, title block on the right (operator request 2026-06-08).
+  const hero = document.createElement('div');
+  hero.className = 'popup-hero fam-hero';
+  // Collection thumbnail: use the preview member's topology, rendered
+  // at full size with labels, matching the topology detail window.
+  const pvMember = _famPreviewMember(fam);
+  if (pvMember && pvMember.topology && library && library.topologies) {
+    const pvTopoKey = pvMember.topology.replace(/_/g, '|');
+    const pvConfigKey = pvMember.config ? pvMember.config.replace(/_/g, '|') : null;
+    try {
+      const pvOpts = { labels: true };
+      if (pvMember.layout) pvOpts.layout = pvMember.layout;
+      const heroThumb = generateThumbnail(pvTopoKey, pvConfigKey, pvOpts);
+      if (heroThumb) {
+        heroThumb.classList.add('popup-thumb');
+        hero.appendChild(heroThumb);
+      }
+    } catch (e) { /* decorative; never break the page */ }
+  }
+  const isUmbrella = fam.familyKind === 'umbrella';
+  let chips = '';
+  if (fam.functionClassLabel)
+    chips += functionBadge(fam.functionClassLabel);
+  if (isUmbrella)
+    chips += '<span class="fam-chip fam-chip-umbrella" title="umbrella meta-collection: cross-links related collections, no members of its own">umbrella</span>';
+  if (fam.familyKind === 'vacuum-period')
+    chips += `<span class="fam-chip fam-chip-period" title="${escapeHtml(_famPeriodText(fam).title)}">period</span>`;
+  const titleBlock = document.createElement('div');
+  titleBlock.className = 'popup-title-block';
+  titleBlock.innerHTML = `
+      <div class="popup-name fam-detail-title">${escapeHtml(fam.displayName || slug)}</div>
+      <div class="fam-detail-chips">${chips}</div>`;
+  if (fam.definition) {
+    const descDiv = document.createElement('div');
+    descDiv.className = 'fam-hero-desc';
+    descDiv.innerHTML = renderInlineMathString(fam.definition);
+    titleBlock.appendChild(descDiv);
+  }
+  hero.appendChild(titleBlock);
+  content.appendChild(hero);
+
+  // ── Closed form (KaTeX + normalization + copy button in a box) ──
+  if (fam.closedForm && fam.closedForm.latex) {
+    const cf = document.createElement('div');
+    cf.className = 'popup-section fam-section fam-closedform';
+    cf.innerHTML = '<div class="popup-section-title">Closed form</div>';
+    // Two-column layout: box on the left, thumbnail on the right.
+    const row = document.createElement('div');
+    row.className = 'fam-closedform-row';
+    // The box: display equation + normalization + copy button together.
+    const box = document.createElement('div');
+    box.className = 'fam-closedform-box';
+    const tex = document.createElement('div');
+    tex.className = 'fam-closedform-tex';
+    try {
+      katex.render(fam.closedForm.latex, tex, {
+        throwOnError: false, displayMode: true, maxSize: Infinity, trust: true,
+      });
+    } catch {
+      tex.innerHTML = '<pre class="result-tex-fallback">' +
+        escapeHtml(fam.closedForm.latex) + '</pre>';
+    }
+    box.appendChild(tex);
+    if (fam.closedForm.normalization) {
+      const norm = document.createElement('div');
+      norm.className = 'fam-closedform-norm';
+      norm.innerHTML = renderInlineMathString(fam.closedForm.normalization);
+      box.appendChild(norm);
+    }
+    if (fam.closedForm.wl) {
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'modal-btn-tiny';
+      copyBtn.textContent = 'Copy Mathematica';
+      copyBtn.title = 'Copy standalone Wolfram Language code to clipboard';
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(fam.closedForm.wl).then(() => {
+          showWarningToast('Mathematica code copied');
+        }).catch(() => {
+          showWarningToast('Copy failed');
+        });
+      });
+      box.appendChild(copyBtn);
+    }
+    row.appendChild(box);
+    cf.appendChild(row);
+    content.appendChild(cf);
+  }
+
+  // ── Description: moved into the hero title block (to the right of
+  //    the collection thumbnail), per operator request 2026-06-09. ──
+
+  // ── Vacuum-period header note (stated once for the whole family) ──
+  // Vacuum-period note box REMOVED (operator request 2026-06-08): the
+  // period chip on the hero + the normalization caption in the closed-form
+  // box carry the information; the violet box was redundant.
+
+  // ── Seed caveat (decision D4: e.g. the pentaladder scalar skeleton) ──
+  if (fam.seedCaveat) {
+    const cav = document.createElement('div');
+    cav.className = 'fam-period-note fam-caveat-note';
+    cav.innerHTML = renderInlineMathString(fam.seedCaveat);
+    content.appendChild(cav);
+  }
+
+  // ── Normalization ──
+  // NOT rendered (operator feedback 2026-06-07: internal bookkeeping; the
+  // defining-integral section replaces it for users). The catalog field
+  // stays: the period-chip tooltip and the validation provenance pin
+  // (test_family_closed_forms) still consume it.
+
+  // ── References (card style, matching diagram-window popup-record cards) ──
+  // Each ref gets the same visual treatment as a diagram-detail reference:
+  // paper thumbnail, arXiv + INSPIRE link buttons, INSPIRE-looked-up title
+  // and authors, citation badge. Role labels ("defining" etc.) and raw
+  // texkeys are intentionally dropped per operator request.
+  // Report-issue buttons are omitted because collection refs carry no
+  // recordId (the button needs a paper x topology x config triple).
+  const refs = fam.refs || [];
+  if (refs.length > 0) {
+    const refSec = document.createElement('div');
+    refSec.className = 'popup-section fam-section';
+    refSec.innerHTML = '<div class="popup-section-title">References</div>';
+    const linkSvgFam = '<svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+    refs.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'popup-record';
+      let html = '';
+
+      const arxivId = r.arxiv || null;
+
+      // Link buttons (arXiv + INSPIRE), matching diagram-window style
+      const linkBtns = [];
+      if (arxivId) {
+        linkBtns.push(`<a class="detail-link detail-link-muted" href="https://arxiv.org/abs/${escapeHtml(arxivId)}" target="_blank" rel="noopener">arXiv ${linkSvgFam}</a>`);
+        linkBtns.push(`<a class="detail-link detail-link-muted" href="https://inspirehep.net/arxiv/${escapeHtml(arxivId)}" target="_blank" rel="noopener">INSPIRE ${linkSvgFam}</a>`);
+      }
+      if (linkBtns.length > 0) {
+        html += `<div class="popup-record-links">${linkBtns.join(' ')}</div>`;
+      }
+
+      // Paper thumbnail (CDN with same-origin fallback, identical to diagram cards)
+      if (arxivId) {
+        const safeId = arxivId.replace(/\//g, '_');
+        const cdnSrc = `https://cdn.jsdelivr.net/gh/SubTropica/SubTropica@main/ui/paper-thumbs/${safeId}.jpg`;
+        const localSrc = `paper-thumbs/${safeId}.jpg`;
+        html += `<img class="popup-record-pdf-thumb" src="${cdnSrc}" data-fallback="${localSrc}" alt="" data-arxiv-id="${escapeHtml(arxivId)}" loading="lazy" onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;delete this.dataset.fallback;}else{this.style.display='none';}">`;
+      } else if (r.journal) {
+        // Pre-arXiv journal-only refs: white placeholder thumbnail
+        html += `<img class="popup-record-pdf-thumb" src="paper-thumbs/_journal_placeholder.jpg" alt="" loading="lazy" style="opacity:0.5">`;
+      }
+
+      // Title slot (synchronous from durable INSPIRE cache, then async update)
+      const cachedHit = getDurableInspireHit(arxivId);
+      const initialTitle = cachedHit && cachedHit.title ? cachedHit.title : '';
+      html += `<div class="popup-record-title">${renderInlineMathString(initialTitle)}</div>`;
+
+      // Authors slot (empty placeholder, filled by INSPIRE async)
+      html += `<div class="popup-record-authors"></div>`;
+
+      // For refs without an arXiv id but with a journal string, show it as
+      // the reference line (rare; mirrors the fallback-references path in
+      // diagram detail).
+      if (!arxivId && r.journal) {
+        html += `<div class="popup-record-ref">${escapeHtml(r.journal)}</div>`;
+      }
+
+      // Per-paper description (how this family appears in the cited paper),
+      // matching diagram-window record cards (.popup-record-desc style).
+      if (r.description) {
+        html += `<div class="popup-record-desc">${renderInlineMathString(r.description)}</div>`;
+      }
+
+      card.innerHTML = html;
+      refSec.appendChild(card);
+
+      // Click thumbnail to open PDF viewer (same as diagram cards)
+      card.querySelector('.popup-record-pdf-thumb')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const aid = e.target.dataset.arxivId;
+        if (aid) openPdfPanel(aid);
+      });
+
+      // Async INSPIRE hydration: title, authors, citation badge.
+      // Uses the same fetchInspireData + getDurableInspireHit paths as
+      // diagram-window cards, so titles fill in and citation badges appear.
+      if (arxivId) {
+        fetchInspireData(arxivId, (data) => {
+          const titleEl = card.querySelector('.popup-record-title');
+          if (data.title && titleEl) {
+            titleEl.innerHTML = renderInlineMathString(data.title);
+          }
+
+          const authorsEl = card.querySelector('.popup-record-authors');
+          if (data.authors && data.authors.length > 0 && authorsEl) {
+            const linked = data.authors.map(a => {
+              if (typeof a === 'string') {
+                const display = _firstLast(a);
+                const url = `https://inspirehep.net/authors?q=${encodeURIComponent(display)}`;
+                return `<a href="${url}" target="_blank" rel="noopener" style="color:var(--text)">${escapeHtml(display)}</a>`;
+              }
+              const display = a.display_name || _firstLast(a.full_name || '');
+              const url = a.inspire_id ? `https://inspirehep.net/authors/${a.inspire_id}`
+                                          : `https://inspirehep.net/authors?q=${encodeURIComponent(display)}`;
+              return `<a href="${url}" target="_blank" rel="noopener" style="color:var(--text)">${escapeHtml(display)}</a>`;
+            });
+            authorsEl.innerHTML = linked.length > 10
+              ? linked.slice(0, 10).join(', ') + ' et al.'
+              : linked.join(', ');
+          }
+
+          if (data.citations != null) {
+            const citBadge = document.createElement('span');
+            citBadge.className = 'badge badge-muted';
+            citBadge.textContent = `${data.citations} citation${data.citations !== 1 ? 's' : ''}`;
+            const badgesEl = card.querySelector('.popup-record-badges');
+            if (badgesEl) {
+              badgesEl.appendChild(citBadge);
+            } else {
+              const newBadges = document.createElement('div');
+              newBadges.className = 'popup-record-badges';
+              newBadges.appendChild(citBadge);
+              card.appendChild(newBadges);
+            }
+          }
+        });
+      }
+    });
+    content.appendChild(refSec);
+  }
+
+  // ── Related collections: REMOVED (operator request 2026-06-07). The
+  // catalog related[] field is retained (used by data tooling) but no
+  // longer rendered on the page.
+
+  // ── Member strip (members + missing, ordered by parameter) ──
+  // Umbrella meta-collections have no members of their own; skip the section
+  // entirely so Related collections is the primary content of the page.
+  // membersRetired collections likewise (operator review 2026-06-07: a
+  // "No instantiated members yet" note would wrongly imply seeding is
+  // planned; the seed caveat carries the explanation) -- unless members
+  // exist (resolved members always render).
+  const _membersRetiredEmpty =
+    fam.membersRetired && !(fam.members || []).length;
+  if (!isUmbrella && !_membersRetiredEmpty) {
+  const memSec = document.createElement('div');
+  memSec.className = 'popup-section fam-section fam-members-section';
+  memSec.innerHTML = '<div class="popup-section-title">Members</div>';
+  const strip = document.createElement('div');
+  strip.className = 'fam-member-grid';
+
+  // Build a unified, loop-ordered list of tiles (core batch: parameters
+  // may be [A, B] grid pairs; numeric subtraction on arrays is NaN, so
+  // sort by a derived loop key: member.loops when present, else the
+  // scalar, else the pair's product/sum per the family's cap kind).
+  const capKind = (fam.parameter || {}).sumMax != null ? 'sum' : 'product';
+  const loopKey = t => {
+    if (t.m && t.m.loops != null) return t.m.loops;
+    const p = t.parameter;
+    if (Array.isArray(p)) return capKind === 'sum' ? p[0] + p[1] : p[0] * p[1];
+    return p ?? 0;
+  };
+  const tiles = [];
+  (fam.members || []).forEach(m => tiles.push({ kind: 'member', parameter: m.parameter, m }));
+  // Parity-excluded parameters are undefined members of the family, not
+  // gaps awaiting seeding; render nothing for them (operator request
+  // 2026-06-07: "undefined for odd L - then don't display them").
+  (fam.missing || []).forEach(m => {
+    if (m.why === 'parity-excluded') return;
+    tiles.push({ kind: 'pending', parameter: m.parameter, m });
+  });
+  tiles.sort((a, b) => (loopKey(a) - loopKey(b))
+    || ((Array.isArray(a.parameter) ? a.parameter[0] : 0)
+        - (Array.isArray(b.parameter) ? b.parameter[0] : 0)));
+
+  if (tiles.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'fam-member-empty';
+    empty.textContent = 'No instantiated members yet.';
+    strip.appendChild(empty);
+  }
+
+  tiles.forEach(t => {
+    if (t.kind === 'member') {
+      // Render as a toast card matching Topologies-tab style (operator
+      // request 2026-06-08: member cards should be the relevant toasts).
+      const card = document.createElement('div');
+      card.className = 'browser-toast fam-member-card';
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      const topoKey = t.m.topology.replace(/_/g, '|');
+
+      // Thumbnail: wide enough for ladder-like graphs to render legibly.
+      // The uniform aspect (_FAM_THUMB_UNIFORM_ASPECT ~1.9) makes the SVG
+      // viewBox wide; the CSS thumb must match or the graph gets squished.
+      const thumbH = 64;
+      const thumbW = Math.round(thumbH * _FAM_THUMB_UNIFORM_ASPECT);
+      const thumbLabel = (t.m.primaryName || '').toString().trim()
+        || (Array.isArray(t.parameter) ? `(${t.parameter.join(',')})` : `${pName}=${t.parameter}`);
+      const th = _famMemberThumb(t.m, thumbH, thumbLabel);
+      if (th) {
+        th.classList.add('notif-thumb');
+        th.style.width = thumbW + 'px';
+        th.style.height = thumbH + 'px';
+        card.appendChild(th);
+      }
+
+      // Body: name, stats, parameter tag
+      const cardBody = document.createElement('div');
+      cardBody.className = 'notif-body';
+      const displayName = t.m.primaryName || '';
+      // Result star: check the member's OWN config (not any config on the
+      // topology; other mass configs may have results while this one does not,
+      // which is a false star: e.g. banana L=2 equal-mass has no result but
+      // the topology carries results on other mass configurations).
+      const topo = (library && library.topologies) ? library.topologies[topoKey] : null;
+      const ownCfgKey = t.m.config ? t.m.config.replace(/_/g, '|') : null;
+      const ownCfg = (topo && ownCfgKey) ? (topo.configs || {})[ownCfgKey] : null;
+      const hasResults = ownCfg && _cfgHasComputedResult(ownCfg);
+      const resultStar = hasResults
+        ? '<span class="result-star" title="Result computed">★</span> '
+        : '';
+      // Stats from member data or topology
+      const loops = t.m.loops != null ? t.m.loops : (topo ? (topo.loops || topo.Loops || 0) : 0);
+      const legs = t.m.legs != null ? t.m.legs : (topo ? (topo.legs || topo.Legs || 0) : 0);
+      const props = t.m.props != null ? t.m.props : (topo ? (topo.props || topo.Propagators || 0) : 0);
+      // Badges: function class + "exact" if the member's own config has
+      // results + period. Uses ownCfg (the member's seeded config), not
+      // all configs on the topology.
+      let memberBadges = '';
+      if (ownCfg) {
+        const fc0 = ownCfg.FunctionClass || ownCfg.functionClass;
+        if (fc0 && fc0 !== 'None' && fc0 !== 'unknown') memberBadges += functionBadge(fc0);
+        if (hasResults) memberBadges += '<span class="badge badge-green">exact</span>';
+        if ((ownCfg.results || ownCfg.Results || []).some(r => r && r.period === true))
+          memberBadges += '<span class="badge badge-purple badge-period">period</span>';
+      }
+      // Parameter label (small tag)
+      const paramLabel = Array.isArray(t.parameter)
+        ? `(${t.parameter.join(',')})` : `${escapeHtml(pName)}=${t.parameter}`;
+      cardBody.innerHTML = `
+        <div class="notif-title">${resultStar}${renderInlineMathString(displayName)}${memberBadges ? ' ' + memberBadges : ''}</div>
+        <div class="notif-stats">
+          <span><span class="notif-stat-val">${loops}</span> loop${loops !== 1 ? 's' : ''}</span>
+          <span><span class="notif-stat-val">${legs}</span> leg${legs !== 1 ? 's' : ''}</span>
+          <span><span class="notif-stat-val">${props}</span> prop${props !== 1 ? 's' : ''}</span>
+        </div>
+        <span class="fam-member-param-tag">${paramLabel}</span>
+      `;
+      card.appendChild(cardBody);
+
+      // Open the member's specific DIAGRAM (config), not just the topology,
+      // because closed forms and results are associated with specific mass
+      // configurations (operator request 2026-06-09).
+      const open = () => {
+        _returnToCollection = { slug, fromBrowser: opts.fromBrowser };
+        if (topo && ownCfgKey && (topo.configs || {})[ownCfgKey]) {
+          openDetailPanel(topoKey, topo, { [ownCfgKey]: 'compatible' }, ownCfgKey,
+            { fromBrowser: opts.fromBrowser });
+        } else {
+          _openTopologyByKey(topoKey, { fromBrowser: opts.fromBrowser });
+        }
+      };
+      card.addEventListener('click', open);
+      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+      strip.appendChild(card);
+    } else {
+      // Pending member: dashed toast placeholder
+      const card = document.createElement('div');
+      card.className = 'browser-toast fam-member-card fam-member-card-pending';
+      card.innerHTML = `<div class="notif-body"><div class="notif-title" style="color:var(--text-muted)">${escapeHtml(pName)}=${t.parameter}</div><div class="notif-stats" style="color:var(--text-muted)">pending</div></div>`;
+      strip.appendChild(card);
+    }
+  });
+
+  memSec.appendChild(strip);
+  content.appendChild(memSec);
+  }  // end if (!isUmbrella)
+
+  // ── Present the panel (reuse the topology-detail open mechanics) ──
+  content.scrollTop = 0;
+  if (opts.fromBrowser) {
+    panel.classList.add('above-browser');
+    $('detail-backdrop').classList.add('above-browser');
+  } else {
+    panel.classList.remove('above-browser');
+    $('detail-backdrop').classList.remove('above-browser');
+  }
+  panel.style.left = '';
+  panel.classList.add('open');
+  $('detail-backdrop').classList.add('open');
+  if (typeof updateCanvasDepth === 'function') updateCanvasDepth();
+
+  if (opts.pushHash !== false) {
+    _suppressHashOpen++;
+    location.hash = 'collection=' + slug;
+    // Decrement the suppression counter after the hashchange event fires.
+    setTimeout(() => { _suppressHashOpen--; }, 0);
+  }
+}
+
+// Open a topology detail by its library key (pipe-separated, e.g.
+// "123|23|3||"). Reused by family member tiles. Mirrors the browser
+// card click: single-config topologies open straight to the config.
+function _openTopologyByKey(topoKey, opts) {
+  opts = opts || {};
+  if (!library || !library.topologies) return;
+  const topo = library.topologies[topoKey];
+  if (!topo) { console.warn('Unknown topology key:', topoKey); return; }
+  const cfgKeys = Object.keys(topo.configs || {});
+  if (cfgKeys.length === 1) {
+    openDetailPanel(topoKey, topo, { [cfgKeys[0]]: 'compatible' }, cfgKeys[0], { fromBrowser: opts.fromBrowser });
+  } else {
+    openDetailPanel(topoKey, topo, {}, null, { fromBrowser: opts.fromBrowser });
+  }
 }
 
 // Viewport-aware auto-fit after loading a diagram. On phones the default
@@ -9202,6 +10301,25 @@ $('browser-close').addEventListener('click', closeBrowser);
 $('browser-overlay').addEventListener('click', function(evt) { if (evt.target===this) closeBrowser(); });
 $('browser-tab-topos').addEventListener('click', () => switchBrowserTab('topos'));
 $('browser-tab-diagrams').addEventListener('click', () => switchBrowserTab('diagrams'));
+{
+  const _famTab = $('browser-tab-families');
+  if (_famTab) _famTab.addEventListener('click', () => switchBrowserTab('families'));
+}
+// Library tab ARIA semantics (review P2-6): mark the .browser-tab buttons as
+// role=tab inside a role=tablist wrapper. index.html is owned elsewhere, so
+// the roles are applied here at init; aria-selected is kept in sync from
+// openBrowser()/switchBrowserTab() via _syncBrowserTabAria().
+{
+  const _topo = $('browser-tab-topos');
+  const _tablist = _topo && _topo.parentElement;
+  if (_tablist) _tablist.setAttribute('role', 'tablist');
+  [['browser-tab-topos', 'topos'], ['browser-tab-diagrams', 'diagrams'],
+   ['browser-tab-families', 'families']].forEach(([id]) => {
+    const el = $(id);
+    if (el) el.setAttribute('role', 'tab');
+  });
+  _syncBrowserTabAria(_browserTab);
+}
 $('browser-sync-btn').addEventListener('click', async () => {
   const btn = $('browser-sync-btn');
   btn.disabled = true;
@@ -12956,6 +14074,145 @@ function renderAlphabetPills(container, wDefinitions, fallbackAlphabet) {
   }
 }
 
+// Ristretto proposal records (operator decision 2026-06-07). Renders the
+// two new Results record types at the BOTTOM of a config's result list:
+//
+//   resultType "singularities"     -> badge "Singularities"; a KaTeX list
+//                                     of the kinematic singular-locus
+//                                     polynomials (working scale).
+//   resultType "proposed-alphabet" -> badge "Proposed alphabet"; the even
+//                                     letters list plus odd-letter pills
+//                                     rendered like the existing algebraic
+//                                     letters ((P-sqrt Q)/(P+sqrt Q)).
+//
+// Both carry a distinct "proposal" badge (badge-proposal, dashed amber) so
+// a proposed alphabet is never mistaken for a verified computed result.
+// Each math string is the TeX sibling emitted by the producer
+// (singularitiesTeX / evensTeX / letterTeX / QTeX), run through cleanTeX
+// for the same mm->m^2, MM->M^2, Sqrt->\sqrt substitutions as the main
+// result view; if a record predates the TeX siblings we fall back to the
+// InputForm string (KaTeX renders it best-effort).
+function renderProposalRecords(content, records) {
+  if (typeof katex === 'undefined') return;
+  const pillStyle = 'display:inline-block;padding:1px 6px;background:var(--surface);border-radius:3px;font-size:11px;border:1px solid var(--border)';
+  const oddPillStyle = pillStyle + ';border-style:dashed';
+  const renderInto = (el, tex) => {
+    try { katex.render(cleanTeX(tex), el, { throwOnError: false }); }
+    catch { el.textContent = tex; }
+  };
+  // byEpsOrder: when a record carries a non-null exact split
+  // [{order, indices}], the labels are rendered as small order chips so a
+  // reader sees which letters belong to which epsilon order. When null the
+  // record is order-agnostic and no chip row is shown (never fabricated).
+  const orderChips = (byEpsOrder) => {
+    if (!Array.isArray(byEpsOrder) || byEpsOrder.length === 0) return '';
+    const chips = byEpsOrder.map(o =>
+      `<span class="badge badge-gold" title="letters at this ε order: indices ${(o.indices || []).join(', ')}">ε${o.order >= 0 ? '+' : ''}${o.order}: ${(o.indices || []).length}</span>`
+    ).join(' ');
+    return `<div class="popup-record-badges" style="margin-top:4px">${chips}</div>`;
+  };
+
+  const section = document.createElement('div');
+  section.className = 'popup-section';
+  section.innerHTML = '<div class="popup-section-title">Proposed singularities &amp; alphabet</div>';
+
+  records.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'popup-record popup-result-card';
+    const isSing = r.resultType === 'singularities';
+    const typeBadge = isSing
+      ? '<span class="badge badge-teal">Singularities</span>'
+      : '<span class="badge badge-purple">Proposed alphabet</span>';
+    const propBadge = '<span class="badge badge-proposal" title="Proposal: an Euler-discriminant singular locus / Ristretto FindLetters alphabet, not a numerically verified result.">proposal</span>';
+    const prov = r.provenance || {};
+    const provBits = [];
+    if (prov.engine) provBits.push(prov.engine);
+    if (prov.chi !== undefined && prov.chi !== null) provBits.push('χ = ' + prov.chi);
+    if (prov.stVersion) provBits.push('ST ' + String(prov.stVersion).replace(/^SubTropica\s*v?/i, 'v'));
+    const provBadge = provBits.length
+      ? `<span class="badge badge-muted" title="Provenance">${provBits.join(' · ')}</span>` : '';
+    card.innerHTML = `<div class="popup-record-badges">${typeBadge} ${propBadge} ${provBadge}</div>`;
+    card.innerHTML += orderChips(r.byEpsOrder);
+
+    if (isSing) {
+      // Singular-locus polynomials as KaTeX pills.
+      const tex = Array.isArray(r.singularitiesTeX) && r.singularitiesTeX.length
+        ? r.singularitiesTeX
+        : (r.singularities || []);
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'margin-top:8px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap';
+      wrap.innerHTML = '<span style="font-size:11px;color:var(--text-muted);font-weight:500;white-space:nowrap">Singular locus</span>';
+      const pills = document.createElement('div');
+      pills.style.cssText = 'display:flex;flex-wrap:wrap;gap:3px;line-height:1';
+      tex.forEach(t => {
+        const span = document.createElement('span');
+        span.style.cssText = pillStyle;
+        renderInto(span, t);
+        pills.appendChild(span);
+      });
+      wrap.appendChild(pills);
+      card.appendChild(wrap);
+    } else {
+      // Even letters.
+      const evTex = Array.isArray(r.evensTeX) && r.evensTeX.length ? r.evensTeX : (r.evens || []);
+      if (evTex.length) {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'margin-top:8px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap';
+        wrap.innerHTML = '<span style="font-size:11px;color:var(--text-muted);font-weight:500;white-space:nowrap">Even letters</span>';
+        const pills = document.createElement('div');
+        pills.style.cssText = 'display:flex;flex-wrap:wrap;gap:3px;line-height:1';
+        evTex.forEach(t => {
+          const span = document.createElement('span');
+          span.style.cssText = pillStyle;
+          renderInto(span, t);
+          pills.appendChild(span);
+        });
+        wrap.appendChild(pills);
+        card.appendChild(wrap);
+      }
+      // Odd-letter certificates: render the letter (P-sqrt Q)/(P+sqrt Q),
+      // with the exact P / c / Q / multiset identity exposed on hover so a
+      // reader can re-verify P^2 - Q - c*M == 0 without leaving the page.
+      const odd = Array.isArray(r.oddLetters) ? r.oddLetters : [];
+      if (odd.length) {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'margin-top:8px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap';
+        wrap.innerHTML = `<span style="font-size:11px;color:var(--text-muted);font-weight:500;white-space:nowrap">Odd letters (${odd.length})</span>`;
+        const pills = document.createElement('div');
+        pills.style.cssText = 'display:flex;flex-wrap:wrap;gap:3px;line-height:1';
+        odd.forEach(o => {
+          const span = document.createElement('span');
+          span.className = 'alphabet-letter';
+          span.style.cssText = oddPillStyle + ';cursor:help';
+          renderInto(span, o.letterTeX || o.letter || '');
+          // exact certificate tooltip (re-verifiable identity)
+          const mset = (o.multiset || []).map(([p, n]) => `(${p})^${n}`).join(' · ');
+          span.title = `P = ${o.P}\nc = ${o.c}\nQ = ${o.Q}\nM = ${mset}\nP^2 - Q - c*M == 0` +
+            (o.identityVerified ? '  (verified)' : '  (UNVERIFIED)');
+          pills.appendChild(span);
+        });
+        wrap.appendChild(pills);
+        card.appendChild(wrap);
+      }
+      // Bare-roots note / refusals, when present.
+      if (r.bareRootsNote && !/^no bare-root/.test(r.bareRootsNote)) {
+        const note = document.createElement('div');
+        note.style.cssText = 'margin-top:6px;font-size:11px;color:var(--text-muted)';
+        note.textContent = 'Bare roots: ' + r.bareRootsNote;
+        card.appendChild(note);
+      }
+      if (Array.isArray(r.refusals) && r.refusals.length) {
+        const note = document.createElement('div');
+        note.style.cssText = 'margin-top:4px;font-size:11px;color:var(--text-muted)';
+        note.textContent = `${r.refusals.length} refusal${r.refusals.length !== 1 ? 's' : ''} recorded`;
+        card.appendChild(note);
+      }
+    }
+    section.appendChild(card);
+  });
+  content.appendChild(section);
+}
+
 function cleanSymbolTeX(tex) {
   if (!tex) return '';
   // Inside an aligned block the '&' column markers are meaningful, so only
@@ -16477,16 +17734,84 @@ function diagramFromHash(hash) {
 }
 
 function updateUrlHash() {
+  // A collection deep link (#collection=slug) owns the hash; do not
+  // clobber it with canvas state. The guard is unconditional (not "only
+  // while the detail panel is open") because on a fresh page load the
+  // canvas writes the hash BEFORE the lazily loaded collection page
+  // opens. closeDetailPanel() clears the collection hash itself, after
+  // which canvas updates resume owning it.
+  if (_collectionHashSlug(window.location.hash) !== null) return;
   const h = diagramToHash();
   if (h) history.replaceState(null, '', '#d=' + h);
   else history.replaceState(null, '', window.location.pathname + window.location.search);
 }
 
+// Collection deep-link slug from a location hash. '#collection=' is the
+// canonical form ("Collections" in the UI: "family" collides with the
+// integral-family term of the Feynman literature); '#family=' stays
+// accepted so pre-rename deep links keep working.
+function _collectionHashSlug(hash) {
+  for (const pre of ['#collection=', '#family=']) {
+    if (hash.startsWith(pre)) return decodeURIComponent(hash.slice(pre.length));
+  }
+  return null;
+}
+
+// Resolves once the library object is populated, WITHOUT triggering a
+// second fetch (init() always kicks loadLibrary(); collection deep links
+// must not race it: member thumbnails and tile clicks silently no-op
+// when the detail page renders before library.json arrives).
+function _libraryReady() {
+  if (library && library.topologies) return Promise.resolve();
+  return new Promise(resolve => {
+    const t = setInterval(() => {
+      if (library && library.topologies) { clearInterval(t); resolve(); }
+    }, 100);
+  });
+}
+
+// Whether the library browser overlay is currently shown; hash-driven
+// collection opens must stack the detail popup ABOVE it in that case
+// (fromBrowser adds the .above-browser z-index bump).
+function _browserOverlayVisible() {
+  const ov = document.getElementById('browser-overlay');
+  return !!(ov && ov.classList.contains('visible'));
+}
+
 function restoreFromUrlHash() {
   const hash = window.location.hash;
+  if (_collectionHashSlug(hash) !== null) {
+    // Deep link to a collection page. Collections load lazily, so kick the
+    // load and open once resolved. Returns true so init() treats the hash
+    // as "consumed" and does not also restore a saved diagram.
+    const slug = _collectionHashSlug(hash);
+    if (slug) {
+      Promise.all([loadFamilies(), _libraryReady()]).then(() =>
+        openFamilyDetail(slug, { fromBrowser: _browserOverlayVisible(), pushHash: false }));
+      return true;
+    }
+  }
   if (!hash.startsWith('#d=')) return false;
   return diagramFromHash(hash.slice(3));
 }
+
+// Back/forward support for #family=<slug>. On a normal in-app open we set
+// _suppressHashOpen so this handler does not double-open; user-driven
+// hash changes (browser back/forward, manual edits) flow through here.
+window.addEventListener('hashchange', () => {
+  if (_suppressHashOpen) return;
+  const hash = window.location.hash;
+  if (_collectionHashSlug(hash) !== null) {
+    const slug = _collectionHashSlug(hash);
+    if (slug) Promise.all([loadFamilies(), _libraryReady()]).then(() =>
+      openFamilyDetail(slug, { fromBrowser: _browserOverlayVisible(), pushHash: false }));
+  } else if (!hash || hash === '#') {
+    // Hash cleared (e.g. back out of a family page): close the panel if it
+    // is currently showing a family detail.
+    const content = $('detail-configs');
+    if (content && content.classList.contains('fam-detail')) closeDetailPanel();
+  }
+});
 
 // ─── Disable autocomplete globally ───────────────────────────────────
 

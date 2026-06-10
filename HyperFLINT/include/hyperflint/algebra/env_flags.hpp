@@ -156,3 +156,5 @@
 #define HF_FLAG_LF_CACHE_SHARDS                std::getenv("HF_LF_CACHE_SHARDS")
 #define HF_FLAG_LF_SQF                         std::getenv("HF_LF_SQF")
 #define HF_FLAG_LF_LOCK_WAIT_PROFILE           std::getenv("HF_LF_LOCK_WAIT_PROFILE")
+#define HF_FLAG_LF_PERFPOW                     std::getenv("HF_LF_PERFPOW")
+#define HF_FLAG_LF_PERFPOW_FAST                std::getenv("HF_LF_PERFPOW_FAST")

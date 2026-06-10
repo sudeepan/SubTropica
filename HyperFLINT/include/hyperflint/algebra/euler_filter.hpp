@@ -62,4 +62,19 @@ std::vector<Poly> chi_filter_letters(
     ChiFilterCache& cache,
     unsigned long base_seed = 87178);
 
+// Utility-study accounting (2026-06-06): judged / dropped /
+// boundary-exempt letter counts and chi_count_sectors invocations
+// (the msolve cost driver) since the last reset.  Reset per request
+// by the consumer (lr_search / lr_scan); read for HF_LR_TRACE
+// summaries and the chi-utility A/B study.
+struct ChiFilterStats {
+    unsigned long judged = 0;
+    unsigned long dropped = 0;
+    unsigned long boundary_exempt = 0;
+    unsigned long msolve_calls = 0;
+};
+ChiFilterStats chi_filter_stats();
+void reset_chi_filter_stats();
+void chi_stats_count_sectors_call();  // incremented inside euler_chi
+
 }  // namespace hyperflint

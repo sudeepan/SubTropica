@@ -1,0 +1,38 @@
+{
+	"CNickelIndex":"1234|567|567|e58|e58||e|e|e|:0000|000|000|000|000||1|2|3|",
+	"MassScales":8,
+	"FunctionClass":"Calabi-Yau periods, maximal rigidity 2(L-1)",
+	"EpsilonOrder":"",
+	"edges":"{{{8, 2}, 0}, {{7, 3}, 0}, {{8, 3}, 0}, {{7, 2}, 0}, {{2, 6}, 0}, {{3, 1}, 0}, {{2, 1}, 0}, {{3, 6}, 0}, {{6, 4}, 0}, {{1, 5}, 0}, {{6, 5}, 0}, {{1, 4}, 0}, {{4, 9}, 0}, {{5, 9}, 0}}",
+	"nodes":"{{8, M[1]}, {4, 0}, {7, M[2]}, {5, 0}, {9, M[3]}}",
+	"References":[
+		"arXiv:1810.07689",
+		"arXiv:2302.14840"
+	],
+	"Records":[
+		{
+			"reference":"arXiv:1810.07689",
+			"familyName":"tardigrade_L6_massless-internal-offshell-external",
+			"description":"Tardigrade family, tardigrade_L6_massless-internal-offshell-external. Nonplanar Calabi-Yau bestiary graph at even loop order L, with 2(L+1) MASSLESS propagators (arXiv:1810.07689). X-cell ladder body with open corners left + apex right; phi^4-marginal decoration, degree-keyed after co-vertex collapse: 3 off-shell legs (both left corners + apex) + 2 massless legs (the apex-adjacent rail column); 5 effective legs at every L (figure-pinned, notes\/families_core_batch\/bestiary_pinning.md). Saturates the maximal rigidity 2(L-1) (checked through 11 loops). The massive-internal L=2 variant (arXiv:2209.10962, arXiv:2302.14840, a K3 surface of Picard rank 11) is a separate config of the same topology; the all-massless decoration is IR-divergent and not a member.",
+			"method":[
+				"closed form"
+			],
+			"tools":[
+				"SubTropica seed_families"
+			],
+			"recordId":"fs_1ce282f9356e",
+			"verified":false,
+			"verifiedAt":""
+		}
+	],
+	"Results":[],
+	"Names":[
+		"tardigrade_L6_massless-internal-offshell-external"
+	],
+	"Source":[
+		"family-seed"
+	],
+	"Loops":6,
+	"NumPropagators":14,
+	"CanonicalName":"6-loop 5-point (14 propagators)"
+}

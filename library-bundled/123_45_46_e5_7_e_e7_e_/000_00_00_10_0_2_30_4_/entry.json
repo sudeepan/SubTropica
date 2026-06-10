@@ -3,8 +3,22 @@
   "MassScales": 6,
   "FunctionClass": "MPL",
   "EpsilonOrder": "0",
+  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{3, 5}, 0}, {{3, 7}, 0}, {{4, 6}, 0}, {{5, 8}, 0}, {{7, 8}, 0}}",
+  "nodes": "{{4, M[1]}, {6, M[2]}, {7, M[3]}, {8, M[4]}}",
   "References": [
-    "Phys. Lett. B305 (1993) 136–143, doi: 10.1016/0370-2693(93)91118-7"
+    "Phys. Lett. B305 (1993) 136–143, doi: 10.1016/0370-2693(93)91118-7",
+    "Phys. Lett. B 298 (1993) 363",
+    "Phys. Lett. B 305 (1993) 136",
+    "arXiv:hep-th/0607160",
+    "arXiv:1705.03545",
+    "arXiv:1811.10623",
+    "arXiv:2007.15049",
+    "arXiv:2310.08625",
+    "arXiv:2209.05291",
+    "arXiv:1811.03282",
+    "arXiv:1905.11467",
+    "arXiv:2005.01735",
+    "arXiv:2010.08552"
   ],
   "Records": [
     {
@@ -15,11 +29,35 @@
       "recordId": "1505927409.8WPL",
       "verified": true,
       "verifiedAt": "auto-loopedia"
+    },
+    {
+      "reference": "Phys. Lett. B 298 (1993) 363",
+      "familyName": "ladder4pt_L3_massless-internal-offshell-external",
+      "description": "4-mass ladder family, ladder4pt_L3_massless-internal-offshell-external. Planar L-rung box ladder: rails t_1..t_{L+1}, b_1..b_{L+1}; rail edges (t_i,t_{i+1}), (b_i,b_{i+1}); rungs (t_i,b_i); 4 off-shell external legs at t_1, t_{L+1}, b_1, b_{L+1}. 2L+2 vertices, 3L+1 propagators, L loops. Massless internal lines. Value = PhiLadder[3, 1/3, 1/5].",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_b2c22d7224f7",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:1705.03545",
+      "familyName": "basso-dixon_L3x1_massless-internal-offshell-external",
+      "description": "Basso-Dixon fishnet family, basso-dixon_L3x1_massless-internal-offshell-external. Basso-Dixon fishnet B_{M,N}: an M x N rectangular grid, 4 external operators at the corners, defined in dual (region-momentum) space via products of 1/x_ij^2 propagators. The L = MN loop integral is conformal. Momentum space: the (M+1) x (N+1) vertex grid (2MN+M+N massless edges, 4 off-shell corner legs, MN loops); B_{M,1} = the M-rung 4-pt ladder; transpose symmetry fixes the canonical orientation M >= N. Value = BassoDixonI[3, 1, 1/3, 1/5].",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_8075e17b3a26",
+      "verified": false,
+      "verifiedAt": ""
     }
-  ],
-  "Source": [
-    "arXiv",
-    "Loopedia"
   ],
   "Results": [],
   "Names": [
@@ -29,8 +67,10 @@
     "Triple box",
     "Traintrack"
   ],
-  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{3, 5}, 0}, {{3, 7}, 0}, {{4, 6}, 0}, {{5, 8}, 0}, {{7, 8}, 0}}",
-  "nodes": "{{4, M[1]}, {6, M[2]}, {7, M[3]}, {8, M[4]}}",
+  "Source": [
+    "arXiv",
+    "Loopedia"
+  ],
   "CanonicalName": "4-mass triple box",
   "MassConfig": {
     "numEdges": 10,

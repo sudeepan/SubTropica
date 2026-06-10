@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"e111111111|e|",
+	"Name":"banana_L8_equal-mass-internal",
+	"PrimaryName":"Banana L8",
+	"Loops":8,
+	"Legs":2,
+	"Propagators":9,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"banana",
+			"parameter":8
+		}
+	]
+}

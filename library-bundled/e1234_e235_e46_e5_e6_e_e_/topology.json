@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"e1234|e235|e46|e5|e6|e|e|",
+	"Name":"fishnet-multileg-2d_L5_massless-internal-2d",
+	"PrimaryName":"Multi-leg fishnet L5",
+	"Loops":5,
+	"Legs":7,
+	"Propagators":11,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"fishnet-multileg-2d",
+			"parameter":5
+		}
+	]
+}

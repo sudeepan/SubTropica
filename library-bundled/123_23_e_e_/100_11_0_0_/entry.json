@@ -1,57 +1,57 @@
 {
-  "CNickelIndex": "123|23|e|e|:100|11|0|0|",
-  "MassScales": 1,
-  "FunctionClass": "elliptic",
-  "EpsilonOrder": "0",
-  "References": [
-    "arXiv:1809.10698 (JHEP 01 (023), 2019)"
-  ],
-  "Records": [
-    {
-      "reference": "arXiv:1809.10698 (JHEP 01 (023), 2019)",
-      "authors": "Broedel, Johannes, Duhr, Claude, Dulat, Falko, Penante, Brenda, Tancredi, Lorenzo",
-      "description": "Two-loop equal-mass kite integral in D=4-2eps with three massive and two massless propagators. Evaluates to a pure combination of ordinary MPLs and elliptic multiple polylogarithms of uniform transcendental weight three.",
-      "epsOrders": "0",
-      "familyName": "kite_equal_mass",
-      "method": "DE, IBP, direct_integration",
-      "tools": [],
-      "ancillaryFiles": false,
-      "doi": "10.1007/JHEP01(2019)023",
-      "texkey": "Broedel:2018qkq",
-      "masterCount": 0,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "",
-      "recordId": "bx_0c87493fd415",
-      "verified": false,
-      "verifiedAt": ""
-    }
-  ],
-  "Names": [
-    "kite_equal_mass"
-  ],
-  "Source": [
-    "arXiv"
-  ],
-  "Loops": 2,
-  "NumPropagators": 5,
-  "Results": [],
-  "edges": "{{{1, 2}, m}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 3}, m}, {{2, 4}, m}}",
-  "nodes": "{{3, 0}, {4, 0}}",
-  "CanonicalName": "Kite, 3 massive propagators (b)",
-  "Genus": 1,
-  "MassConfig": {
-    "numEdges": 5,
-    "numMassiveEdges": 3,
-    "numMasslessEdges": 2,
-    "distinctInternalMasses": 1,
-    "internalMassLabels": [
-      "m"
+    "CNickelIndex": "123|23|e|e|:100|11|0|0|",
+    "MassScales": 1,
+    "FunctionClass": "elliptic",
+    "EpsilonOrder": "0",
+    "References": [
+        "arXiv:1809.10698 (JHEP 01 (023), 2019)"
     ],
-    "edgeMassPattern": "10011",
-    "numExtLegs": 2,
-    "numOnshellMassiveExtLegs": 0,
-    "numMasslessExtLegs": 2,
-    "extLegSignature": "00"
-  }
+    "Records": [
+        {
+            "reference": "arXiv:1809.10698 (JHEP 01 (023), 2019)",
+            "authors": "Broedel, Johannes, Duhr, Claude, Dulat, Falko, Penante, Brenda, Tancredi, Lorenzo",
+            "description": "Two-loop equal-mass kite integral in D=4-2eps with three massive and two massless propagators. Evaluates to a pure combination of ordinary MPLs and elliptic multiple polylogarithms of uniform transcendental weight three.",
+            "epsOrders": "0",
+            "familyName": "kite_equal_mass",
+            "method": "DE, IBP, direct_integration",
+            "tools": [],
+            "ancillaryFiles": false,
+            "doi": "10.1007/JHEP01(2019)023",
+            "texkey": "Broedel:2018qkq",
+            "masterCount": 0,
+            "dimScheme": "d=4-2*eps",
+            "computationLevel": "full",
+            "location": "",
+            "recordId": "bx_0c87493fd415",
+            "verified": false,
+            "verifiedAt": ""
+        }
+    ],
+    "Names": [
+        "kite_equal_mass"
+    ],
+    "Source": [
+        "arXiv"
+    ],
+    "Loops": 2,
+    "NumPropagators": 5,
+    "Results": [],
+    "edges": "{{{1, 2}, m}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 3}, m}, {{2, 4}, m}}",
+    "nodes": "{{3, 0}, {4, 0}}",
+    "CanonicalName": "Kite, 3 massive propagators (b)",
+    "Genus": 1,
+    "MassConfig": {
+        "numEdges": 5,
+        "numMassiveEdges": 3,
+        "numMasslessEdges": 2,
+        "distinctInternalMasses": 1,
+        "internalMassLabels": [
+            "m"
+        ],
+        "edgeMassPattern": "10011",
+        "numExtLegs": 2,
+        "numOnshellMassiveExtLegs": 0,
+        "numMasslessExtLegs": 2,
+        "extLegSignature": "00"
+    }
 }

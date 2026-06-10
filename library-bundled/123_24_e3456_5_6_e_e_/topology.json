@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"123|24|e3456|5|6|e|e|",
+	"Name":"generalised-ladder_L5_massless-internal-offshell-external",
+	"PrimaryName":"Generalised ladder L5",
+	"Loops":5,
+	"Legs":3,
+	"Propagators":11,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"generalised-ladder",
+			"parameter":5
+		}
+	]
+}

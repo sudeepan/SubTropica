@@ -1,9 +1,15 @@
 {
-  "NickelIndex": "e123|e23|e|e|",
-  "Name": "2-loop 4-pt double-triangle",
-  "PrimaryName": "Double triangle (a)",
-  "Loops": 2,
-  "Legs": 4,
-  "Propagators": 5,
-  "LoopediaURL": ""
+	"NickelIndex":"e123|e23|e|e|",
+	"Name":"2-loop 4-pt double-triangle",
+	"PrimaryName":"Double triangle (a)",
+	"Loops":2,
+	"Legs":4,
+	"Propagators":5,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"fishnet-multileg-2d",
+			"parameter":2
+		}
+	]
 }

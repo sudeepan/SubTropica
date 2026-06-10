@@ -35,6 +35,8 @@
 #endif
 
 #include <flint/fmpz_mpoly.h>
+#include <flint/nmod.h>          // Phase-3 PERFPOW mod-p screen
+#include <flint/ulong_extras.h>  // n_invmod / n_mulmod2_preinv
 
 #include <algorithm>
 #include <chrono>
@@ -121,6 +123,27 @@ std::vector<double>& lf_lock_wait_per_thread_storage() {
     static std::vector<double> v;
     return v;
 }
+// 2026-06-09 (1m-tbox parity Phase 3): PERFPOW detector sub-timers.
+// The detector body (cand-pole Rat ctor → multivariate GCD reduce,
+// lin.pow(d) + divexact verification) was fully unattributed by the
+// existing counters: step 1 of 1m-tbox showed linear_factors_s=29.4s
+// with lf_flint_factor_s=0 and every other sub-counter ~0.
+std::vector<double>& lf_perfpow_per_thread_storage() {
+    static std::vector<double> v;
+    return v;
+}
+std::vector<double>& lf_perfpow_ratctor_per_thread_storage() {
+    static std::vector<double> v;
+    return v;
+}
+std::vector<double>& lf_perfpow_powdiv_per_thread_storage() {
+    static std::vector<double> v;
+    return v;
+}
+std::vector<long>& lf_perfpow_fired_per_thread_storage() {
+    static std::vector<long> v;
+    return v;
+}
 }  // namespace (anon, file-scope)
 
 void init_lf_flint_factor_per_thread(int n_threads) {
@@ -205,6 +228,59 @@ void reset_lf_cache_key_build_per_thread() {
 double sum_lf_cache_key_build_per_thread() {
     double s = 0.0;
     for (double x : lf_cache_key_build_per_thread_storage()) s += x;
+    return s;
+}
+
+// PERFPOW detector sub-timers: mirror the lf_cache_key_build API.
+void init_lf_perfpow_per_thread(int n_threads) {
+    auto& v = lf_perfpow_per_thread_storage();
+    v.assign(static_cast<size_t>(n_threads > 0 ? n_threads : 1), 0.0);
+}
+void reset_lf_perfpow_per_thread() {
+    for (auto& x : lf_perfpow_per_thread_storage()) x = 0.0;
+}
+double sum_lf_perfpow_per_thread() {
+    double s = 0.0;
+    for (double x : lf_perfpow_per_thread_storage()) s += x;
+    return s;
+}
+
+void init_lf_perfpow_ratctor_per_thread(int n_threads) {
+    auto& v = lf_perfpow_ratctor_per_thread_storage();
+    v.assign(static_cast<size_t>(n_threads > 0 ? n_threads : 1), 0.0);
+}
+void reset_lf_perfpow_ratctor_per_thread() {
+    for (auto& x : lf_perfpow_ratctor_per_thread_storage()) x = 0.0;
+}
+double sum_lf_perfpow_ratctor_per_thread() {
+    double s = 0.0;
+    for (double x : lf_perfpow_ratctor_per_thread_storage()) s += x;
+    return s;
+}
+
+void init_lf_perfpow_powdiv_per_thread(int n_threads) {
+    auto& v = lf_perfpow_powdiv_per_thread_storage();
+    v.assign(static_cast<size_t>(n_threads > 0 ? n_threads : 1), 0.0);
+}
+void reset_lf_perfpow_powdiv_per_thread() {
+    for (auto& x : lf_perfpow_powdiv_per_thread_storage()) x = 0.0;
+}
+double sum_lf_perfpow_powdiv_per_thread() {
+    double s = 0.0;
+    for (double x : lf_perfpow_powdiv_per_thread_storage()) s += x;
+    return s;
+}
+
+void init_lf_perfpow_fired_per_thread(int n_threads) {
+    auto& v = lf_perfpow_fired_per_thread_storage();
+    v.assign(static_cast<size_t>(n_threads > 0 ? n_threads : 1), 0L);
+}
+void reset_lf_perfpow_fired_per_thread() {
+    for (auto& x : lf_perfpow_fired_per_thread_storage()) x = 0L;
+}
+long sum_lf_perfpow_fired_per_thread() {
+    long s = 0;
+    for (long x : lf_perfpow_fired_per_thread_storage()) s += x;
     return s;
 }
 
@@ -819,6 +895,200 @@ static bool lf_sqf_enabled() {
     return cached == 1;
 }
 
+static bool lf_perfpow_enabled() {
+    static int cached = -1;
+    if (cached < 0) {
+        const char* s = HF_FLAG_LF_PERFPOW;
+        cached = (s && s[0] == '0') ? 0 : 1;
+    }
+    return cached == 1;
+}
+
+// Phase-3 fast path inside the detector (2026-06-10). Default ON.
+static bool lf_perfpow_fast_enabled() {
+    static int cached = -1;
+    if (cached < 0) {
+        const char* s = HF_FLAG_LF_PERFPOW_FAST;
+        cached = (s && s[0] == '0') ? 0 : 1;
+    }
+    return cached == 1;
+}
+
+// ---------------------------------------------------------------------------
+// Phase-3 PERFPOW fast machinery (1m-tbox parity, 2026-06-10).
+//
+// The legacy detector body pays a full multivariate GCD inside
+// `Rat cand_pole(-d*c0, c1)` (85.3s of the 455.5s 1m-tbox run) plus
+// lin.pow(d) + divexact on every degree>=2 input (26.7s). Two cures:
+//
+//  1. pp_modp_screen: deterministic mod-p univariate image. For a true
+//     p = k * (A*var + B)^d, EVERY evaluation of the other variables
+//     yields u(x) = lc * (x + t)^d, whose coefficients satisfy
+//     u_j = C(d,j) * lc * t^(d-j) with t = u_{d-1} / (d * u_d).
+//     A failed identity with a non-degenerate image (u_d != 0, no
+//     denominator hit by the prime) therefore CERTIFIES "not a perfect
+//     power" — no probabilistic caveat on the reject side. Degenerate
+//     images return INCONCLUSIVE and fall back to the exact path.
+//     False ACCEPTS (Schwartz-Zippel) are caught by the exact divexact
+//     verification downstream. One O(terms * active_vars) pass.
+//
+//  2. pp_fast_pole: on screen-pass with d in {2,4,8}, recover the pole
+//     GCD-free: s = d-th root of zpoly(c_d) via fmpz_mpoly_sqrt chain
+//     (c_d = k*A^d, so the primitive part of c_d is +-primitive(A)^d by
+//     Gauss), then pole = -c_{d-1} / (d*c_d) computed on the SMALL
+//     cofactors num = c_{d-1}/s^(d-1), den = d * c_d/s^(d-1). The Rat
+//     reduce then runs on A/B-sized operands instead of A^d-sized.
+// ---------------------------------------------------------------------------
+
+// Deterministic nonzero evaluation point for variable i (splitmix64).
+static mp_limb_t pp_screen_point(size_t i, const nmod_t& mod) {
+    std::uint64_t z = (static_cast<std::uint64_t>(i) + 1)
+                      * 0x9E3779B97F4A7C15ULL;
+    z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ULL;
+    z = (z ^ (z >> 27)) * 0x94D049BB133111EBULL;
+    z ^= (z >> 31);
+    mp_limb_t v = z % mod.n;
+    return (v == 0) ? 1 : v;
+}
+
+// Mod-p univariate screen. Returns +1 (candidate), 0 (inconclusive,
+// use the exact path), -1 (certified not a perfect power of a linear
+// form in var_idx).
+static int pp_modp_screen(const Poly& p, size_t var_idx, long d) {
+    const fmpq_mpoly_struct* raw = p.raw();
+    const fmpq_mpoly_ctx_struct* qctx = p.ctx().raw();
+    const size_t nvars = p.ctx().vars().size();
+    const slong len = fmpq_mpoly_length(
+        const_cast<fmpq_mpoly_struct*>(raw), qctx);
+    if (len <= 0 || d < 2 || d > 64) return 0;
+
+    nmod_t mod;
+    nmod_init(&mod, UWORD(2305843009213693951));  // 2^61 - 1 (prime)
+
+    // Global content (fmpq): reduce mod p; denominator hit => inconclusive.
+    mp_limb_t content_m;
+    {
+        const fmpq* c = raw->content;
+        const mp_limb_t cden = fmpz_fdiv_ui(fmpq_denref(c), mod.n);
+        if (cden == 0) return 0;
+        const mp_limb_t cnum = fmpz_fdiv_ui(fmpq_numref(c), mod.n);
+        if (cnum == 0) return 0;  // content zero mod p: degenerate
+        content_m = nmod_mul(cnum, n_invmod(cden, mod.n), mod);
+    }
+
+    // Per-variable evaluation points (var_idx stays symbolic).
+    std::vector<mp_limb_t> pts(nvars);
+    for (size_t i = 0; i < nvars; ++i) pts[i] = pp_screen_point(i, mod);
+
+    // Accumulate u[e] = sum over terms with exp_var == e.
+    std::vector<mp_limb_t> u(static_cast<size_t>(d) + 1, 0);
+    std::vector<ulong> exp(nvars);
+    const fmpz_mpoly_struct* zp = raw->zpoly;
+    const fmpz_mpoly_ctx_struct* zctx = qctx->zctx;
+    for (slong t = 0; t < len; ++t) {
+        fmpz_mpoly_get_term_exp_ui(
+            exp.data(), const_cast<fmpz_mpoly_struct*>(zp), t, zctx);
+        mp_limb_t cm = fmpz_fdiv_ui(
+            fmpz_mpoly_term_coeff_ref(
+                const_cast<fmpz_mpoly_struct*>(zp), t, zctx), mod.n);
+        if (cm == 0) continue;
+        ulong ev = 0;
+        for (size_t j = 0; j < nvars; ++j) {
+            if (exp[j] == 0) continue;
+            if (j == var_idx) { ev = exp[j]; continue; }
+            cm = nmod_mul(cm, nmod_pow_ui(pts[j], exp[j], mod), mod);
+        }
+        if (ev > static_cast<ulong>(d)) return 0;  // shouldn't happen
+        u[static_cast<size_t>(ev)] = nmod_add(
+            u[static_cast<size_t>(ev)], cm, mod);
+    }
+    // Fold in the rational content (a nonzero scalar; affects all u[e]
+    // uniformly, so it cancels in the identity — fold anyway for clarity).
+    for (auto& x : u) x = nmod_mul(x, content_m, mod);
+
+    const mp_limb_t ud = u[static_cast<size_t>(d)];
+    if (ud == 0) return 0;  // leading coefficient vanished: inconclusive
+
+    // t = u_{d-1} / (d * u_d);  check u_j == C(d,j) * u_d * t^(d-j).
+    const mp_limb_t dm = nmod_set_ui(static_cast<ulong>(d), mod);
+    if (dm == 0) return 0;
+    const mp_limb_t tval = nmod_mul(
+        u[static_cast<size_t>(d - 1)],
+        n_invmod(nmod_mul(dm, ud, mod), mod.n), mod);
+    // Running binomial C(d,j) downward from j=d: C(d,j-1) = C(d,j)*j/(d-j+1).
+    mp_limb_t binom = 1;        // C(d,d)
+    mp_limb_t tpow  = 1;        // t^(d-j) at j=d
+    for (long j = d - 1; j >= 0; --j) {
+        // C(d,j) = C(d,j+1) * (j+1) / (d-j)
+        binom = nmod_mul(binom,
+                         nmod_set_ui(static_cast<ulong>(j + 1), mod), mod);
+        binom = nmod_mul(binom,
+                         n_invmod(nmod_set_ui(
+                             static_cast<ulong>(d - j), mod), mod.n), mod);
+        tpow = nmod_mul(tpow, tval, mod);
+        const mp_limb_t expect = nmod_mul(nmod_mul(binom, ud, mod),
+                                          tpow, mod);
+        if (u[static_cast<size_t>(j)] != expect) return -1;  // certified
+    }
+    return +1;
+}
+
+// GCD-free pole recovery for d in {2,4,8}: s = d-th root of the
+// primitive part of c_d via fmpz_mpoly_sqrt chain, then
+// pole = -(c_{d-1}/s^{d-1}) / (d * (c_d/s^{d-1})). Returns true and
+// fills pole_out on success; false => caller uses the legacy path.
+static bool pp_fast_pole(const Poly& cd, const Poly& cdm1, long d,
+                         const PolyCtx& ctx, Rat& pole_out) {
+    if (d != 2 && d != 4 && d != 8) return false;
+    const fmpq_mpoly_ctx_struct* qctx = ctx.raw();
+    const fmpz_mpoly_ctx_struct* zctx = qctx->zctx;
+    const fmpz_mpoly_struct* zcd = cd.raw()->zpoly;
+
+    // sqrt chain on the primitive integer part of c_d (try both signs:
+    // fmpz_mpoly_sqrt requires a perfect square including sign).
+    fmpz_mpoly_t s, tmp;
+    fmpz_mpoly_init(s, zctx);
+    fmpz_mpoly_init(tmp, zctx);
+    fmpz_mpoly_set(tmp, const_cast<fmpz_mpoly_struct*>(zcd), zctx);
+    // The zpoly of an fmpq_mpoly has unit content by construction, so
+    // tmp is already the primitive part (up to sign).
+    long half = d;
+    bool ok = true;
+    while (half > 1) {
+        if (!fmpz_mpoly_sqrt(s, tmp, zctx)) {
+            // Retry with the negation once (lc(c_d) < 0 case).
+            fmpz_mpoly_neg(tmp, tmp, zctx);
+            if (!fmpz_mpoly_sqrt(s, tmp, zctx)) { ok = false; break; }
+        }
+        fmpz_mpoly_swap(s, tmp, zctx);
+        half /= 2;
+    }
+    if (!ok) {
+        fmpz_mpoly_clear(s, zctx);
+        fmpz_mpoly_clear(tmp, zctx);
+        return false;
+    }
+    // tmp now holds s = +-primitive(A). Lift to Poly (content 1, then
+    // fmpq_mpoly_reduce restores FLINT's canonical content/sign split).
+    Poly s_poly(ctx);
+    fmpz_mpoly_set(s_poly.raw()->zpoly, tmp, zctx);
+    fmpq_set_si(s_poly.raw()->content, 1, 1);
+    fmpq_mpoly_reduce(s_poly.raw(), qctx);
+    fmpz_mpoly_clear(s, zctx);
+    fmpz_mpoly_clear(tmp, zctx);
+
+    try {
+        const Poly s_pow = s_poly.pow(static_cast<unsigned long>(d - 1));
+        const Poly num = cdm1.divexact(s_pow);          // ~ B-sized
+        const Poly den = cd.divexact(s_pow)
+                             .mul(Poly::from_int(ctx, d));  // ~ A-sized
+        pole_out = Rat(Poly::from_int(ctx, -1).mul(num), Poly(den));
+    } catch (...) {
+        return false;
+    }
+    return true;
+}
+
 // iter-37 lock-acquire wait probe env-gate. Default-OFF; enabling
 // adds one steady_clock::now() pair per lock_guard ctor, accumulated
 // to a per-thread vector. Surfaced in HF_STEP_TRACE JSON as
@@ -1123,6 +1393,157 @@ linear_factors_impl_se(const Poly& p, size_t var_idx,
         if (static_cast<size_t>(_lff_tid) < _mv.size()) {
             _mv[static_cast<size_t>(_lff_tid)] += 1;
         }
+    }
+
+    // Univariate perfect-power detector. For p = (a*var + b)^d with d >= 2:
+    // 1. Extract c[0], c[1] cheaply, compute candidate pole, construct lin.
+    // 2. Verify p.divexact(lin^d) succeeds (fast, O(n_terms)).
+    // 3. Factor lin via fmpq_mpoly_factor (trivial — lin is degree 1) to
+    //    get FLINT's exact normalization. This avoids the 33-vs-29 entry
+    //    count divergence caused by Rat::reduce_inplace producing a
+    //    differently-normalized pole than FLINT's factor post-processing.
+    if (_lff_input_deg >= 2 && lf_perfpow_enabled()) {
+        // Phase-3 sub-timers (2026-06-09): the Rat ctor below pays a
+        // full multivariate GCD reduce on (d*c0, c1); lin.pow(d) +
+        // divexact expand/divide million-term operands. Attribute both.
+        const bool _pp_tg = step_trace_enabled();
+        const auto _pp_t0 = _pp_tg ? std::chrono::steady_clock::now()
+                                   : std::chrono::steady_clock::time_point{};
+        auto _pp_charge = [&](std::vector<double>& v, const auto& t0) {
+            if (static_cast<size_t>(_lff_tid) < v.size()) {
+                v[static_cast<size_t>(_lff_tid)] +=
+                    std::chrono::duration<double>(
+                        std::chrono::steady_clock::now() - t0).count();
+            }
+        };
+        const long d = _lff_input_deg;
+        // Phase-3 fast path (HF_LF_PERFPOW_FAST, default ON):
+        //   screen == -1: certified not a perfect power -> skip the
+        //                 whole detector (no GCD, no pow, no divexact).
+        //   screen == +1: candidate; try GCD-free pole extraction.
+        //   screen ==  0: inconclusive; legacy exact path.
+        const int _pp_screen = (d <= 20 && lf_perfpow_fast_enabled())
+            ? pp_modp_screen(p, var_idx, d) : 0;
+        if (d <= 20 && _pp_screen >= 0) {
+            Poly c0 = p.coefficient_of_var(var_idx, 0);
+            Poly c1 = p.coefficient_of_var(var_idx, 1);
+            if (!c0.is_zero() && !c1.is_zero()) {
+                const auto _pp_rc_t0 = _pp_tg
+                    ? std::chrono::steady_clock::now()
+                    : std::chrono::steady_clock::time_point{};
+                // Candidate pole. Fast route (screen-pass, d in {2,4,8}):
+                // -c_{d-1}/(d*c_d) on s^{d-1}-cofactors (A/B-sized GCD).
+                // Legacy route: -d*c0/c1 (full multivariate GCD reduce).
+                // Both reduce to the identical canonical Rat, so lin and
+                // everything downstream are byte-identical.
+                bool _pp_fast_ok = false;
+                Rat cand_pole = [&]() -> Rat {
+                    if (_pp_screen > 0) {
+                        Poly cd = p.coefficient_of_var(var_idx, d);
+                        Poly cdm1 = p.coefficient_of_var(var_idx, d - 1);
+                        if (!cd.is_zero() && !cdm1.is_zero()) {
+                            Rat fp(Poly::zero_of(ctx));
+                            if (pp_fast_pole(cd, cdm1, d, ctx, fp)) {
+                                _pp_fast_ok = true;
+                                return fp;
+                            }
+                            // Pair choice (Phase 3 fold, 2026-06-10):
+                            // when the sqrt chain fails (p = k*F^d with
+                            // a non-d-th-power cofactor k), the pole
+                            // still equals both -d*c0/c1 and
+                            // -c_{d-1}/(d*c_d). The Rat-reduce GCD
+                            // scales with the chosen pair (~k*B^{d-1}
+                            // bottom vs ~k*A^{d-1} top); pick the side
+                            // with fewer terms. Both reduce to the
+                            // identical canonical Rat, so downstream
+                            // stays byte-identical. (1m-tbox step 1:
+                            // the bottom pair cost 30.5s.)
+                            const slong n_top =
+                                fmpq_mpoly_length(
+                                    const_cast<fmpq_mpoly_struct*>(
+                                        cd.raw()), ctx.raw()) +
+                                fmpq_mpoly_length(
+                                    const_cast<fmpq_mpoly_struct*>(
+                                        cdm1.raw()), ctx.raw());
+                            const slong n_bot =
+                                fmpq_mpoly_length(
+                                    const_cast<fmpq_mpoly_struct*>(
+                                        c0.raw()), ctx.raw()) +
+                                fmpq_mpoly_length(
+                                    const_cast<fmpq_mpoly_struct*>(
+                                        c1.raw()), ctx.raw());
+                            if (n_top < n_bot) {
+                                return Rat(
+                                    Poly::from_int(ctx, -1).mul(cdm1),
+                                    cd.mul(Poly::from_int(ctx, d)));
+                            }
+                        }
+                    }
+                    Poly neg_d_c0 = Poly::from_int(ctx, -d).mul(c0);
+                    return Rat(std::move(neg_d_c0), Poly(c1));
+                }();
+                (void)_pp_fast_ok;
+                Poly lin = cand_pole.den().mul(Poly::gen(ctx, var_idx))
+                               .sub(cand_pole.num());
+                if (_pp_tg) _pp_charge(
+                    lf_perfpow_ratctor_per_thread_storage(), _pp_rc_t0);
+                // Verify: p must be divisible by lin^d.
+                const auto _pp_pd_t0 = _pp_tg
+                    ? std::chrono::steady_clock::now()
+                    : std::chrono::steady_clock::time_point{};
+                Poly lin_d = lin.pow(static_cast<unsigned long>(d));
+                bool is_perfpow = false;
+                try {
+                    Poly quot = p.divexact(lin_d);
+                    if (quot.degree_in_var(var_idx) <= 0)
+                        is_perfpow = true;
+                } catch (...) {}
+                if (_pp_tg) _pp_charge(
+                    lf_perfpow_powdiv_per_thread_storage(), _pp_pd_t0);
+
+                if (is_perfpow) {
+                    // Factor lin (degree 1) via FLINT to get the exact
+                    // normalized factor base — matching the downstream
+                    // partial_fractions convention byte-for-byte.
+                    // Factoring a degree-1 polynomial is trivial (~0s).
+                    fmpq_mpoly_factor_t F;
+                    fmpq_mpoly_factor_init(F, ctx.raw());
+                    int rc = fmpq_mpoly_factor(
+                        F, const_cast<fmpq_mpoly_struct*>(lin.raw()),
+                        ctx.raw());
+                    if (rc && F->num == 1) {
+                        Poly base = clone_from_raw(ctx, F->poly + 0);
+                        Poly base_lc =
+                            base.coefficient_of_var(var_idx, 1);
+                        Poly base_c0 =
+                            base.coefficient_of_var(var_idx, 0);
+                        Rat pole(
+                            Poly::from_int(ctx, -1).mul(base_c0),
+                            base_lc);
+                        out.linear.push_back(
+                            LinearFactor{d, std::move(pole)});
+                        if (compute_constant) {
+                            out.constant = "1";
+                        }
+                        fmpq_mpoly_factor_clear(F, ctx.raw());
+                        {
+                            auto& _fv =
+                                lf_perfpow_fired_per_thread_storage();
+                            if (static_cast<size_t>(_lff_tid) < _fv.size())
+                                _fv[static_cast<size_t>(_lff_tid)] += 1;
+                        }
+                        if (_pp_tg) _pp_charge(
+                            lf_perfpow_per_thread_storage(), _pp_t0);
+                        cache_store_locked(cache_key, out);
+                        return apply_v1_roundtrip(std::move(out),
+                                                   "linear_factors/perfpow");
+                    }
+                    fmpq_mpoly_factor_clear(F, ctx.raw());
+                }
+            }
+        }
+        // Fall-through: detector did not fire; charge total anyway.
+        if (_pp_tg) _pp_charge(lf_perfpow_per_thread_storage(), _pp_t0);
     }
 
     // 2026-05-04 PIVOT: hoist used_wide so the worth_narrowing block

@@ -1,6 +1,6 @@
 {
   "CNickelIndex": "123|23|e3|e|:102|20|32|3|",
-  "MassScales": 2,
+  "MassScales": 3,
   "FunctionClass": "elliptic",
   "EpsilonOrder": "-3,-2,-1,0",
   "References": [

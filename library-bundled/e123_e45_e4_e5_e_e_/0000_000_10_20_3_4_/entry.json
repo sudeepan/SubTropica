@@ -1,127 +1,160 @@
 {
-  "CNickelIndex": "e123|e45|e4|e5|e|e|:0000|000|10|20|3|4|",
-  "MassScales": 0,
-  "FunctionClass": "elliptic",
-  "EpsilonOrder": "",
-  "References": [
-    "arXiv:1712.02785, Phys.Rev.Lett. 120, 2018",
-    "arXiv:1805.09326",
-    "arXiv:2106.14902, Phys.Rev.Lett. 127 (25), 2021"
-  ],
-  "Records": [
-    {
-      "authors": "Bourjaily, Jacob L., McLeod, Andrew J., Spradlin, Marcus, von Hippel, Matt, Wilhelm, Matthias",
-      "texkey": "Bourjaily:2017bsb",
-      "verified": true,
-      "verifiedAt": "2026-04-08",
-      "reference": "arXiv:1712.02785, Phys.Rev.Lett. 120, 2018",
-      "ancillaryFiles": [],
-      "recordId": "bf_5fe6b5c4b05e",
-      "masterCount": 0,
-      "transcendentalWeight": 4,
-      "computationLevel": "none",
-      "doi": "10.1103/PhysRevLett.120.121603",
-      "tools": [],
-      "description": "Ten-particle two-loop planar double-box integral in massless $\\varphi^4$ theory, finite in $d=4$, expressed as elliptic integral over weight-3 polylogarithms. Dual-conformally invariant. Depends on 7 cross-ratios. First example of elliptic integrals in massless scattering amplitudes.",
-      "epsOrders": "",
-      "method": [],
-      "dimScheme": "d=4",
-      "location": "eq. (13)-(18), eq. (22)",
-      "familyName": "elliptic double-box"
-    },
-    {
-      "authors": "Kristensson, Alexander, Wilhelm, Matthias, Zhang, Chi",
-      "texkey": "Kristensson:2021ani",
-      "verified": true,
-      "verifiedAt": "2026-04-08",
-      "ancillaryPaths": [
-        "dbE4andcE4",
-        "dbSymbol",
-        "demo.nb"
-      ],
-      "reference": "arXiv:2106.14902, Phys.Rev.Lett. 127 (25), 2021",
-      "ancillaryFiles": [],
-      "recordId": "bf_1c8f920dc0dc",
-      "masterCount": 0,
-      "transcendentalWeight": 4,
-      "computationLevel": "full",
-      "doi": "10.1103/PhysRevLett.127.251603",
-      "tools": [],
-      "description": "10-point 2-loop massless planar elliptic double box in $d=4$ ($\\mathcal{N}=4$ SYM). 7 massless propagators with dual-conformal numerator. Weight 4, expressed in elliptic MPLs. Full symbol computed with 36 rational + 24 algebraic + 20 elliptic letters.",
-      "epsOrders": "",
-      "method": [],
-      "dimScheme": "d=4",
-      "location": "Eq. (2)-(3), Fig. 1",
-      "familyName": "10pt-2L-elliptic-double-box"
-    },
-    {
-      "authors": [
-        {
-          "full_name": "Bourjaily, Jacob L.",
-          "inspire_id": 1020130
-        },
-        {
-          "full_name": "He, Yang-Hui",
-          "inspire_id": 1006373
-        },
-        {
-          "full_name": "Mcleod, Andrew J.",
-          "inspire_id": 1486130
-        },
-        {
-          "full_name": "Von Hippel, Matt",
-          "inspire_id": 1067843
-        },
-        {
-          "full_name": "Wilhelm, Matthias",
-          "inspire_id": 1283987
-        }
-      ],
-      "texkey": "",
-      "verified": true,
-      "verifiedAt": "2026-04-08",
-      "reference": "arXiv:1805.09326",
-      "ancillaryFiles": [],
-      "recordId": "bf_ab557d6c4abe",
-      "masterCount": 0,
-      "computationLevel": "none",
-      "doi": "",
-      "tools": [],
-      "description": "2-loop traintrack: the elliptic double-box. 2-loop double-box with 7 massless propagators, 10 massless external legs grouped into 6 momenta. Finite and dual-conformally invariant in $d=4$. Involves weight-3 hyperlogarithms integrated over an elliptic curve. Feynman parametric representation given explicitly in Eqs. (5)-(9).",
-      "epsOrders": "",
-      "method": [],
-      "dimScheme": "d=4",
-      "location": "Eq. (1), Sec. Introduction, Sec. Feynman Parameterization",
-      "familyName": "traintrack_2L_elliptic_double_box"
-    }
-  ],
-  "Names": [
-    "10pt-2L-elliptic-double-box",
-    "Elliptic double box"
-  ],
-  "Source": [
-    "arXiv",
-    "Loopedia"
-  ],
-  "Loops": 2,
-  "NumPropagators": 7,
-  "Results": [],
-  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{3, 5}, 0}, {{4, 6}, 0}}",
-  "nodes": "{{1, 0}, {2, 0}, {3, M[1]}, {4, M[2]}, {5, M[3]}, {6, M[4]}}",
-  "CanonicalName": "4-mass double box",
-  "MassConfig": {
-    "numEdges": 7,
-    "numMassiveEdges": 0,
-    "numMasslessEdges": 7,
-    "distinctInternalMasses": 0,
-    "internalMassLabels": [],
-    "edgeMassPattern": "0000000",
-    "numExtLegs": 6,
-    "numOnshellMassiveExtLegs": 4,
-    "numMasslessExtLegs": 2,
-    "extLegSignature": "00MMMM"
-  },
-  "Subsectors": [],
-  "ParentSectors": [],
-  "Genus": 1
+	"CNickelIndex":"e123|e45|e4|e5|e|e|:0000|000|10|20|3|4|",
+	"MassScales":13,
+	"FunctionClass":"elliptic",
+	"EpsilonOrder":"",
+	"edges":"{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{3, 5}, 0}, {{4, 6}, 0}}",
+	"nodes":"{{1, 0}, {2, 0}, {3, M[1]}, {4, M[2]}, {5, M[3]}, {6, M[4]}}",
+	"References":[
+		"arXiv:1712.02785, Phys.Rev.Lett. 120, 2018",
+		"arXiv:1805.09326",
+		"arXiv:2106.14902, Phys.Rev.Lett. 127 (25), 2021",
+		"arXiv:2301.07965",
+		"arXiv:2301.07834",
+		"arXiv:1910.01534",
+		"arXiv:2005.08771",
+		"arXiv:2306.11780"
+	],
+	"Records":[
+		{
+			"authors":"Bourjaily, Jacob L., McLeod, Andrew J., Spradlin, Marcus, von Hippel, Matt, Wilhelm, Matthias",
+			"texkey":"Bourjaily:2017bsb",
+			"verified":true,
+			"verifiedAt":"2026-04-08",
+			"reference":"arXiv:1712.02785, Phys.Rev.Lett. 120, 2018",
+			"ancillaryFiles":[],
+			"recordId":"bf_5fe6b5c4b05e",
+			"masterCount":0,
+			"transcendentalWeight":4,
+			"computationLevel":"none",
+			"doi":"10.1103\/PhysRevLett.120.121603",
+			"tools":[],
+			"description":"Ten-particle two-loop planar double-box integral in massless $\\varphi^4$ theory, finite in $d=4$, expressed as elliptic integral over weight-3 polylogarithms. Dual-conformally invariant. Depends on 7 cross-ratios. First example of elliptic integrals in massless scattering amplitudes.",
+			"epsOrders":"",
+			"method":[],
+			"dimScheme":"d=4",
+			"location":"eq. (13)-(18), eq. (22)",
+			"familyName":"elliptic double-box"
+		},
+		{
+			"authors":"Kristensson, Alexander, Wilhelm, Matthias, Zhang, Chi",
+			"texkey":"Kristensson:2021ani",
+			"verified":true,
+			"verifiedAt":"2026-04-08",
+			"ancillaryPaths":[
+				"dbE4andcE4",
+				"dbSymbol",
+				"demo.nb"
+			],
+			"reference":"arXiv:2106.14902, Phys.Rev.Lett. 127 (25), 2021",
+			"ancillaryFiles":[],
+			"recordId":"bf_1c8f920dc0dc",
+			"masterCount":0,
+			"transcendentalWeight":4,
+			"computationLevel":"full",
+			"doi":"10.1103\/PhysRevLett.127.251603",
+			"tools":[],
+			"description":"10-point 2-loop massless planar elliptic double box in $d=4$ ($\\mathcal{N}=4$ SYM). 7 massless propagators with dual-conformal numerator. Weight 4, expressed in elliptic MPLs. Full symbol computed with 36 rational + 24 algebraic + 20 elliptic letters.",
+			"epsOrders":"",
+			"method":[],
+			"dimScheme":"d=4",
+			"location":"Eq. (2)-(3), Fig. 1",
+			"familyName":"10pt-2L-elliptic-double-box"
+		},
+		{
+			"authors":[
+				{
+					"full_name":"Bourjaily, Jacob L.",
+					"inspire_id":1020130
+				},
+				{
+					"full_name":"He, Yang-Hui",
+					"inspire_id":1006373
+				},
+				{
+					"full_name":"Mcleod, Andrew J.",
+					"inspire_id":1486130
+				},
+				{
+					"full_name":"Von Hippel, Matt",
+					"inspire_id":1067843
+				},
+				{
+					"full_name":"Wilhelm, Matthias",
+					"inspire_id":1283987
+				}
+			],
+			"texkey":"",
+			"verified":true,
+			"verifiedAt":"2026-04-08",
+			"reference":"arXiv:1805.09326",
+			"ancillaryFiles":[],
+			"recordId":"bf_ab557d6c4abe",
+			"masterCount":0,
+			"computationLevel":"none",
+			"doi":"",
+			"tools":[],
+			"description":"2-loop traintrack: the elliptic double-box. 2-loop double-box with 7 massless propagators, 10 massless external legs grouped into 6 momenta. Finite and dual-conformally invariant in $d=4$. Involves weight-3 hyperlogarithms integrated over an elliptic curve. Feynman parametric representation given explicitly in Eqs. (5)-(9).",
+			"epsOrders":"",
+			"method":[],
+			"dimScheme":"d=4",
+			"location":"Eq. (1), Sec. Introduction, Sec. Feynman Parameterization",
+			"familyName":"traintrack_2L_elliptic_double_box"
+		},
+		{
+			"reference":"arXiv:2301.07965",
+			"familyName":"elliptic-ladder_L1x1_massless-internal-dualconformal",
+			"description":"Elliptic ladder family, elliptic-ladder_L1x1_massless-internal-dualconformal. Family 1 of arXiv:2301.07965 (I_{L,R}): the (L+R)-cell ladder chain whose two distinguished massless legs p5, p10 attach to the SAME central rung (L cells left, R right); 4 off-shell corner legs; I_{L,R} = I_{R,L}; total loops L+R; lowest member I_{1,1} = the elliptic double box. Evaluated to elliptic multiple polylogarithms on ONE fixed elliptic curve at all loop orders. The staggered family I_{L,M,R} (legs M rungs apart) is known but not seeded.",
+			"method":[
+				"closed form"
+			],
+			"tools":[
+				"SubTropica seed_families"
+			],
+			"recordId":"fs_698ee8164af6",
+			"verified":false,
+			"verifiedAt":""
+		},
+		{
+			"reference":"arXiv:1805.09326",
+			"familyName":"traintrack_L2_massless-internal-offshell-external",
+			"description":"Traintrack family, traintrack_L2_massless-internal-offshell-external. Planar chain of L boxes (cells), massless internal lines. External legs at every vertex: 4 off-shell corners (distinct masses, the collapsed pairs of the paper's 2L+6 massless particles) + 2L-2 massless middle legs; L=1 is the four-mass box. The L-loop traintrack is a weight-(L+1) hyperlogarithm over a Calabi-Yau (L-1)-fold: L=1 is a box, L=2 elliptic, L=3 a K3 surface, L=4 a Calabi-Yau threefold.",
+			"method":[
+				"closed form"
+			],
+			"tools":[
+				"SubTropica seed_families"
+			],
+			"recordId":"fs_c8b6d5231ba9",
+			"verified":false,
+			"verifiedAt":""
+		}
+	],
+	"Results":[],
+	"Names":[
+		"10pt-2L-elliptic-double-box",
+		"Elliptic double box"
+	],
+	"Source":[
+		"arXiv",
+		"Loopedia"
+	],
+	"Loops":2,
+	"NumPropagators":7,
+	"CanonicalName":"4-mass double box",
+	"MassConfig":{
+		"numEdges":7,
+		"numMassiveEdges":0,
+		"numMasslessEdges":7,
+		"distinctInternalMasses":0,
+		"internalMassLabels":[],
+		"edgeMassPattern":"0000000",
+		"numExtLegs":6,
+		"numOnshellMassiveExtLegs":4,
+		"numMasslessExtLegs":2,
+		"extLegSignature":"00MMMM"
+	},
+	"Subsectors":[],
+	"ParentSectors":[],
+	"Genus":1
 }

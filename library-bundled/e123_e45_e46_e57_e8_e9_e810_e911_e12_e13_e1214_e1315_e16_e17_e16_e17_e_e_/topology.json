@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"e123|e45|e46|e57|e8|e9|e810|e911|e12|e13|e1214|e1315|e16|e17|e16|e17|e|e|",
+	"Name":"traintrack_L8_massless-internal-offshell-external",
+	"PrimaryName":"Traintrack L8",
+	"Loops":8,
+	"Legs":18,
+	"Propagators":25,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"traintrack",
+			"parameter":8
+		}
+	]
+}

@@ -1,0 +1,37 @@
+{
+	"CNickelIndex":"e1234|e23|e4|e|e|:10000|200|30|4|5|",
+	"MassScales":10,
+	"FunctionClass":"multi-leg Calabi-Yau periods (Picard curve at lowest order)",
+	"EpsilonOrder":"",
+	"edges":"{{{5, 3}, 0}, {{3, 1}, 0}, {{1, 2}, 0}, {{2, 4}, 0}, {{5, 1}, 0}, {{3, 2}, 0}, {{1, 4}, 0}}",
+	"nodes":"{{5, M[1]}, {3, M[2]}, {1, M[3]}, {2, M[4]}, {4, M[5]}}",
+	"References":[
+		"arXiv:2402.19034"
+	],
+	"Records":[
+		{
+			"reference":"arXiv:2402.19034",
+			"familyName":"fishnet-multileg-2d_L3_massless-internal-2d",
+			"description":"Multi-leg fishnet family, fishnet-multileg-2d_L3_massless-internal-2d. Multi-leg two-dimensional fishnet on the trivalent (hexagonal) tiling (arXiv:2402.19034 Eq. (2.1), Figs. 5-6): the triangle-track sequence $Z_L$. Position space: a chain of $L$ trivalent integration vertices; momentum space (planar dual, notes\/families_sweep_batch\/derivations.md): the $L$-triangle strip on vertices $w_1..w_{L+2}$ with path edges $\\{w_i,w_{i+1}\\}$ and chords $\\{w_i,w_{i+2}\\}$, one off-shell leg at every vertex; legs $= L+2$, loops $= L$ (Euler-exact on the dual). $Z_2$ reduces to the box and $Z_3$ to a one-loop pentagon by star-triangle (VALUE identities); the lowest geometry is a genus-2 Picard curve (Eq. (3.30)). Propagator weight $2\/3$ per line is a value-level datum.",
+			"method":[
+				"closed form"
+			],
+			"tools":[
+				"SubTropica seed_families"
+			],
+			"recordId":"fs_9a895e25659f",
+			"verified":false,
+			"verifiedAt":""
+		}
+	],
+	"Results":[],
+	"Names":[
+		"fishnet-multileg-2d_L3_massless-internal-2d"
+	],
+	"Source":[
+		"family-seed"
+	],
+	"Loops":3,
+	"NumPropagators":7,
+	"CanonicalName":"3-loop 5-point (7 propagators)"
+}

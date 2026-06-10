@@ -1,81 +1,81 @@
 {
-  "CNickelIndex": "e12|e3|e3|e|:102|12|10|1|",
-  "MassScales": 4,
-  "FunctionClass": "MPL",
-  "EpsilonOrder": "",
-  "References": [
-    "arXiv:1401.4361 (JHEP 03 (071), 2014)",
-    "arXiv:1307.4083"
-  ],
-  "Records": [
-    {
-      "reference": "arXiv:1401.4361 (JHEP 03 (071), 2014)",
-      "authors": "Panzer, Erik",
-      "description": "One-loop box with two opposite internal masses, on-shell legs p_i^2=-m^2. Not linearly reducible in Schwinger parameters; restored by change of variables.",
-      "epsOrders": "",
-      "familyName": "box_2mass_opposite",
-      "method": "direct_integration",
-      "tools": [
-        "HyperInt"
-      ],
-      "ancillaryFiles": false,
-      "doi": "10.1007/JHEP03(2014)071",
-      "texkey": "Panzer:2014gra",
-      "masterCount": 0,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "",
-      "recordId": "bx_16f7e18b5677",
-      "verified": false,
-      "verifiedAt": ""
-    },
-    {
-      "reference": "arXiv:1307.4083",
-      "authors": "Henn, Johannes M., Smirnov, Vladimir A.",
-      "description": "One-loop box for Bhabha scattering with alternating massive/massless propagators. 5 MIs to all orders in eps via canonical DEs in 2dHPLs.",
-      "epsOrders": "all_orders",
-      "familyName": "Bhabha 1-loop",
-      "method": "DE, IBP",
-      "tools": [
-        "FIRE"
-      ],
-      "ancillaryFiles": false,
-      "doi": "",
-      "texkey": "",
-      "masterCount": 5,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "Eq. (3), Section 2.1",
-      "recordId": "bx_710f3b483551",
-      "verified": false,
-      "verifiedAt": ""
-    }
-  ],
-  "Names": [
-    "box_2mass_opposite",
-    "Bhabha 1-loop"
-  ],
-  "Source": [
-    "arXiv"
-  ],
-  "Loops": 1,
-  "NumPropagators": 4,
-  "Results": [],
-  "edges": "{{{1, 2}, 0}, {{1, 3}, m}, {{2, 4}, m}, {{3, 4}, 0}}",
-  "nodes": "{{1, M}, {2, M}, {3, M}, {4, M}}",
-  "CanonicalName": "Box, 2 massive propagators (f)",
-  "MassConfig": {
-    "numEdges": 4,
-    "numMassiveEdges": 2,
-    "numMasslessEdges": 2,
-    "distinctInternalMasses": 1,
-    "internalMassLabels": [
-      "m"
+    "CNickelIndex": "e12|e3|e3|e|:102|12|10|1|",
+    "MassScales": 4,
+    "FunctionClass": "MPL",
+    "EpsilonOrder": "",
+    "References": [
+        "arXiv:1401.4361 (JHEP 03 (071), 2014)",
+        "arXiv:1307.4083"
     ],
-    "edgeMassPattern": "0110",
-    "numExtLegs": 4,
-    "numOnshellMassiveExtLegs": 4,
-    "numMasslessExtLegs": 0,
-    "extLegSignature": "MMMM"
-  }
+    "Records": [
+        {
+            "reference": "arXiv:1401.4361 (JHEP 03 (071), 2014)",
+            "authors": "Panzer, Erik",
+            "description": "One-loop box with two opposite internal masses, on-shell legs p_i^2=-m^2. Not linearly reducible in Schwinger parameters; restored by change of variables.",
+            "epsOrders": "",
+            "familyName": "box_2mass_opposite",
+            "method": "direct_integration",
+            "tools": [
+                "HyperInt"
+            ],
+            "ancillaryFiles": false,
+            "doi": "10.1007/JHEP03(2014)071",
+            "texkey": "Panzer:2014gra",
+            "masterCount": 0,
+            "dimScheme": "d=4-2*eps",
+            "computationLevel": "full",
+            "location": "",
+            "recordId": "bx_16f7e18b5677",
+            "verified": false,
+            "verifiedAt": ""
+        },
+        {
+            "reference": "arXiv:1307.4083",
+            "authors": "Henn, Johannes M., Smirnov, Vladimir A.",
+            "description": "One-loop box for Bhabha scattering with alternating massive/massless propagators. 5 MIs to all orders in eps via canonical DEs in 2dHPLs.",
+            "epsOrders": "all_orders",
+            "familyName": "Bhabha 1-loop",
+            "method": "DE, IBP",
+            "tools": [
+                "FIRE"
+            ],
+            "ancillaryFiles": false,
+            "doi": "",
+            "texkey": "",
+            "masterCount": 5,
+            "dimScheme": "d=4-2*eps",
+            "computationLevel": "full",
+            "location": "Eq. (3), Section 2.1",
+            "recordId": "bx_710f3b483551",
+            "verified": false,
+            "verifiedAt": ""
+        }
+    ],
+    "Names": [
+        "box_2mass_opposite",
+        "Bhabha 1-loop"
+    ],
+    "Source": [
+        "arXiv"
+    ],
+    "Loops": 1,
+    "NumPropagators": 4,
+    "Results": [],
+    "edges": "{{{1, 2}, 0}, {{1, 3}, m}, {{2, 4}, m}, {{3, 4}, 0}}",
+    "nodes": "{{1, M}, {2, M}, {3, M}, {4, M}}",
+    "CanonicalName": "Box, 2 massive propagators (f)",
+    "MassConfig": {
+        "numEdges": 4,
+        "numMassiveEdges": 2,
+        "numMasslessEdges": 2,
+        "distinctInternalMasses": 1,
+        "internalMassLabels": [
+            "m"
+        ],
+        "edgeMassPattern": "0110",
+        "numExtLegs": 4,
+        "numOnshellMassiveExtLegs": 4,
+        "numMasslessExtLegs": 0,
+        "extLegSignature": "MMMM"
+    }
 }

@@ -1,6 +1,6 @@
 {
   "CNickelIndex": "123|45|45|e4||e|:000|00|00|10||1|",
-  "MassScales": 0,
+  "MassScales": 1,
   "FunctionClass": "MPL",
   "EpsilonOrder": "-6,-5,-4,-3,-2,-1,0,1,2",
   "References": [

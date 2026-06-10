@@ -1,62 +1,62 @@
 {
-  "CNickelIndex": "123|45|e4|e6|e|e6|e|:000|00|00|12|0|12|3|",
-  "MassScales": 8,
-  "FunctionClass": "unknown",
-  "EpsilonOrder": "4",
-  "References": [
-    "arXiv:2312.08131 (JHEP 07 (084), 2024)"
-  ],
-  "Records": [
-    {
-      "reference": "arXiv:2312.08131 (JHEP 07 (084), 2024)",
-      "authors": "Febres Cordero, F., Figueiredo, G., Kraus, M., Page, B., Reina, L.",
-      "description": "Two-loop penta-box for leading-color pp->ttH with light-quark loop. 111 MIs, 152 one-forms (4 non-dlog from kite sector). Numerical results through O(eps^4) via DiffExp.",
-      "epsOrders": "4",
-      "familyName": "T1",
-      "method": "IBP, DE, series_expansion",
-      "tools": [
-        "Kira",
-        "FIRE",
-        "DiffExp",
-        "AMFlow",
-        "PolyLogTools"
-      ],
-      "ancillaryFiles": true,
-      "doi": "10.1007/JHEP07(2024)084",
-      "texkey": "FebresCordero:2023pww",
-      "masterCount": 111,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "numerical",
-      "location": "Section 2.1, Eqs. (2.2)-(2.5), Figure 2",
-      "recordId": "bx_4ce83bc0237e",
-      "verified": false,
-      "verifiedAt": ""
-    }
-  ],
-  "Names": [
-    "T1"
-  ],
-  "Source": [
-    "arXiv"
-  ],
-  "Loops": 2,
-  "NumPropagators": 8,
-  "Results": [],
-  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{3, 5}, 0}, {{4, 7}, m}, {{6, 7}, m}}",
-  "nodes": "{{3, 0}, {4, M[2]}, {5, 0}, {6, M[4]}, {7, M[5]}}",
-  "CanonicalName": "Box-pentagon, 2 massive propagators (b)",
-  "MassConfig": {
-    "numEdges": 8,
-    "numMassiveEdges": 2,
-    "numMasslessEdges": 6,
-    "distinctInternalMasses": 1,
-    "internalMassLabels": [
-      "m"
+    "CNickelIndex": "123|45|e4|e6|e|e6|e|:000|00|00|12|0|12|3|",
+    "MassScales": 8,
+    "FunctionClass": "unknown",
+    "EpsilonOrder": "4",
+    "References": [
+        "arXiv:2312.08131 (JHEP 07 (084), 2024)"
     ],
-    "edgeMassPattern": "00000011",
-    "numExtLegs": 5,
-    "numOnshellMassiveExtLegs": 3,
-    "numMasslessExtLegs": 2,
-    "extLegSignature": "0M0MM"
-  }
+    "Records": [
+        {
+            "reference": "arXiv:2312.08131 (JHEP 07 (084), 2024)",
+            "authors": "Febres Cordero, F., Figueiredo, G., Kraus, M., Page, B., Reina, L.",
+            "description": "Two-loop penta-box for leading-color pp->ttH with light-quark loop. 111 MIs, 152 one-forms (4 non-dlog from kite sector). Numerical results through O(eps^4) via DiffExp.",
+            "epsOrders": "4",
+            "familyName": "T1",
+            "method": "IBP, DE, series_expansion",
+            "tools": [
+                "Kira",
+                "FIRE",
+                "DiffExp",
+                "AMFlow",
+                "PolyLogTools"
+            ],
+            "ancillaryFiles": true,
+            "doi": "10.1007/JHEP07(2024)084",
+            "texkey": "FebresCordero:2023pww",
+            "masterCount": 111,
+            "dimScheme": "d=4-2*eps",
+            "computationLevel": "numerical",
+            "location": "Section 2.1, Eqs. (2.2)-(2.5), Figure 2",
+            "recordId": "bx_4ce83bc0237e",
+            "verified": false,
+            "verifiedAt": ""
+        }
+    ],
+    "Names": [
+        "T1"
+    ],
+    "Source": [
+        "arXiv"
+    ],
+    "Loops": 2,
+    "NumPropagators": 8,
+    "Results": [],
+    "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, 0}, {{3, 5}, 0}, {{4, 7}, m[2]}, {{6, 7}, m[2]}}",
+    "nodes": "{{3, 0}, {4, M[1]}, {5, 0}, {6, M[1]}, {7, M[3]}}",
+    "CanonicalName": "Box-pentagon, 2 massive propagators (b)",
+    "MassConfig": {
+        "numEdges": 8,
+        "numMassiveEdges": 2,
+        "numMasslessEdges": 6,
+        "distinctInternalMasses": 1,
+        "internalMassLabels": [
+            "m"
+        ],
+        "edgeMassPattern": "00000011",
+        "numExtLegs": 5,
+        "numOnshellMassiveExtLegs": 3,
+        "numMasslessExtLegs": 2,
+        "extLegSignature": "0M0MM"
+    }
 }

@@ -202,6 +202,11 @@ thread_local double g_lf_lock_held_s             = 0.0;
 thread_local double g_lf_lock_wait_s             = 0.0;
 // 2026-04-26 cache_key_build direct measurement.
 thread_local double g_lf_cache_key_build_s       = 0.0;
+// 2026-06-09 (1m-tbox parity Phase 3): PERFPOW detector sub-timers.
+thread_local double g_lf_perfpow_s               = 0.0;
+thread_local double g_lf_perfpow_ratctor_s       = 0.0;
+thread_local double g_lf_perfpow_powdiv_s        = 0.0;
+thread_local long   g_lf_perfpow_fired           = 0;
 // 2026-04-29 (Probe 2): four sub-timers splitting post-FLINT extraction
 // in linear_factors. Aggregated across threads at end of OMP region.
 thread_local double g_lf_post_transplant_s          = 0.0;
@@ -413,6 +418,10 @@ void reset_step_sub_timers() {
     g_lf_lock_held_s = 0.0;
     g_lf_lock_wait_s = 0.0;
     g_lf_cache_key_build_s = 0.0;
+    g_lf_perfpow_s = 0.0;
+    g_lf_perfpow_ratctor_s = 0.0;
+    g_lf_perfpow_powdiv_s = 0.0;
+    g_lf_perfpow_fired = 0;
     g_lf_post_transplant_s = 0.0;
     g_lf_post_rat_ctor_s = 0.0;
     g_lf_post_constant_to_string_s = 0.0;
@@ -537,6 +546,10 @@ long   read_bump_unique_rows()         { return g_bump_unique_rows; }
 double read_lf_lock_held_s()           { return g_lf_lock_held_s; }
 double read_lf_lock_wait_s()           { return g_lf_lock_wait_s; }
 double read_lf_cache_key_build_s()     { return g_lf_cache_key_build_s; }
+double read_lf_perfpow_s()             { return g_lf_perfpow_s; }
+double read_lf_perfpow_ratctor_s()     { return g_lf_perfpow_ratctor_s; }
+double read_lf_perfpow_powdiv_s()      { return g_lf_perfpow_powdiv_s; }
+long   read_lf_perfpow_fired()         { return g_lf_perfpow_fired; }
 double read_lf_post_transplant_s()         { return g_lf_post_transplant_s; }
 double read_lf_post_rat_ctor_s()           { return g_lf_post_rat_ctor_s; }
 double read_lf_post_constant_to_string_s() { return g_lf_post_constant_to_string_s; }
@@ -1572,6 +1585,15 @@ RegulatorSym integration_step(const PolyCtx& ctx,
     // 2026-04-26 cache_key_build direct measurement.
     init_lf_cache_key_build_per_thread(n_threads_outer);
     reset_lf_cache_key_build_per_thread();
+    // 2026-06-09 (Phase 3): PERFPOW detector sub-timers.
+    init_lf_perfpow_per_thread(n_threads_outer);
+    reset_lf_perfpow_per_thread();
+    init_lf_perfpow_ratctor_per_thread(n_threads_outer);
+    reset_lf_perfpow_ratctor_per_thread();
+    init_lf_perfpow_powdiv_per_thread(n_threads_outer);
+    reset_lf_perfpow_powdiv_per_thread();
+    init_lf_perfpow_fired_per_thread(n_threads_outer);
+    reset_lf_perfpow_fired_per_thread();
     // 2026-04-29 (Probe 2): post-FLINT extraction sub-timers.
     init_lf_post_transplant_per_thread(n_threads_outer);
     reset_lf_post_transplant_per_thread();
@@ -2331,6 +2353,11 @@ RegulatorSym integration_step(const PolyCtx& ctx,
         g_lf_lock_wait_s             += sum_lf_lock_wait_per_thread();
         // cache_key_build direct measurement.
         g_lf_cache_key_build_s       += sum_lf_cache_key_build_per_thread();
+        // 2026-06-09 (Phase 3): PERFPOW detector sub-timers.
+        g_lf_perfpow_s               += sum_lf_perfpow_per_thread();
+        g_lf_perfpow_ratctor_s       += sum_lf_perfpow_ratctor_per_thread();
+        g_lf_perfpow_powdiv_s        += sum_lf_perfpow_powdiv_per_thread();
+        g_lf_perfpow_fired           += sum_lf_perfpow_fired_per_thread();
         // 2026-04-29 (Probe 2): post-FLINT extraction sub-timers.
         g_lf_post_transplant_s          += sum_lf_post_transplant_per_thread();
         g_lf_post_rat_ctor_s            += sum_lf_post_rat_ctor_per_thread();

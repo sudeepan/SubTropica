@@ -1,21 +1,29 @@
 #!/bin/sh
-# Keep ui/library.json in sync with library-bundled/ on every commit.
+# Keep ui/library.json and ui/families.json in sync with their sources on
+# every commit.
 #
 # Production library.json is the output of two scripts run in sequence:
 #   1. scripts/_build_library_json.py     - rolls up entry.json/topology.json
 #   2. ui/build_subtopology_index.py      - appends subtopologies, tab-indents
 #
-# When a commit modifies any library-bundled/*.json (other than manifest.json),
-# this hook regenerates ui/library.json the same way and stages it. Without
-# this hook, hand-edits / bot-merged submits / cross-repo entry promotions
-# silently leave the rollup stale until the next release cut.
+# ui/families.json is the output of:
+#   3. scripts/_build_families_json.py    - joins data/families.json with the
+#                                            Families fields in topology.json
+#
+# When a commit modifies any library-bundled/*.json (other than manifest.json)
+# OR data/families.json, this hook regenerates the affected rollups and stages
+# them. Without this hook, hand-edits / bot-merged submits / cross-repo entry
+# promotions / family-seed merges silently leave the rollups stale until the
+# next release cut. (The grep gate must include data/families.json, otherwise
+# the early exit at "[ -z "$changed" ] && exit 0" skips the families rebuild on
+# a families-catalog-only commit.)
 #
 # Bypass with:  SKIP_LIBRARY_REBUILD=1 git commit ...
 
 [ "$SKIP_LIBRARY_REBUILD" = "1" ] && exit 0
 
 changed=$(git diff --cached --name-only --diff-filter=ACMRD \
-  | grep -E '^library-bundled/.+\.json$' \
+  | grep -E '(^library-bundled/.+\.json$|^data/families\.json$)' \
   | grep -vE '^library-bundled/manifest\.json$' || true)
 
 [ -z "$changed" ] && exit 0
@@ -23,7 +31,7 @@ changed=$(git diff --cached --name-only --diff-filter=ACMRD \
 repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root" || exit 1
 
-echo "[pre-commit] library-bundled/ changes detected; rebuilding ui/library.json"
+echo "[pre-commit] library-bundled/ or data/families.json changes detected; rebuilding ui rollups"
 
 log=$(mktemp -t subtropica-pre-commit.XXXXXX)
 
@@ -46,6 +54,19 @@ rm -f "$log"
 if ! git diff --quiet ui/library.json; then
   git add ui/library.json
   echo "[pre-commit] ui/library.json regenerated and staged."
+fi
+
+# ui/families.json: join data/families.json with topology.json Families fields.
+# Cheap and side-effect-free when nothing family-related changed (it just
+# reproduces the current ui/families.json, so git add stages a no-op diff).
+if python3 scripts/_build_families_json.py >/dev/null 2>&1; then
+  if ! git diff --quiet ui/families.json; then
+    git add ui/families.json
+    echo "[pre-commit] ui/families.json regenerated and staged."
+  fi
+else
+  echo "[pre-commit] FAIL: scripts/_build_families_json.py"
+  exit 1
 fi
 
 exit 0

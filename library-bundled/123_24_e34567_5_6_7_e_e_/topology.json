@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"123|24|e34567|5|6|7|e|e|",
+	"Name":"generalised-ladder_L6_massless-internal-offshell-external",
+	"PrimaryName":"Generalised ladder L6",
+	"Loops":6,
+	"Legs":3,
+	"Propagators":13,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"generalised-ladder",
+			"parameter":6
+		}
+	]
+}

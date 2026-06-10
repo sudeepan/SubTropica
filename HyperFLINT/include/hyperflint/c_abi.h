@@ -132,6 +132,14 @@ char* hf_linear_factors(const char* request_json);
 // so external consumers do not need to link Mma headers.
 char* hf_find_lr_orders(const char* request_json);
 
+// Doppio-port phase 3 bridge (2026-06-06): find_lr_orders_scan typed
+// entry — the projective Cheng-Wu gauge scan with the Doppio keep
+// rules (Strict / FindRoots carried-sqrt tiers; optional chi filter).
+// Request/response schema documented at
+// hyperflint::handlers::find_lr_orders_scan (bridge/handlers.hpp).
+// Same allocation contract as hf_find_lr_orders.
+char* hf_find_lr_orders_scan(const char* request_json);
+
 // Track 8.4-real-op-1 (iter-61): hyperflint_sym typed entry. Delegates
 // to hyperflint::handlers::hyperflint_sym, the transport-neutral
 // integrator handler shared with `hyperflint eval-json` (CLI) and the

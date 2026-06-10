@@ -1,9 +1,15 @@
 {
-  "NickelIndex": "123|45|e6|e7|e6|e7|e|e|",
-  "Name": "$I^{**}_{4,1,4}$",
-  "PrimaryName": "Double pentagon",
-  "Loops": 2,
-  "Legs": 6,
-  "Propagators": 9,
-  "LoopediaURL": ""
+	"NickelIndex":"123|45|e6|e7|e6|e7|e|e|",
+	"Name":"$I^{**}_{4,1,4}$",
+	"PrimaryName":"Double pentagon",
+	"Loops":2,
+	"Legs":6,
+	"Propagators":9,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"pentaladder",
+			"parameter":2
+		}
+	]
 }

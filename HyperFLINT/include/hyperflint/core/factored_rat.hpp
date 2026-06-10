@@ -78,11 +78,12 @@ public:
     const Poly& numerator() const { return numerator_; }
     const std::vector<Factor>& den_factors() const { return den_factors_; }
 
+    // Multiply one (base, exp) into den_factors_, merging by Poly::equal.
+    void push_factor(const Poly& base, long exp);
+
 private:
     explicit FactoredRat(Poly numerator) : numerator_(std::move(numerator)) {}
 
-    // Multiply one (base, exp) into den_factors_, merging by struct-hash.
-    void push_factor(const Poly& base, long exp);
     // Expand the denominator product to a single Poly (used only at materialize
     // and inside reciprocal). Small in practice: factors are letters.
     Poly expand_denominator() const;

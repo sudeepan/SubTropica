@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"1234|567|567|e58|e58||e|e|e|",
+	"Name":"tardigrade_L6_massless-internal-offshell-external",
+	"PrimaryName":"Tardigrade L6",
+	"Loops":6,
+	"Legs":5,
+	"Propagators":14,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"tardigrade",
+			"parameter":6
+		}
+	]
+}

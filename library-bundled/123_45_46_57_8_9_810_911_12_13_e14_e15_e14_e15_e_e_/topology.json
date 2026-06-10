@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"123|45|46|57|8|9|810|911|12|13|e14|e15|e14|e15|e|e|",
+	"Name":"pentaladder_L6_massless-internal-dualconformal",
+	"PrimaryName":"Pentagon ladder L6",
+	"Loops":6,
+	"Legs":6,
+	"Propagators":21,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"pentaladder",
+			"parameter":6
+		}
+	]
+}

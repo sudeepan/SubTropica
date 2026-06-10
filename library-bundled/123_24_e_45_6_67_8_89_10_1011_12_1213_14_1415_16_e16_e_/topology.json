@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"123|24|e|45|6|67|8|89|10|1011|12|1213|14|1415|16|e16|e|",
+	"Name":"triangle-ladder_L8_massless-internal-offshell-external",
+	"PrimaryName":"Triangle ladder L8",
+	"Loops":8,
+	"Legs":3,
+	"Propagators":24,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"triangle-ladder",
+			"parameter":8
+		}
+	]
+}

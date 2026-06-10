@@ -1,0 +1,39 @@
+{
+	"CNickelIndex":"e11111111|e|:122222222|1|",
+	"MassScales":2,
+	"FunctionClass":"Calabi-Yau (L-1)-fold periods, eps-factorized all L",
+	"EpsilonOrder":"",
+	"edges":"{{{2, 1}, m}, {{2, 1}, m}, {{2, 1}, m}, {{2, 1}, m}, {{2, 1}, m}, {{2, 1}, m}, {{2, 1}, m}, {{2, 1}, m}}",
+	"nodes":"{{2, M}, {1, M}}",
+	"References":[
+		"arXiv:1912.06201",
+		"arXiv:2008.10574",
+		"arXiv:2212.08908"
+	],
+	"Records":[
+		{
+			"reference":"arXiv:1912.06201",
+			"familyName":"banana_L7_equal-mass-internal",
+			"description":"Banana family, banana_L7_equal-mass-internal. Banana (sunrise) graph: two vertices joined by L+1 edges, L loops, equal internal masses. Evaluates to Calabi-Yau (L-1)-fold periods; GKZ systems give the all-L structure; eps-factorized at all L.",
+			"method":[
+				"closed form"
+			],
+			"tools":[
+				"SubTropica seed_families"
+			],
+			"recordId":"fs_0aa7595577df",
+			"verified":false,
+			"verifiedAt":""
+		}
+	],
+	"Results":[],
+	"Names":[
+		"banana_L7_equal-mass-internal"
+	],
+	"Source":[
+		"family-seed"
+	],
+	"Loops":7,
+	"NumPropagators":8,
+	"CanonicalName":"7-loop 2-point (8 propagators)"
+}

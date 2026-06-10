@@ -17,11 +17,45 @@
 
 #include <cstdint>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 namespace hyperflint {
 namespace lr_search {
+
+// Per-face kinematic-divisor collector (order-resolved singularities
+// pipeline; notes/ristretto/order_resolved_singularities.md, step 2).
+// An OPT-IN side channel into the LR walk: when a non-null pointer is
+// threaded through find_lr_orders / st_fubini_lr, every IRREDUCIBLE
+// factor (of any leading coefficient, discriminant, or pairwise
+// resultant produced by the DP) that is FREE OF ALL integration
+// variables is canonicalized (via Poly::canonical_prop_form, the same
+// proportionality representative the dedup uses) and recorded.  These
+// are exactly the kinematic divisors the face can develop a singularity
+// on, at ANY degree --- the collector observes factors BEFORE/ASIDE
+// from the deg-2 letter cap that bounds the LR VERDICT, and it NEVER
+// alters control flow.  A null collector (the default) adds no work and
+// leaves the response byte-identical (gate #1).
+//
+// `integration_vars` is the set of integration-variable ORIGINAL-CTX
+// indices (xvar_indices); a factor is "kinematic-only" iff its used-var
+// set is disjoint from this set.  `seen` dedups by canonical-form
+// string; `ordered` preserves first-encounter order for a stable,
+// reproducible response.  No chi-vetting here --- the Mathematica side
+// owns vetting/comparison (notes/ristretto, Implementation step 2).
+struct SingCollector {
+    std::unordered_set<size_t>      integration_vars;
+    std::unordered_set<std::string> seen;
+    std::vector<std::string>        ordered;
+
+    // Observe an irreducible factor base `b` (already a Poly in the
+    // shared PolyCtx).  Records iff `b` is non-numeric and free of every
+    // integration variable.  Canonical form = canonical_prop_form (the
+    // dedup's proportionality representative), so s - 4*mm and
+    // -(s - 4*mm) collapse to one entry.
+    void observe(const Poly& b);
+};
 
 // Result shape.  `order.empty() && score == +inf` means NOLR (no
 // linearly reducible order exists for this input).
@@ -40,6 +74,12 @@ struct LrResult {
     std::vector<size_t> order;       // xvar ORIGINAL-CTX indices
     double              score;
     std::vector<Poly>   root_polys;  // deg-2 polys accepted during walk
+    // Carried-sqrt profile of the chosen order (carry_discharge tier
+    // only; all zero on the Strict / deg<=1 paths).  Mirrors
+    // lr_scan::ScanOrder's {carried_sqrts, kin_sqrts, terminal_quads}.
+    unsigned long carried_sqrts = 0;
+    unsigned long kin_sqrts = 0;
+    unsigned long terminal_quads = 0;
     bool nolr() const { return order.empty() && score >= 1e300; }
 };
 
@@ -50,11 +90,25 @@ struct LrResult {
 // ∪ {res(f1, f2, v) : f1, f2 ∈ polys, deg(f1,v) ≥ 1, deg(f2,v) ≥ 1}
 // after (a) factoring each via fmpq_mpoly_factor and (b) dedup via
 // canonical-form equivalence (proportionality over ℚ).
-std::vector<Poly> st_fubini_lr(const std::vector<Poly>& polys, size_t var_idx);
+// `sings` (default nullptr): optional per-face kinematic-divisor
+// collector.  When non-null, every irreducible factor produced at this
+// step that is free of all integration variables is recorded into it
+// (see SingCollector).  Pure side channel: the returned letter list and
+// all control flow are identical whether `sings` is null or not.
+std::vector<Poly> st_fubini_lr(const std::vector<Poly>& polys, size_t var_idx,
+                               SingCollector* sings = nullptr);
 
 // Proportionality dedup: drop numeric / zero polys, group by canonical
 // form, return one representative per equivalence class.
 std::vector<Poly> dedup_proportional(const std::vector<Poly>& polys);
+
+// Deficiency-3 cure (2026-06-06): reset the per-request step/factor
+// memo layers inside st_fubini_lr (value-preserving caches keyed on
+// poly strings; see notes/hf_lr_search_deficiencies.md).  Called
+// automatically at find_lr_orders entry; external drivers that loop
+// st_fubini_lr directly (lr_scan) must call it once per request to
+// bound memo memory.  Opt-outs: HF_LR_STEP_MEMO=0 / HF_LR_FACTOR_MEMO=0.
+void reset_lr_memos();
 
 // N-way intersection under proportionality equivalence.  Picks
 // representatives from the FIRST list.  Matches the semantics of Mma's
@@ -81,10 +135,40 @@ long leaf_count_proxy(const std::vector<Poly>& polys);
 // at integration time via `linear_factors`, so the LR pass only needs
 // to admit deg-2 as a valid step shape.  When false (the classic
 // FindRoots=False semantics) only linear (deg ≤ 1) polys are accepted.
+//
+// `sings` (default nullptr): optional per-face kinematic-divisor
+// collector (order-resolved singularities pipeline).  When non-null, it
+// is seeded with the integration-variable index set (so it can decide
+// which factors are kinematic-only) and threaded through every
+// st_fubini_lr call, accumulating the canonical irreducible kinematic
+// divisors of the whole DP.  Null (the default) => no extra work and a
+// byte-identical verdict path.  The collector never changes the LR
+// order/score (it only observes factors the walk already computes).
+//
+// `carry_discharge` (2026-06-07): the Doppio FindRoots keep rule.  Only
+// active when `allow_algebraic_letters` is true (deg-2 letters allowed);
+// for the deg<=1 path it is a no-op.  When OFF (the Strict tier) the
+// subset-DP judges deg-2 letters TERMINAL-ONLY: a deg-2 letter whose
+// sqrt-obligation depends on a still-pending variable is rejected at
+// that step (forbidden_after_step).  When ON, that obligation is
+// instead CARRIED forward and discharged at a later pivot — the exact
+// per-step semantics of lr_scan::step_fr_judge / fr_judge, run here as a
+// per-path DFS over the same S-marginal set_table (no Cheng-Wu gauge:
+// the production per-gauge integrand is already gauge-fixed upstream).
+// This is strictly more permissive: it flips faces that are Strict-NOLR
+// but carried-LR.  The path-dependence (a carried obligation depends on
+// the whole order, not just the subset reached) is why this cannot be
+// threaded through the best-score subset-DP memo and is realized as a
+// DFS.  When ON the result's `root_polys` carries the deg-2 letters
+// encountered along the chosen (score-minimal) order, and the
+// LrResult.carried_sqrts profile is populated.  carry_discharge=false
+// reproduces the Strict subset-DP byte-for-byte (regression gate).
 LrResult find_lr_orders(
     const std::vector<std::vector<Poly>>& group_polys,
     const std::vector<size_t>& xvar_indices,
-    bool allow_algebraic_letters = false);
+    bool allow_algebraic_letters = false,
+    SingCollector* sings = nullptr,
+    bool carry_discharge = true);
 
 }  // namespace lr_search
 }  // namespace hyperflint

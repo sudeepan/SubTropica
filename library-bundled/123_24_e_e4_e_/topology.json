@@ -1,9 +1,15 @@
 {
-  "NickelIndex": "123|24|e|e4|e|",
-  "Name": "2-loop 3-pt planar double-triangle",
-  "PrimaryName": "Triangle-box",
-  "Loops": 2,
-  "Legs": 3,
-  "Propagators": 6,
-  "LoopediaURL": ""
+	"NickelIndex":"123|24|e|e4|e|",
+	"Name":"2-loop 3-pt planar double-triangle",
+	"PrimaryName":"Triangle-box",
+	"Loops":2,
+	"Legs":3,
+	"Propagators":6,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"triangle-ladder",
+			"parameter":2
+		}
+	]
 }

@@ -1,9 +1,31 @@
 {
-  "NickelIndex": "e12|e2|e|",
-  "Name": "1-loop 3-pt triangle",
-  "PrimaryName": "Triangle",
-  "Loops": 1,
-  "Legs": 3,
-  "Propagators": 3,
-  "LoopediaURL": ""
+	"NickelIndex":"e12|e2|e|",
+	"Name":"1-loop 3-pt triangle",
+	"PrimaryName":"Triangle",
+	"Loops":1,
+	"Legs":3,
+	"Propagators":3,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"ice-cone",
+			"parameter":1
+		},
+		{
+			"family":"fishnet-multileg-2d",
+			"parameter":1
+		},
+		{
+			"family":"generalised-ladder",
+			"parameter":1
+		},
+		{
+			"family":"triangle-ladder",
+			"parameter":1
+		},
+		{
+			"family":"ngon",
+			"parameter":3
+		}
+	]
 }

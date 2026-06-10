@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"e1111112|e2|e|",
+	"Name":"ice-cone_L6_equal-mass-internal",
+	"PrimaryName":"Ice-cream cone L6",
+	"Loops":6,
+	"Legs":3,
+	"Propagators":8,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"ice-cone",
+			"parameter":6
+		}
+	]
+}

@@ -1,0 +1,37 @@
+{
+	"CNickelIndex":"1234|567|567|589|589||e|e|e|e|:0000|000|000|000|000||1|2|3|4|",
+	"MassScales":6,
+	"FunctionClass":"Calabi-Yau periods, rigidity up to 2(L-1)",
+	"EpsilonOrder":"",
+	"edges":"{{{10, 4}, 0}, {{9, 5}, 0}, {{10, 5}, 0}, {{9, 4}, 0}, {{4, 6}, 0}, {{5, 1}, 0}, {{4, 1}, 0}, {{5, 6}, 0}, {{6, 2}, 0}, {{1, 3}, 0}, {{6, 3}, 0}, {{1, 2}, 0}, {{2, 8}, 0}, {{3, 7}, 0}, {{2, 7}, 0}, {{3, 8}, 0}}",
+	"nodes":"{{10, M[1]}, {8, M[2]}, {9, M[3]}, {7, M[4]}}",
+	"References":[
+		"arXiv:1810.07689"
+	],
+	"Records":[
+		{
+			"reference":"arXiv:1810.07689",
+			"familyName":"amoeba_L7_massless-internal-offshell-external",
+			"description":"Amoeba family, amoeba_L7_massless-internal-offshell-external. Nonplanar Calabi-Yau bestiary graph at odd loop order L, with 2(L+1) MASSLESS propagators (arXiv:1810.07689). X-cell ladder body with open corners at BOTH ends (no apexes); degree-keyed decoration: 4 off-shell corner legs, no massless legs; 4 effective legs at every L (figure-pinned; L=3 = K_{2,4}, Fig. 2e). Marginal in D=4; L=3 has non-maximal rigidity, maximal 2(L-1) from L=5.",
+			"method":[
+				"closed form"
+			],
+			"tools":[
+				"SubTropica seed_families"
+			],
+			"recordId":"fs_3850322912b7",
+			"verified":false,
+			"verifiedAt":""
+		}
+	],
+	"Results":[],
+	"Names":[
+		"amoeba_L7_massless-internal-offshell-external"
+	],
+	"Source":[
+		"family-seed"
+	],
+	"Loops":7,
+	"NumPropagators":16,
+	"CanonicalName":"7-loop 4-point (16 propagators)"
+}

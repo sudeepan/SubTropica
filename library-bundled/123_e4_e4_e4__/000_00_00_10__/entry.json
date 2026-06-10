@@ -4,7 +4,9 @@
   "FunctionClass": "unknown",
   "EpsilonOrder": "-4,-3,-2,-1,0,1,2,3",
   "References": [
-    "arXiv:1004.3653"
+    "arXiv:1004.3653",
+    "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+    "arXiv:2311.16219 (Comput.Phys.Commun. 303 (109278), 2024)"
   ],
   "Records": [
     {
@@ -15,6 +17,12 @@
       "recordId": "1499084266.nWE3",
       "verified": true,
       "verifiedAt": "auto-loopedia"
+    },
+    {
+      "reference": "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+      "authors": "Fevola, C., Mizera, S., Telen, S.",
+      "description": "Landau singularities of the non-planar triangle-bubble computed via principal Landau determinants.",
+      "familyName": "PLD: npltrb"
     }
   ],
   "Source": [

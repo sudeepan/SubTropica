@@ -43,7 +43,10 @@
 // can be applied to the table letters before judgment, exactly like the
 // Mathematica variant C.
 #pragma once
+#include <cstddef>
 #include <cstdint>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "hyperflint/core/poly.hpp"
@@ -52,6 +55,14 @@ namespace hyperflint {
 namespace lr_scan {
 
 enum class KeepRule { Strict, FindRoots };
+
+// Sentinel for step_fr_judge's `gauge` argument meaning "no Cheng-Wu
+// gauge" — letters are judged AS GIVEN, with no dehomogenization.  Used
+// by find_lr_orders' carry-discharge path (the production per-gauge
+// integrand is already gauge-fixed upstream, so there is no further
+// gauge to fold), and distinguishable from any real ctx var index
+// (which is always < the number of variables, far below SIZE_MAX).
+inline constexpr std::size_t kNoGauge = static_cast<std::size_t>(-1);
 
 // twist exponent  a + b*eps  (integer pairs cover the Symanzik cases:
 // U^(omega - D/2) F^(-omega) at D = 4 - 2 eps has integer a, b)
@@ -104,6 +115,46 @@ FrJudgment fr_judge(const Poly& letter, size_t pivot,
 // Euler-conic rationalizability of a deg-2-in-pivot letter (exposed for
 // unit tests): leading and constant coefficients both perfect squares.
 bool conic_rationalizable(const Poly& letter, size_t pivot);
+
+// ---------------------------------------------------------------------
+// Carried-obligation path state for the FindRoots tier.  `carried` holds
+// the canonical (proportionality-representative) forms of the deferred
+// sqrt-obligations; `carried_keys` is the dedup set; the counters
+// accumulate {carried_sqrts, kin_sqrts, terminal_quads} along the path.
+// One PathState per DFS branch — copied on descent so siblings do not
+// share carry.
+// ---------------------------------------------------------------------
+struct PathState {
+    std::vector<Poly>          carried;       // canonical forms
+    std::set<std::string>      carried_keys;  // dedup
+    unsigned long nsq = 0, nkin = 0, ntq = 0; // carried / kin / terminal
+};
+
+// ---------------------------------------------------------------------
+// One carry-discharge step (the extracted core of the FindRoots tier;
+// the port of the Mathematica stepScan).  Shared verbatim by BOTH
+// engines so the carry semantics are identical by construction:
+//   * lr_scan's per-gauge DFS (gauge = the un-integrated Cheng-Wu var),
+//   * find_lr_orders' carry-discharge path (gauge = kNoGauge).
+//
+// Semantics (mirrors fr_judge exactly; no new carry rules):
+//   1. discharge carried obligations now free of `pending` AND of the
+//      pivot — i.e. their sqrt-argument no longer depends on any
+//      not-yet-integrated variable;
+//   2. join the (dehomogenized, when gauge != kNoGauge) `letters` with
+//      the still-pending carried obligations, dedup by canonical key,
+//      table-first;
+//   3. fr_judge each survivor at `pivot` with `pending`; on a single
+//      `!ok` the WHOLE step fails (return false);
+//   4. fold the new obligations into `st.carried`, bumping nsq, and
+//      accumulate kin / terminal counters.
+// `pending` is the set of integration-variable ctx indices that remain
+// un-integrated AFTER this step (it excludes the pivot, and — in the
+// gauge scan — the gauge).  Returns true iff the step is admissible;
+// `st` is updated in place.
+bool step_fr_judge(const std::vector<Poly>& letters, size_t pivot,
+                   size_t gauge, const std::vector<size_t>& pending,
+                   PathState& st);
 
 // ---------------------------------------------------------------------
 // the gauge scan.  group_polys are the RAW per-face groups (boundary

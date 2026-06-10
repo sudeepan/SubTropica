@@ -1,0 +1,45 @@
+{
+  "CNickelIndex": "e123|e23|e|e|:1000|200|3|4|",
+  "MassScales": 6,
+  "FunctionClass": "multi-leg Calabi-Yau periods (Picard curve at lowest order)",
+  "EpsilonOrder": "",
+  "edges": "{{{3, 2}, 0}, {{2, 1}, 0}, {{1, 4}, 0}, {{3, 1}, 0}, {{2, 4}, 0}}",
+  "nodes": "{{3, M[1]}, {2, M[2]}, {1, M[3]}, {4, M[4]}}",
+  "References": [
+    "arXiv:2402.19034",
+    "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+    "arXiv:2311.16219 (Comput.Phys.Commun. 303 (109278), 2024)"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:2402.19034",
+      "familyName": "fishnet-multileg-2d_L2_massless-internal-2d",
+      "description": "Multi-leg fishnet family, fishnet-multileg-2d_L2_massless-internal-2d. Multi-leg two-dimensional fishnet on the trivalent (hexagonal) tiling (arXiv:2402.19034 Eq. (2.1), Figs. 5-6): the triangle-track sequence $Z_L$. Position space: a chain of $L$ trivalent integration vertices; momentum space (planar dual, notes/families_sweep_batch/derivations.md): the $L$-triangle strip on vertices $w_1..w_{L+2}$ with path edges $\\{w_i,w_{i+1}\\}$ and chords $\\{w_i,w_{i+2}\\}$, one off-shell leg at every vertex; legs $= L+2$, loops $= L$ (Euler-exact on the dual). $Z_2$ reduces to the box and $Z_3$ to a one-loop pentagon by star-triangle (VALUE identities); the lowest geometry is a genus-2 Picard curve (Eq. (3.30)). Propagator weight $2/3$ per line is a value-level datum.",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_592205438cb8",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+      "authors": "Fevola, C., Mizera, S., Telen, S.",
+      "description": "Landau singularities of the acnode (triangle-box) computed via principal Landau determinants.",
+      "familyName": "PLD: acn"
+    }
+  ],
+  "Results": [],
+  "Names": [
+    "fishnet-multileg-2d_L2_massless-internal-2d"
+  ],
+  "Source": [
+    "family-seed"
+  ],
+  "Loops": 2,
+  "NumPropagators": 5,
+  "CanonicalName": "Massless double triangle (a)"
+}

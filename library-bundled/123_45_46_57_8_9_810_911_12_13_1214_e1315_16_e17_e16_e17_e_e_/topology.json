@@ -1,0 +1,18 @@
+{
+	"NickelIndex":"123|45|46|57|8|9|810|911|12|13|1214|e1315|16|e17|e16|e17|e|e|",
+	"Name":"elliptic-ladder_L7x1_massless-internal-dualconformal",
+	"PrimaryName":"Elliptic ladder (7,1)",
+	"Loops":8,
+	"Legs":6,
+	"Propagators":25,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"elliptic-ladder",
+			"parameter":[
+				7,
+				1
+			]
+		}
+	]
+}

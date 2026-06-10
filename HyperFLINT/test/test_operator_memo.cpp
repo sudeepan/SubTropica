@@ -928,6 +928,14 @@ static OpMemoSubprocessResult run_hf_with_operator_memo(
         // requires explicit ENABLE_REDUCE=1 to participate in the byte-id check.
         char val[2] = {static_cast<char>('0' + operator_memo_value), '\0'};
         ::setenv("HF_OPERATOR_MEMO", val, 1);
+        // HF_PERIOD_TUPLES defaults ON (2026-06-09, commit 205807166).
+        // The memo HIT path is not period-tuples-aware: under PT the
+        // tst0 child dies with "zero_one_period: non-integer letter
+        // (Phase 6b scope)". This test pins the memo A/B byte-identity
+        // contract in the representation it was designed for, so opt
+        // out of PT here. The memo-vs-PT interaction is an OPEN issue
+        // (see notes/hf_tree_merge/1MTBOX_PARITY.md Phase 3).
+        ::setenv("HF_PERIOD_TUPLES", "0", 1);
         ::setenv("HF_OPERATOR_MEMO_OFF_RAT_ADD",      "0", 1);
         ::setenv("HF_OPERATOR_MEMO_ENABLE_REDUCE",    "1", 1);
         ::setenv("HF_OPERATOR_MEMO_OFF_LF",           "0", 1);

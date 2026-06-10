@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"1234|e56|e56|e57|e57||e|e|",
+	"Name":"paramecium_L5_massless-internal-offshell-external",
+	"PrimaryName":"Paramecium L5",
+	"Loops":5,
+	"Legs":6,
+	"Propagators":12,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"paramecium",
+			"parameter":5
+		}
+	]
+}

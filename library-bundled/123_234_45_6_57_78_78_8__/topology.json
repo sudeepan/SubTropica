@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"123|234|45|6|57|78|78|8||",
+	"Name":"zigzag_L8_massless",
+	"PrimaryName":"Zigzag Z8",
+	"Loops":8,
+	"Legs":0,
+	"Propagators":16,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"zigzag",
+			"parameter":8
+		}
+	]
+}

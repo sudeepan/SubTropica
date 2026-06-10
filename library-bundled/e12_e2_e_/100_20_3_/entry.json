@@ -3,11 +3,17 @@
   "MassScales": 3,
   "FunctionClass": "hypergeometric",
   "EpsilonOrder": "-2,-1,0",
+  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{2, 3}, 0}}",
+  "nodes": "{{1, M[1]}, {2, M[2]}, {3, M[3]}}",
   "References": [
     "arXiv:1401.4361",
     "arXiv:1401.3546",
     "arXiv:2309.12772",
-    "arXiv:2303.11105"
+    "arXiv:2303.11105",
+    "arXiv:2402.19034",
+    "arXiv:1207.3824",
+    "Phys. Lett. B 298 (1993) 363",
+    "Phys. Lett. B 305 (1993) 136"
   ],
   "Records": [
     {
@@ -92,43 +98,49 @@
       "dimScheme": "d=4",
       "location": "Eq. (2.1), Fig. 1; analytic result Eq. (2.7); solutions Eqs. (2.11)-(2.14); conformal PDE system Eqs. (2.3)-(2.5)",
       "familyName": "one-loop triangle (three-mass)"
+    },
+    {
+      "reference": "arXiv:2402.19034",
+      "familyName": "fishnet-multileg-2d_L1_massless-internal-2d",
+      "description": "Multi-leg fishnet family, fishnet-multileg-2d_L1_massless-internal-2d. Multi-leg two-dimensional fishnet on the trivalent (hexagonal) tiling (arXiv:2402.19034 Eq. (2.1), Figs. 5-6): the triangle-track sequence $Z_L$. Position space: a chain of $L$ trivalent integration vertices; momentum space (planar dual, notes/families_sweep_batch/derivations.md): the $L$-triangle strip on vertices $w_1..w_{L+2}$ with path edges $\\{w_i,w_{i+1}\\}$ and chords $\\{w_i,w_{i+2}\\}$, one off-shell leg at every vertex; legs $= L+2$, loops $= L$ (Euler-exact on the dual). $Z_2$ reduces to the box and $Z_3$ to a one-loop pentagon by star-triangle (VALUE identities); the lowest geometry is a genus-2 Picard curve (Eq. (3.30)). Propagator weight $2/3$ per line is a value-level datum.",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_8a79b7dfe415",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:1207.3824",
+      "familyName": "generalised-ladder_L1_massless-internal-offshell-external",
+      "description": "Generalised ladder family, generalised-ladder_L1_massless-internal-offshell-external. Drummond's generalised ladders (arXiv:1207.3824 Eq. (2.7)): three-point ladders indexed by loop order $L$ and a binary word $m \\in \\{0,1\\}^{L-1}$; $2^{L-1}$ members per $L$. Seeded representative: the all-zeros word. Momentum-space graph (planar dual, notes/families_sweep_batch/derivations.md): the fan $F_L =$ hub $h$ joined to every vertex of a path $q_0..q_L$, legs at $q_0$, $q_L$, $h$; loops $= L$ (Euler-exact on the dual). The fan is NOT bare-isomorphic to the 4-point box ladder ($V = L+2$ vs $2L+2$); the relation to the box ladders is the value-level conformal completion. The 2-point vacuum limits of the word family are the zigzags and wheels.",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_15390d94ddc7",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "Phys. Lett. B 298 (1993) 363",
+      "familyName": "triangle-ladder_L1_massless-internal-offshell-external",
+      "description": "Triangle ladder family, triangle-ladder_L1_massless-internal-offshell-external. The Usyukina-Davydychev triangle ladder $T^{(L)}$ consists of $(L{-}1)$ box cells capped by a triangle at the apex, with two rails of $L$ edges converging to a shared apex vertex and $L$ rungs connecting the rails at each level. It has $2L{+}1$ vertices, $3L$ massless internal propagators, $L$ loops, and three off-shell external legs at the two base vertices and the apex. The triangle ladder evaluates to the same $\\Phi^{(L)}$ as the four-point box ladder and the generalised-ladder fan via the conformal magic identity, but is a genuinely different topology from both for $L \\ge 2$: the triangle ladder has $V = 2L{+}1$, $E = 3L$ versus $V = L{+}2$, $E = 2L{+}1$ for the fan. Only $L = 1$ (the triangle) is shared. Value = PhiLadder[1, 1/3, 1/5].",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_cad8fafd8551",
+      "verified": false,
+      "verifiedAt": ""
     }
-  ],
-  "Names": [
-    "Delta1_triangle",
-    "T (three-mass triangle)",
-    "Star_3 (triangle d=2)",
-    "one-loop triangle (three-mass)"
-  ],
-  "Source": [
-    "arXiv",
-    "Loopedia"
-  ],
-  "Loops": 1,
-  "NumPropagators": 3,
-  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{2, 3}, 0}}",
-  "nodes": "{{1, M[1]}, {2, M[2]}, {3, M[3]}}",
-  "CanonicalName": "3-mass triangle (c)",
-  "MassConfig": {
-    "numEdges": 3,
-    "numMassiveEdges": 0,
-    "numMasslessEdges": 3,
-    "distinctInternalMasses": 0,
-    "internalMassLabels": [],
-    "edgeMassPattern": "000",
-    "numExtLegs": 3,
-    "numOnshellMassiveExtLegs": 3,
-    "numMasslessExtLegs": 0,
-    "extLegSignature": "MMM"
-  },
-  "commonNames": [
-    "C₀"
-  ],
-  "Subsectors": [],
-  "ParentSectors": [
-    "e12|e3|e3|e|:000|00|10|2|",
-    "e12|e3|e3|e|:000|10|20|3|",
-    "e12|e3|e3|e|:100|20|30|4|"
   ],
   "Results": [
     {
@@ -305,5 +317,39 @@
         3
       ]
     }
+  ],
+  "Names": [
+    "Delta1_triangle",
+    "T (three-mass triangle)",
+    "Star_3 (triangle d=2)",
+    "one-loop triangle (three-mass)"
+  ],
+  "Source": [
+    "arXiv",
+    "Loopedia"
+  ],
+  "Loops": 1,
+  "NumPropagators": 3,
+  "CanonicalName": "3-mass triangle",
+  "MassConfig": {
+    "numEdges": 3,
+    "numMassiveEdges": 0,
+    "numMasslessEdges": 3,
+    "distinctInternalMasses": 0,
+    "internalMassLabels": [],
+    "edgeMassPattern": "000",
+    "numExtLegs": 3,
+    "numOnshellMassiveExtLegs": 3,
+    "numMasslessExtLegs": 0,
+    "extLegSignature": "MMM"
+  },
+  "commonNames": [
+    "C₀"
+  ],
+  "Subsectors": [],
+  "ParentSectors": [
+    "e12|e3|e3|e|:000|00|10|2|",
+    "e12|e3|e3|e|:000|10|20|3|",
+    "e12|e3|e3|e|:100|20|30|4|"
   ]
 }

@@ -1,99 +1,99 @@
 {
-  "CNickelIndex": "123|45|e4|e5|e|e|:000|01|00|00|0|0|",
-  "MassScales": 3,
-  "FunctionClass": "unknown",
-  "EpsilonOrder": "",
-  "References": [
-    "arXiv:1705.05610 (Comput.Phys.Commun. 230 (99), 2018)",
-    "arXiv:2106.12093",
-    "arXiv:2412.07522"
-  ],
-  "Records": [
-    {
-      "reference": "arXiv:2412.07522",
-      "authors": [
+    "CNickelIndex": "123|45|e4|e5|e|e|:000|01|00|00|0|0|",
+    "MassScales": 3,
+    "FunctionClass": "unknown",
+    "EpsilonOrder": "",
+    "References": [
+        "arXiv:1705.05610 (Comput.Phys.Commun. 230 (99), 2018)",
+        "arXiv:2106.12093",
+        "arXiv:2412.07522"
+    ],
+    "Records": [
         {
-          "full_name": "Schwanemann, Niklas",
-          "inspire_id": 1887879
+            "reference": "arXiv:2412.07522",
+            "authors": [
+                {
+                    "full_name": "Schwanemann, Niklas",
+                    "inspire_id": 1887879
+                },
+                {
+                    "full_name": "Weinzierl, Stefan",
+                    "inspire_id": 983857
+                }
+            ],
+            "description": "Planar 2-loop double-box with single heavy gauge boson on rung; 19 masters; no square roots. Called topology C in the paper.",
+            "epsOrders": "all_orders",
+            "familyName": "Planar 2-loop double-box with single heavy boson on rung (Moller, topology C)",
+            "method": "IBP, DE",
+            "tools": [
+                "Kira"
+            ],
+            "ancillaryFiles": true,
+            "doi": "",
+            "texkey": "",
+            "masterCount": 19,
+            "dimScheme": "d=4-2*eps",
+            "computationLevel": "full",
+            "location": "Sec. 2.2, Table 1",
+            "recordId": "bx_0a991854570d",
+            "verified": false,
+            "verifiedAt": ""
         },
         {
-          "full_name": "Weinzierl, Stefan",
-          "inspire_id": 983857
+            "reference": "arXiv:1705.05610 (Comput.Phys.Commun. 230 (99), 2018)",
+            "authors": "Maierhöfer, Philipp, Usovitsch, Johann, Uwer, Peter",
+            "description": "Two-loop planar double box appearing in NNLO QCD corrections to t-channel single top-quark production. Seven internal lines (P1-P7) plus two auxiliary ISP propagators (P8,P9). One massive internal propagator (P4 with W mass m2) and one massive external leg (q1, top mass m1). Used as the worked example to illustrate Kira usage and as the first benchmark topology; reduction performance compared with Reduze 2 and FIRE5. No analytic master-integral results computed in this paper.",
+            "epsOrders": "",
+            "familyName": "topo7",
+            "method": "IBP",
+            "tools": [
+                "Kira",
+                "FIRE",
+                "Reduze"
+            ],
+            "ancillaryFiles": false,
+            "doi": "10.1016/j.cpc.2018.04.012",
+            "texkey": "Maierhofer:2017gsa",
+            "masterCount": 0,
+            "dimScheme": "d=4-2*eps",
+            "computationLevel": "IBP_only",
+            "location": "",
+            "recordId": "bx_004b492bb16c",
+            "verified": false,
+            "verifiedAt": ""
         }
-      ],
-      "description": "Planar 2-loop double-box with single heavy gauge boson on rung; 19 masters; no square roots. Called topology C in the paper.",
-      "epsOrders": "all_orders",
-      "familyName": "Planar 2-loop double-box with single heavy boson on rung (Moller, topology C)",
-      "method": "IBP, DE",
-      "tools": [
-        "Kira"
-      ],
-      "ancillaryFiles": true,
-      "doi": "",
-      "texkey": "",
-      "masterCount": 19,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "Sec. 2.2, Table 1",
-      "recordId": "bx_0a991854570d",
-      "verified": false,
-      "verifiedAt": ""
-    },
-    {
-      "reference": "arXiv:1705.05610 (Comput.Phys.Commun. 230 (99), 2018)",
-      "authors": "Maierhöfer, Philipp, Usovitsch, Johann, Uwer, Peter",
-      "description": "Two-loop planar double box appearing in NNLO QCD corrections to t-channel single top-quark production. Seven internal lines (P1-P7) plus two auxiliary ISP propagators (P8,P9). One massive internal propagator (P4 with W mass m2) and one massive external leg (q1, top mass m1). Used as the worked example to illustrate Kira usage and as the first benchmark topology; reduction performance compared with Reduze 2 and FIRE5. No analytic master-integral results computed in this paper.",
-      "epsOrders": "",
-      "familyName": "topo7",
-      "method": "IBP",
-      "tools": [
-        "Kira",
-        "FIRE",
-        "Reduze"
-      ],
-      "ancillaryFiles": false,
-      "doi": "10.1016/j.cpc.2018.04.012",
-      "texkey": "Maierhofer:2017gsa",
-      "masterCount": 0,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "IBP_only",
-      "location": "",
-      "recordId": "bx_004b492bb16c",
-      "verified": false,
-      "verifiedAt": ""
-    }
-  ],
-  "Names": [
-    "topo7",
-    "Planar two-loop double box for gb -> tW with one massive (top-quark) propagator",
-    "Planar 2-loop double-box with single heavy boson on rung (Moller, topology C)"
-  ],
-  "Source": [
-    "arXiv"
-  ],
-  "Loops": 2,
-  "NumPropagators": 7,
-  "Results": [],
-  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, m}, {{3, 5}, 0}, {{4, 6}, 0}}",
-  "nodes": "{{3, 0}, {4, 0}, {6, 0}, {5, 0}}",
-  "CanonicalName": "Double box, 1 massive propagator (e)",
-  "MassConfig": {
-    "numEdges": 7,
-    "numMassiveEdges": 1,
-    "numMasslessEdges": 6,
-    "distinctInternalMasses": 1,
-    "internalMassLabels": [
-      "m"
     ],
-    "edgeMassPattern": "0000100",
-    "numExtLegs": 4,
-    "numOnshellMassiveExtLegs": 0,
-    "numMasslessExtLegs": 4,
-    "extLegSignature": "0000"
-  },
-  "commonNames": [
-    "L2"
-  ],
-  "Subsectors": [],
-  "ParentSectors": []
+    "Names": [
+        "topo7",
+        "Planar two-loop double box for gb -> tW with one massive (top-quark) propagator",
+        "Planar 2-loop double-box with single heavy boson on rung (Moller, topology C)"
+    ],
+    "Source": [
+        "arXiv"
+    ],
+    "Loops": 2,
+    "NumPropagators": 7,
+    "Results": [],
+    "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 5}, 0}, {{2, 6}, m}, {{3, 5}, 0}, {{4, 6}, 0}}",
+    "nodes": "{{3, 0}, {4, 0}, {6, 0}, {5, 0}}",
+    "CanonicalName": "Double box, 1 massive propagator (e)",
+    "MassConfig": {
+        "numEdges": 7,
+        "numMassiveEdges": 1,
+        "numMasslessEdges": 6,
+        "distinctInternalMasses": 1,
+        "internalMassLabels": [
+            "m"
+        ],
+        "edgeMassPattern": "0000100",
+        "numExtLegs": 4,
+        "numOnshellMassiveExtLegs": 0,
+        "numMasslessExtLegs": 4,
+        "extLegSignature": "0000"
+    },
+    "commonNames": [
+        "L2"
+    ],
+    "Subsectors": [],
+    "ParentSectors": []
 }

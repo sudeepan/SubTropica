@@ -1,7 +1,7 @@
 {
   "CNickelIndex": "123|e4|e4|e4||:011|20|01|01||",
   "MassScales": 2,
-  "FunctionClass": "mixed",
+  "FunctionClass": "elliptic",
   "EpsilonOrder": "≤ 4",
   "References": [
     "arXiv:1701.05905"

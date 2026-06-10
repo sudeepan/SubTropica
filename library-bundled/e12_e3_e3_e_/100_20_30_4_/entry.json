@@ -3,11 +3,31 @@
   "MassScales": 6,
   "FunctionClass": "hypergeometric",
   "EpsilonOrder": "-2,-1,0",
+  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{2, 4}, 0}, {{3, 4}, 0}}",
+  "nodes": "{{1, M[1]}, {2, M[2]}, {4, M[3]}, {3, M[4]}}",
   "References": [
     "arXiv:1401.3546",
     "arXiv:2309.12772",
     "arXiv:2206.04609",
-    "arXiv:2303.11657"
+    "arXiv:2303.11657",
+    "Phys. Lett. B 298 (1993) 363",
+    "Phys. Lett. B 305 (1993) 136",
+    "arXiv:hep-th/0607160",
+    "arXiv:1805.09326",
+    "arXiv:1910.01534",
+    "arXiv:2005.08771",
+    "arXiv:2306.11780",
+    "arXiv:1705.03545",
+    "arXiv:1811.10623",
+    "arXiv:2007.15049",
+    "arXiv:2310.08625",
+    "arXiv:2209.05291",
+    "arXiv:1811.03282",
+    "arXiv:1905.11467",
+    "arXiv:2005.01735",
+    "arXiv:2010.08552",
+    "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+    "arXiv:2311.16219 (Comput.Phys.Commun. 303 (109278), 2024)"
   ],
   "Records": [
     {
@@ -88,42 +108,56 @@
       "method": [],
       "dimScheme": "d=4-2*eps",
       "familyName": "four-mass box"
+    },
+    {
+      "reference": "Phys. Lett. B 298 (1993) 363",
+      "familyName": "ladder4pt_L1_massless-internal-offshell-external",
+      "description": "4-mass ladder family, ladder4pt_L1_massless-internal-offshell-external. Planar L-rung box ladder: rails t_1..t_{L+1}, b_1..b_{L+1}; rail edges (t_i,t_{i+1}), (b_i,b_{i+1}); rungs (t_i,b_i); 4 off-shell external legs at t_1, t_{L+1}, b_1, b_{L+1}. 2L+2 vertices, 3L+1 propagators, L loops. Massless internal lines. Value = PhiLadder[1, 1/3, 1/5].",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_dff36983b180",
+      "verified": true,
+      "verifiedAt": "2026-06-06"
+    },
+    {
+      "reference": "arXiv:1805.09326",
+      "familyName": "traintrack_L1_massless-internal-offshell-external",
+      "description": "Traintrack family, traintrack_L1_massless-internal-offshell-external. Planar chain of L boxes (cells), massless internal lines. External legs at every vertex: 4 off-shell corners (distinct masses, the collapsed pairs of the paper's 2L+6 massless particles) + 2L-2 massless middle legs; L=1 is the four-mass box. The L-loop traintrack is a weight-(L+1) hyperlogarithm over a Calabi-Yau (L-1)-fold: L=1 is a box, L=2 elliptic, L=3 a K3 surface, L=4 a Calabi-Yau threefold.",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_7f82186e82d6",
+      "verified": false,
+      "verifiedAt": ""
+    },
+    {
+      "reference": "arXiv:1705.03545",
+      "familyName": "basso-dixon_L1x1_massless-internal-offshell-external",
+      "description": "Basso-Dixon fishnet family, basso-dixon_L1x1_massless-internal-offshell-external. Basso-Dixon fishnet B_{M,N}: an M x N rectangular grid, 4 external operators at the corners, defined in dual (region-momentum) space via products of 1/x_ij^2 propagators. The L = MN loop integral is conformal. Momentum space: the (M+1) x (N+1) vertex grid (2MN+M+N massless edges, 4 off-shell corner legs, MN loops); B_{M,1} = the M-rung 4-pt ladder; transpose symmetry fixes the canonical orientation M >= N. Value = BassoDixonI[1, 1, 1/3, 1/5].",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_47ca851a09b3",
+      "verified": true,
+      "verifiedAt": "2026-06-06"
+    },
+    {
+      "reference": "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+      "authors": "Fevola, C., Mizera, S., Telen, S.",
+      "description": "Landau singularities of the 1-loop box (A₄) computed via principal Landau determinants.",
+      "familyName": "PLD: A4"
     }
   ],
-  "Names": [
-    "$B^{4m} $(four-mass box)",
-    "Star_4 (box d=2)",
-    "B(4m) (four-mass box)",
-    "one-loop four-mass box",
-    "four-mass box"
-  ],
-  "Source": [
-    "arXiv"
-  ],
-  "Loops": 1,
-  "NumPropagators": 4,
-  "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{2, 4}, 0}, {{3, 4}, 0}}",
-  "nodes": "{{1, M[1]}, {2, M[2]}, {4, M[3]}, {3, M[4]}}",
-  "CanonicalName": "4-mass box (c)",
-  "MassConfig": {
-    "numEdges": 4,
-    "numMassiveEdges": 0,
-    "numMasslessEdges": 4,
-    "distinctInternalMasses": 0,
-    "internalMassLabels": [],
-    "edgeMassPattern": "0000",
-    "numExtLegs": 4,
-    "numOnshellMassiveExtLegs": 4,
-    "numMasslessExtLegs": 0,
-    "extLegSignature": "MMMM"
-  },
-  "commonNames": [
-    "D₀"
-  ],
-  "Subsectors": [
-    "e12|e2|e|:100|20|3|"
-  ],
-  "ParentSectors": [],
   "Results": [
     {
       "resultCompressed": "1:eJztV90KgjAUtrm6iF6iR6heoYsuDKSCrgs2GRSKK3r50PaDTqfpBgVNujmydc53vu/zbNL8HO/wxPM8OmVhj1KC6Pp0O1GfLVFCCXt4eMQTIAsBoTc8K1bh5U4xT6RjFg7kiih55nmOQZGxucQR4dVqi0NIVFBUhvEDpSqDw8oi0ZfvH69ig+Ql+ps6DOt0xI+C4mKp4LZbAtvw9eqMtTOpTirsND9gTfzH/Ehc9QOY+KEkiaKyZZfSZpJsKEhUuQIj4wYzgJnJgfxBwwc+4VpRr0xJarnqdRuWvBr0//PujP3uTH8LAZnJcYI40hyrwaoXo+S13xwdiJrbhTSnXMt6NDbHr2mWP1iztAlq88BGbeWG/lnJlvPx/VOVuDAolnfR106VE2YZfAKtJTtwtMR/Lbnk4QWJQB/Y",
@@ -291,5 +325,37 @@
         }
       ]
     }
-  ]
+  ],
+  "Names": [
+    "$B^{4m} $(four-mass box)",
+    "Star_4 (box d=2)",
+    "B(4m) (four-mass box)",
+    "one-loop four-mass box",
+    "four-mass box"
+  ],
+  "Source": [
+    "arXiv"
+  ],
+  "Loops": 1,
+  "NumPropagators": 4,
+  "CanonicalName": "4-mass box",
+  "MassConfig": {
+    "numEdges": 4,
+    "numMassiveEdges": 0,
+    "numMasslessEdges": 4,
+    "distinctInternalMasses": 0,
+    "internalMassLabels": [],
+    "edgeMassPattern": "0000",
+    "numExtLegs": 4,
+    "numOnshellMassiveExtLegs": 4,
+    "numMasslessExtLegs": 0,
+    "extLegSignature": "MMMM"
+  },
+  "commonNames": [
+    "D₀"
+  ],
+  "Subsectors": [
+    "e12|e2|e|:100|20|3|"
+  ],
+  "ParentSectors": []
 }

@@ -198,6 +198,44 @@ DLLEXPORT int hf_find_lr_orders(WolframLibraryData /*libData*/,
     }
 }
 
+// -------- hf_find_lr_orders_scan --------
+//
+// Signature:  String = hf_find_lr_orders_scan[jsonBody_String]
+// Doppio-port phase 3 bridge (2026-06-06): wraps
+// hyperflint::handlers::find_lr_orders_scan — the projective Cheng-Wu
+// gauge scan with the Doppio keep rules.  Same lifecycle pattern as
+// hf_find_lr_orders (defensive letter-table clear, FLINT pool cleanup,
+// JSON-encoded errors so the Mma caller can inspect them).
+DLLEXPORT int hf_find_lr_orders_scan(WolframLibraryData /*libData*/,
+                                     mint Argc, MArgument* Args,
+                                     MArgument Res) {
+    try {
+        if (Argc < 1) return LIBRARY_FUNCTION_ERROR;
+        char* input = MArgument_getUTF8String(Args[0]);
+        if (input == nullptr) return LIBRARY_FUNCTION_ERROR;
+
+        hyperflint::AlgebraicLetterTable::global().clear();
+
+        std::string response = hyperflint::handlers::find_lr_orders_scan(
+            std::string(input));
+
+        flint_cleanup_master();
+
+        return set_utf8_result(Res, response);
+    } catch (const std::exception& e) {
+        try {
+            std::string err = std::string(
+                "{\"op\":\"find_lr_orders_scan\",\"error\":\"")
+                + e.what() + "\"}";
+            return set_utf8_result(Res, err);
+        } catch (...) {
+            return LIBRARY_FUNCTION_ERROR;
+        }
+    } catch (...) {
+        return LIBRARY_FUNCTION_ERROR;
+    }
+}
+
 // -------- hf_hyperflint_sym --------
 //
 // Signature:  String = hf_hyperflint_sym[jsonBody_String]

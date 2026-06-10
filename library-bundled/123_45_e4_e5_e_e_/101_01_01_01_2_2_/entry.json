@@ -1,87 +1,87 @@
 {
-  "CNickelIndex": "123|45|e4|e5|e|e|:101|01|01|01|2|2|",
-  "MassScales": 4,
-  "FunctionClass": "elliptic",
-  "EpsilonOrder": "4",
-  "References": [
-    "arXiv:1806.04981",
-    "arXiv:1804.11144"
-  ],
-  "Records": [
-    {
-      "reference": "arXiv:1806.04981",
-      "authors": "Adams, Luise, Chaubey, Ekta, Weinzierl, Stefan",
-      "description": "Two-loop planar double box for ttbar with closed top loop. 7 propagators (5 massive m, 2 massless) + 2 ISPs. 44 MIs in 27 topologies. Three inequivalent elliptic curves. DE solved as iterated integrals to all orders in eps, explicit through O(eps^4).",
-      "epsOrders": "4",
-      "familyName": "planar double box (ttbar, closed top loop)",
-      "method": "DE, IBP",
-      "tools": [
-        "Reduze",
-        "Kira",
-        "FIRE",
-        "LiteRed"
-      ],
-      "ancillaryFiles": true,
-      "doi": "",
-      "texkey": "",
-      "masterCount": 44,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "Section 2, Eqs. (3)-(7)",
-      "recordId": "bx_9625033873d1",
-      "verified": false,
-      "verifiedAt": ""
-    },
-    {
-      "reference": "arXiv:1804.11144",
-      "authors": "Adams, Luise, Chaubey, Ekta, Weinzierl, Stefan",
-      "description": "PRL letter: planar double box for ttbar with closed top loop. 7 propagators (5 massive, 2 massless). 42 MIs. Three elliptic curves. Solved to all orders in eps via DEs with strictly lower-triangular eps^0 part.",
-      "epsOrders": "all_orders",
-      "familyName": "planar double box (ttbar, closed top loop)",
-      "method": "DE, IBP",
-      "tools": [
-        "Reduze",
-        "Kira",
-        "FIRE",
-        "sector_decomposition"
-      ],
-      "ancillaryFiles": true,
-      "doi": "",
-      "texkey": "",
-      "masterCount": 42,
-      "dimScheme": "d=4-2*eps",
-      "computationLevel": "full",
-      "location": "Section 2 ('The integral'): eq. labeled def_integral (the I_{ν_1...ν_7} definition) together with the unnumbered align-block defining P_1..P_7 immediately below (letter_topbox_rev.tex lines 136-165); fig. fig_double_box_graph (fig1.eps) for the topology.",
-      "recordId": "bx_21d886c00ffb",
-      "verified": false,
-      "verifiedAt": ""
-    }
-  ],
-  "Names": [
-    "planar double box (ttbar, closed top loop)"
-  ],
-  "Source": [
-    "arXiv"
-  ],
-  "Loops": 2,
-  "NumPropagators": 7,
-  "Results": [],
-  "edges": "{{{1, 2}, m}, {{1, 3}, 0}, {{1, 4}, m}, {{2, 5}, 0}, {{2, 6}, m}, {{3, 5}, m}, {{4, 6}, m}}",
-  "nodes": "{{3, 0}, {4, 0}, {5, M}, {6, M}}",
-  "CanonicalName": "Double box, 5 massive propagators (e)",
-  "Genus": 1,
-  "MassConfig": {
-    "numEdges": 7,
-    "numMassiveEdges": 5,
-    "numMasslessEdges": 2,
-    "distinctInternalMasses": 1,
-    "internalMassLabels": [
-      "m"
+    "CNickelIndex": "123|45|e4|e5|e|e|:101|01|01|01|2|2|",
+    "MassScales": 4,
+    "FunctionClass": "elliptic",
+    "EpsilonOrder": "4",
+    "References": [
+        "arXiv:1806.04981",
+        "arXiv:1804.11144"
     ],
-    "edgeMassPattern": "1010111",
-    "numExtLegs": 4,
-    "numOnshellMassiveExtLegs": 2,
-    "numMasslessExtLegs": 2,
-    "extLegSignature": "00MM"
-  }
+    "Records": [
+        {
+            "reference": "arXiv:1806.04981",
+            "authors": "Adams, Luise, Chaubey, Ekta, Weinzierl, Stefan",
+            "description": "Two-loop planar double box for ttbar with closed top loop. 7 propagators (5 massive m, 2 massless) + 2 ISPs. 44 MIs in 27 topologies. Three inequivalent elliptic curves. DE solved as iterated integrals to all orders in eps, explicit through O(eps^4).",
+            "epsOrders": "4",
+            "familyName": "planar double box (ttbar, closed top loop)",
+            "method": "DE, IBP",
+            "tools": [
+                "Reduze",
+                "Kira",
+                "FIRE",
+                "LiteRed"
+            ],
+            "ancillaryFiles": true,
+            "doi": "",
+            "texkey": "",
+            "masterCount": 44,
+            "dimScheme": "d=4-2*eps",
+            "computationLevel": "full",
+            "location": "Section 2, Eqs. (3)-(7)",
+            "recordId": "bx_9625033873d1",
+            "verified": false,
+            "verifiedAt": ""
+        },
+        {
+            "reference": "arXiv:1804.11144",
+            "authors": "Adams, Luise, Chaubey, Ekta, Weinzierl, Stefan",
+            "description": "PRL letter: planar double box for ttbar with closed top loop. 7 propagators (5 massive, 2 massless). 42 MIs. Three elliptic curves. Solved to all orders in eps via DEs with strictly lower-triangular eps^0 part.",
+            "epsOrders": "all_orders",
+            "familyName": "planar double box (ttbar, closed top loop)",
+            "method": "DE, IBP",
+            "tools": [
+                "Reduze",
+                "Kira",
+                "FIRE",
+                "sector_decomposition"
+            ],
+            "ancillaryFiles": true,
+            "doi": "",
+            "texkey": "",
+            "masterCount": 42,
+            "dimScheme": "d=4-2*eps",
+            "computationLevel": "full",
+            "location": "Section 2 ('The integral'): eq. labeled def_integral (the I_{ν_1...ν_7} definition) together with the unnumbered align-block defining P_1..P_7 immediately below (letter_topbox_rev.tex lines 136-165); fig. fig_double_box_graph (fig1.eps) for the topology.",
+            "recordId": "bx_21d886c00ffb",
+            "verified": false,
+            "verifiedAt": ""
+        }
+    ],
+    "Names": [
+        "planar double box (ttbar, closed top loop)"
+    ],
+    "Source": [
+        "arXiv"
+    ],
+    "Loops": 2,
+    "NumPropagators": 7,
+    "Results": [],
+    "edges": "{{{1, 2}, m}, {{1, 3}, 0}, {{1, 4}, m}, {{2, 5}, 0}, {{2, 6}, m}, {{3, 5}, m}, {{4, 6}, m}}",
+    "nodes": "{{3, 0}, {4, 0}, {5, M}, {6, M}}",
+    "CanonicalName": "Double box, 5 massive propagators (e)",
+    "Genus": 1,
+    "MassConfig": {
+        "numEdges": 7,
+        "numMassiveEdges": 5,
+        "numMasslessEdges": 2,
+        "distinctInternalMasses": 1,
+        "internalMassLabels": [
+            "m"
+        ],
+        "edgeMassPattern": "1010111",
+        "numExtLegs": 4,
+        "numOnshellMassiveExtLegs": 2,
+        "numMasslessExtLegs": 2,
+        "extLegSignature": "00MM"
+    }
 }

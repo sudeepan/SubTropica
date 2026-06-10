@@ -1,0 +1,15 @@
+{
+  "NickelIndex": "e12|e3|e4|e5|e6|e6|e|",
+  "Name": "Heptagon",
+  "PrimaryName": "Heptagon",
+  "Loops": 1,
+  "Legs": 7,
+  "Propagators": 7,
+  "LoopediaURL": "",
+  "Families": [
+    {
+      "family": "ngon",
+      "parameter": 7
+    }
+  ]
+}

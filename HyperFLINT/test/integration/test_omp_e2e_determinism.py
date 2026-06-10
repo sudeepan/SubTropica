@@ -95,6 +95,11 @@ def run_one_cell(hf_bin: Path, req_str: str, omp_threads: int,
                  timeout_s: int) -> dict:
     env = dict(os.environ)
     env["HF_USE_SCALAR_REP"] = "1"
+    # HF_PERIOD_TUPLES defaults ON (2026-06-09, commit 205807166) and is
+    # mutually exclusive with HF_USE_SCALAR_REP (period_scratch.cpp
+    # aborts when both are active). This test exists to pin SCALAR_REP
+    # determinism, so opt out of period tuples explicitly.
+    env["HF_PERIOD_TUPLES"] = "0"
     env["HF_RAT_SPLIT_VERIFY"] = "0"
     env["OMP_NUM_THREADS"] = str(omp_threads)
     t0 = time.time()

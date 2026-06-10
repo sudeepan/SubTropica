@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"1234|567|567|589|589||e|e|e|e|",
+	"Name":"amoeba_L7_massless-internal-offshell-external",
+	"PrimaryName":"Amoeba L7",
+	"Loops":7,
+	"Legs":4,
+	"Propagators":16,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"amoeba",
+			"parameter":7
+		}
+	]
+}

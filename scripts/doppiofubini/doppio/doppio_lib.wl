@@ -44,7 +44,11 @@ Quiet@Check[Needs["DiscKosky`"], Null];
 
 dp$graphCounter = 0;
 
-Get["/Users/smizera/Projects/SubTropica-branchSM/scripts/doppiofubini/euler_disc/euler_disc_lib.wl"];
+(* Portability (2026-06-06): euler_disc_lib.wl lives in the sibling
+   euler_disc/ directory; resolve relative to $InputFileName so deployed
+   trees load without a Mac-absolute path. *)
+Get[FileNameJoin[{DirectoryName[DirectoryName[$InputFileName]],
+    "euler_disc", "euler_disc_lib.wl"}]];
 
 (* ----------------------------------------------------------------------
    dpToAtomic[expr]
@@ -389,6 +393,46 @@ dpSquareQ[poly_, vars_] := Module[{e = Expand[poly], rt},
      FreeQ[rt, Complex] && Expand[rt^2 - e] === 0];
 
 (* ----------------------------------------------------------------------
+   dpEulerConic[poly, var]
+
+     Euler-conic parametrization of u^2 = poly (degree <= 2 in var),
+     extracted verbatim from the retired AnTropica.wl::ANEulerConic
+     (attic/AnTropica.wl, retirement 2026-06-09) so doppio_lib carries no
+     AnTropica dependency.  Parity-pinned by t25_euler_conic_parity.wl.
+
+     Finds a rational base point (var0, u0) on the conic and projects:
+       u = w (var - var0) + u0
+       =>  var = var0 + (2 A var0 + B - 2 w u0)/(w^2 - A).
+     Returns {var -> xOfW, sqrtOfW}; $Failed when deg > 2 or no automatic
+     base point exists.  Unlike the AnTropica original, failures are
+     SILENT (no Print): the only call site (dpRationalizableQ) wraps the
+     call in Quiet@Check with a bare-discriminant fallback.
+   ---------------------------------------------------------------------- *)
+Options[dpEulerConic] = {"BasePoint" -> Automatic, "NewVariable" -> Global`w};
+dpEulerConic[poly_, var_, OptionsPattern[]] := Module[
+  {wNew = OptionValue["NewVariable"], bp, A, B, C, var0, u0, xOfW, sqrtOfW},
+  If[Exponent[poly, var] > 2, Return[$Failed]];
+  A = Coefficient[poly, var, 2];
+  B = Coefficient[poly, var, 1];
+  C = Coefficient[poly, var, 0];
+  bp = OptionValue["BasePoint"];
+  If[bp === Automatic,
+    If[C =!= 0,
+      bp = {0, Sqrt[C]},
+      If[B =!= 0,
+        bp = {-C/B, Sqrt[A*C^2/B^2]},
+        Return[$Failed]
+      ]
+    ]
+  ];
+  {var0, u0} = bp;
+  xOfW = var0 + Together[(2*A*var0 + B - 2*wNew*u0)/(wNew^2 - A)];
+  xOfW = Together[xOfW];
+  sqrtOfW = wNew*(xOfW - var0) + u0 // Together // Factor;
+  {var -> xOfW, sqrtOfW}
+];
+
+(* ----------------------------------------------------------------------
    dpRationalizableQ[q, v, leftoverVars]
 
      Quadratic Euler-conic keep-test.  The locus polynomial `q` is degree
@@ -404,7 +448,7 @@ dpSquareQ[poly_, vars_] := Module[{e = Expand[poly], rt},
    rational point, which here holds iff BOTH the leading coefficient A and
    the constant term C are perfect squares in the leftover variables.  (A
    square A lets one read off a rational point at v -> Infinity; a square C
-   gives the rational base point (0, Sqrt[C]) that ANEulerConic projects
+   gives the rational base point (0, Sqrt[C]) that dpEulerConic projects
    from below.)  When either fails, the root is genuinely algebraic over
    Q(leftoverVars) and the next v-integration leaves the hyperlogarithm
    class -- the locus is NOT kept.
@@ -412,18 +456,18 @@ dpSquareQ[poly_, vars_] := Module[{e = Expand[poly], rt},
    Recorded letter
    ---------------
    On success we record the rationalization (sqrt) letter by calling
-   ANEulerConic[q, v] (AnTropica.wl, signature ANEulerConic[poly, var]),
-   which returns the conic parametrization {v -> rational(w), sqrt(w)}.
-   ANEulerConic is wrapped in Quiet@Check so that, if it is unavailable or
-   fails (e.g. AnTropica.wl not loaded in this kernel), we fall back to the
-   bare discriminant B^2 - 4 A C as the recorded letter.  The discriminant
-   is also used directly in the not-ok branch, where no conic parametrization
+   dpEulerConic[q, v] (inlined above from the retired AnTropica.wl;
+   signature dpEulerConic[poly, var]), which returns the conic
+   parametrization {v -> rational(w), sqrt(w)}.  dpEulerConic is wrapped
+   in Quiet@Check so that, if it fails, we fall back to the bare
+   discriminant B^2 - 4 A C as the recorded letter.  The discriminant is
+   also used directly in the not-ok branch, where no conic parametrization
    is meaningful.
 
    Returns an Association:
      "ok"     -> True/False  (rationalizable -> keep this locus)
      "A","C"  -> the leading and constant coefficients (for diagnostics)
-     "letter" -> ANEulerConic output on success, else B^2 - 4 A C
+     "letter" -> dpEulerConic output on success, else B^2 - 4 A C
    ---------------------------------------------------------------------- *)
 dpRationalizableQ[qIn_, v_, leftoverVars_] :=
  Module[{q = Expand[qIn], A, B, C, ok, letter},
@@ -432,7 +476,7 @@ dpRationalizableQ[qIn_, v_, leftoverVars_] :=
      rational point -> Euler substitution rationalizes the discriminant root *)
   ok = dpSquareQ[A, leftoverVars] && dpSquareQ[C, leftoverVars];
   letter = If[ok,
-     Quiet@Check[ANEulerConic[q, v], B^2 - 4 A C], B^2 - 4 A C];
+     Quiet@Check[dpEulerConic[q, v], B^2 - 4 A C], B^2 - 4 A C];
   <|"ok" -> ok, "A" -> A, "C" -> C, "letter" -> letter|>];
 
 (* ----------------------------------------------------------------------
@@ -911,9 +955,20 @@ dpFRJudge[p_, v_, lo_List, allVars_List] :=
                    (the Landau alphabet of the fully-integrated integrand).
      "variant"  -> the "Doppio" option value ("A" or "B").
    ---------------------------------------------------------------------- *)
+(* "EulerFilter" (2026-06-06, user directive after the utility study,
+   notes/chi_utility_study.md): the per-subset Euler chi-drop check is
+   OFF by default.  Empirics: 86,700 letters judged across the hexchord
+   production battery + tbox monster + PLD fixtures -> 0 drops, 0
+   verdict changes, 40-100x wall cost (121k msolve/DK counts).  The
+   Fubini intersection already removes what the filter targets on
+   per-face inputs; the filter's real catches (box2me sequential
+   extras, uq5 intermediate letters) live in sequential-crawl
+   alphabets.  "EulerFilter" -> True restores the chi-certified
+   variant-C behavior exactly (t15-t19 era semantics). *)
 Options[DoppioFubini] = {"Doppio" -> "B", "Exponents" -> None,
    "ChengWu" -> Automatic, "ChengWuVariable" -> Automatic,
-   "ChengWuRetry" -> True, "KeepRule" -> "Strict"};
+   "ChengWuRetry" -> True, "KeepRule" -> "Strict",
+   "EulerFilter" -> False};
 
 DoppioFubini[groupPolysIn_List, allVarsIn_List, OptionsPattern[]] :=
  Module[{groupPolys, allVars, pre, chengWu, keepRule, cwRetryHit,
@@ -993,13 +1048,18 @@ DoppioFubini[groupPolysIn_List, allVarsIn_List, OptionsPattern[]] :=
       them would reproduce the boundary-poly draining bug.  Letters here are
       symbolic over Q, so the admissibility and score layers below operate
       exactly. *)
-   With[{hyp = (variant === "CII")},
+   With[{hyp = (variant === "CII"),
+         chiOn = TrueQ[OptionValue["EulerFilter"]]},
     table = dpLungoCore[groupPolys, allVars,
-       Function[{g, Ss, letters},
-         Select[letters,
-           MemberQ[allVars, #] ||
-             dpGenuineQ[groupPolys[[g]], Ss, allVars, #,
-                "Hyperplanes" -> hyp] &]]
+       If[chiOn,
+          Function[{g, Ss, letters},
+            Select[letters,
+              MemberQ[allVars, #] ||
+                dpGenuineQ[groupPolys[[g]], Ss, allVars, #,
+                   "Hyperplanes" -> hyp] &]],
+          (* EulerFilter -> False (default): keep-all hook; pure
+             Lungo-core semantics, zero chi cost. *)
+          Function[{g, Ss, letters}, letters]]
        ]["table"]]
   ];
 

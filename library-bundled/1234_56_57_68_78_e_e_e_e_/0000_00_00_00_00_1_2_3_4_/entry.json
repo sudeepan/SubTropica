@@ -1,0 +1,41 @@
+{
+  "CNickelIndex": "1234|56|57|68|78|e|e|e|e|:0000|00|00|00|00|1|2|3|4|",
+  "MassScales": 6,
+  "FunctionClass": "determinant of Usyukina-Davydychev ladders Phi^(L)",
+  "EpsilonOrder": "",
+  "edges": "{{{9, 5}, 0}, {{5, 8}, 0}, {{4, 1}, 0}, {{1, 3}, 0}, {{7, 2}, 0}, {{2, 6}, 0}, {{9, 4}, 0}, {{5, 1}, 0}, {{8, 3}, 0}, {{4, 7}, 0}, {{1, 2}, 0}, {{3, 6}, 0}}",
+  "nodes": "{{9, M[1]}, {8, M[2]}, {7, M[3]}, {6, M[4]}}",
+  "References": [
+    "arXiv:1705.03545",
+    "arXiv:1811.10623",
+    "arXiv:2007.15049",
+    "arXiv:2310.08625",
+    "arXiv:2209.05291"
+  ],
+  "Records": [
+    {
+      "reference": "arXiv:1705.03545",
+      "familyName": "basso-dixon_L2x2_massless-internal-offshell-external",
+      "description": "Basso-Dixon fishnet family, basso-dixon_L2x2_massless-internal-offshell-external. Basso-Dixon fishnet B_{M,N}: an M x N rectangular grid, 4 external operators at the corners, defined in dual (region-momentum) space via products of 1/x_ij^2 propagators. The L = MN loop integral is conformal. Momentum space: the (M+1) x (N+1) vertex grid (2MN+M+N massless edges, 4 off-shell corner legs, MN loops); B_{M,1} = the M-rung 4-pt ladder; transpose symmetry fixes the canonical orientation M >= N. Value = BassoDixonI[2, 2, 1/3, 1/5].",
+      "method": [
+        "closed form"
+      ],
+      "tools": [
+        "SubTropica seed_families"
+      ],
+      "recordId": "fs_5146f836c796",
+      "verified": false,
+      "verifiedAt": ""
+    }
+  ],
+  "Results": [],
+  "Names": [
+    "basso-dixon_L2x2_massless-internal-offshell-external"
+  ],
+  "Source": [
+    "family-seed"
+  ],
+  "Loops": 4,
+  "NumPropagators": 12,
+  "CanonicalName": "4-loop 4-point (12 propagators)"
+}

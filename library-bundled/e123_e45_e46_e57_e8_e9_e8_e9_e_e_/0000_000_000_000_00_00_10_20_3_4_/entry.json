@@ -1,0 +1,101 @@
+{
+	"CNickelIndex": "e123|e45|e46|e57|e8|e9|e8|e9|e|e|:0000|000|000|000|00|00|10|20|3|4|",
+	"MassScales": 39,
+	"FunctionClass": "Calabi-Yau",
+	"EpsilonOrder": "",
+	"edges": "{{{7, 9}, 0}, {{7, 3}, 0}, {{9, 5}, 0}, {{3, 5}, 0}, {{3, 1}, 0}, {{5, 2}, 0}, {{1, 2}, 0}, {{1, 4}, 0}, {{2, 6}, 0}, {{4, 6}, 0}, {{4, 8}, 0}, {{6, 10}, 0}, {{8, 10}, 0}}",
+	"nodes": "{{7, M[1]}, {9, M[2]}, {3, 0}, {5, 0}, {1, 0}, {2, 0}, {4, 0}, {6, 0}, {8, M[3]}, {10, M[4]}}",
+	"References": [
+		"arXiv:1805.09326",
+		"arXiv:1910.01534",
+		"arXiv:2005.08771",
+		"arXiv:2306.11780"
+	],
+	"Records": [
+		{
+			"authors": [
+				{
+					"full_name": "Bourjaily, Jacob L.",
+					"inspire_id": 1020130
+				},
+				{
+					"full_name": "He, Yang-Hui",
+					"inspire_id": 1006373
+				},
+				{
+					"full_name": "Mcleod, Andrew J.",
+					"inspire_id": 1486130
+				},
+				{
+					"full_name": "Von Hippel, Matt",
+					"inspire_id": 1067843
+				},
+				{
+					"full_name": "Wilhelm, Matthias",
+					"inspire_id": 1283987
+				}
+			],
+			"texkey": "",
+			"verified": true,
+			"verifiedAt": "2026-04-08",
+			"reference": "arXiv:1805.09326",
+			"ancillaryFiles": [],
+			"recordId": "bf_168afcb2df73",
+			"masterCount": 0,
+			"computationLevel": "none",
+			"doi": "",
+			"tools": [
+				"Macaulay2"
+			],
+			"description": "4-loop traintrack integral involving a Calabi-Yau threefold. 4-loop traintrack with 13 massless propagators, 14 massless external legs grouped into 10 momenta. Finite and dual-conformally invariant in $d=4$. Involves weight-5 hyperlogarithms integrated over an irreducible smooth Calabi-Yau threefold, elliptically fibered over $\\mathbb{P}^2$. Weierstrass coefficients $g_2(z_1,z_2)$ and $g_3(z_1,z_2)$ have degrees specified in Eq. (13). Verified to have trivial canonical sheaf using Macaulay2.",
+			"epsOrders": "",
+			"method": [],
+			"dimScheme": "d=4",
+			"location": "Eq. (1), Sec. Calabi-Yaus at Higher Loops",
+			"familyName": "traintrack_4L_CY3"
+		},
+		{
+			"reference": "arXiv:1805.09326",
+			"familyName": "traintrack_L4_massless-internal-offshell-external",
+			"description": "Traintrack family, traintrack_L4_massless-internal-offshell-external. Planar chain of L boxes (cells), massless internal lines. External legs at every vertex: 4 off-shell corners (distinct masses, the collapsed pairs of the paper's 2L+6 massless particles) + 2L-2 massless middle legs; L=1 is the four-mass box. The L-loop traintrack is a weight-(L+1) hyperlogarithm over a Calabi-Yau (L-1)-fold: L=1 is a box, L=2 elliptic, L=3 a K3 surface, L=4 a Calabi-Yau threefold.",
+			"method": [
+				"closed form"
+			],
+			"tools": [
+				"SubTropica seed_families"
+			],
+			"recordId": "fs_3803a51d7fd6",
+			"verified": false,
+			"verifiedAt": ""
+		}
+	],
+	"Results": [],
+	"Names": [
+		"4-loop traintrack",
+		"Traintrack (Calabi-Yau 3-fold)"
+	],
+	"Source": [
+		"arXiv",
+		"Loopedia"
+	],
+	"Loops": 4,
+	"NumPropagators": 13,
+	"CanonicalName": "4-loop 10-point (13 propagators)",
+	"MassConfig": {
+		"numEdges": 13,
+		"numMassiveEdges": 0,
+		"numMasslessEdges": 13,
+		"distinctInternalMasses": 0,
+		"internalMassLabels": [],
+		"edgeMassPattern": "0000000000000",
+		"numExtLegs": 10,
+		"numOnshellMassiveExtLegs": 4,
+		"numMasslessExtLegs": 6,
+		"extLegSignature": "MM000000MM"
+	},
+	"commonNames": [
+		"TT4"
+	],
+	"Subsectors": [],
+	"ParentSectors": []
+}

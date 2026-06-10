@@ -1,6 +1,6 @@
 {
   "CNickelIndex": "e11|e|:100|1|",
-  "MassScales": 0,
+  "MassScales": 1,
   "FunctionClass": "hypergeometric",
   "EpsilonOrder": "all_orders",
   "References": [

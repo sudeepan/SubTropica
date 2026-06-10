@@ -28,6 +28,7 @@
 #include "hyperflint/algebra/poly_struct_hash.hpp"   // Lever A: cache key
 #include "hyperflint/core/zw_table.hpp"              // iter-52 C0c.1: ZWTable for linear_factors transient
 #include "hyperflint/core/factored_rat.hpp"          // B1.3: single-pole factored residue fast path
+#include "univar_rat.hpp"                              // CRT partial fractions for multi-pole denominators
 #include "hyperflint/instrumentation/dag_hashcons_probe.hpp"  // §A.1 iter-50: op_call emit at function entry
 
 #include <flint/fmpq.h>
@@ -52,6 +53,38 @@
 #include <vector>
 
 namespace hyperflint {
+
+// Cancel the common rational content between numerator and denominator.
+// fmpq_mpoly stores poly = content × primitive_zpoly; two Rats that
+// are VALUE-equal can have different (content_n, content_d) pairs.
+// This post-processing step divides both sides by gcd(content_n,
+// content_d), making the result deterministic regardless of the
+// construction path. Cheap: O(1) fmpq arithmetic, no Poly GCD.
+namespace {
+Rat normalize_rat_content(Rat r) {
+    if (r.is_zero()) return r;
+    const fmpq* cn = r.num().raw()->content;
+    const fmpq* cd = r.den().raw()->content;
+    if (fmpq_is_one(cn) && fmpq_is_one(cd)) return r;
+    fmpq_t g;
+    fmpq_init(g);
+    _fmpq_gcd(fmpq_numref(g), fmpq_denref(g),
+              fmpq_numref(cn), fmpq_denref(cn),
+              fmpq_numref(cd), fmpq_denref(cd));
+    bool trivial = fmpq_is_one(g);
+    if (!trivial) {
+        Poly n(r.num()), d(r.den());
+        fmpq_mpoly_scalar_div_fmpq(n.raw(), n.raw(), g,
+                                   n.ctx().raw());
+        fmpq_mpoly_scalar_div_fmpq(d.raw(), d.raw(), g,
+                                   d.ctx().raw());
+        fmpq_clear(g);
+        return Rat::from_canonical(std::move(n), std::move(d));
+    }
+    fmpq_clear(g);
+    return r;
+}
+}  // namespace
 
 // Phase-d15 follow-up: file-scope per-thread accumulator for the
 // linear_factors call (FLINT fmpq_mpoly_factor) inside partial_fractions.
@@ -997,35 +1030,315 @@ PartialFractionization partial_fractions_impl(
             //                 / (den_remaining * prod_j lin_j^{m_j})
             //             = rem / (Q_k^{m_k} * den_remaining
             //                       * prod_{j!=k} lin_j^{m_j}).
-            // We build the CANCELLED form directly so that no copy of lin_k
-            // survives in the denominator: lin_k(P_k/Q_k) = 0, so a surviving
-            // lin_k denominator factor would vanish when we evaluate at the
-            // pole.  Holding it factored keeps the representation GCD-free
-            // until materialize_to_rat().  Constant Q_k (the polynomial-pole
-            // case a.den()==1) or constant den_remaining folds away through
-            // from_rat, so this one expression covers both branches the
-            // legacy loop handles separately.
+            // Single-pole case: Euclidean PF via Horner Taylor expansion.
+            // Multi-pole case: FactoredRat derivative chain + PEEL.
+            //
+            // The Euclidean path is faster for single-pole denominators
+            // (1m-tbox steps 1-2: 0.4s vs 256s) but regresses on multi-pole
+            // denominators (step 3: >60 min vs 826s) because R_other has
+            // high degree in var, making the Horner loop expensive.
+            // Horner Taylor expansion: Poly-returning core.
+            // Computes the Q-homogenized all-derivatives Taylor coefficients
+            // d[0..order-1] of poly((P + t) / Q) * Q^D, along with D.
+            struct HornerPolyResult {
+                std::vector<Poly> coeffs;
+                long degree;
+            };
+            auto horner_taylor_polys = [&](const Poly& poly,
+                const Prim& ppk, long order) -> HornerPolyResult {
+                long D = poly.degree_in_var(var_idx);
+                if (D < 0) D = 0;
+                long M = std::min(order, D + 1);
+                std::vector<Poly> ck;
+                ck.reserve(static_cast<size_t>(D + 1));
+                for (long k = 0; k <= D; ++k)
+                    ck.push_back(poly.coefficient_of_var(var_idx, k));
+                std::vector<Poly> Qpow;
+                Qpow.reserve(static_cast<size_t>(D + 1));
+                Qpow.push_back(Poly::one_of(ctx));
+                for (long i = 1; i <= D; ++i)
+                    Qpow.push_back(Qpow[static_cast<size_t>(i - 1)].mul(ppk.Q));
+                std::vector<Poly> hk;
+                hk.reserve(static_cast<size_t>(D + 1));
+                for (long k = 0; k <= D; ++k) {
+                    if (ck[static_cast<size_t>(k)].is_zero())
+                        hk.push_back(Poly::zero_of(ctx));
+                    else
+                        hk.push_back(ck[static_cast<size_t>(k)].mul(
+                            Qpow[static_cast<size_t>(D - k)]));
+                }
+                std::vector<Poly> d(static_cast<size_t>(M),
+                                    Poly::zero_of(ctx));
+                for (long k = D; k >= 0; --k) {
+                    for (long j = M - 1; j >= 1; --j) {
+                        d[static_cast<size_t>(j)] =
+                            d[static_cast<size_t>(j)].mul(ppk.P)
+                                .add(d[static_cast<size_t>(j - 1)]);
+                    }
+                    d[0] = d[0].mul(ppk.P).add(hk[static_cast<size_t>(k)]);
+                }
+                std::vector<Poly> result;
+                result.reserve(static_cast<size_t>(order));
+                for (long j = 0; j < M; ++j)
+                    result.push_back(std::move(d[static_cast<size_t>(j)]));
+                for (long j = M; j < order; ++j)
+                    result.push_back(Poly::zero_of(ctx));
+                return {std::move(result), D};
+            };
+            // Rat-returning wrapper: divides each d[j] by Q^D.
+            auto expand_horner = [&](const Poly& poly, const Prim& ppk,
+                                     long order) -> std::vector<Rat> {
+                auto hr = horner_taylor_polys(poly, ppk, order);
+                Poly QD = ppk.Q.pow(
+                    static_cast<unsigned long>(hr.degree));
+                std::vector<Rat> rats;
+                rats.reserve(static_cast<size_t>(order));
+                for (auto& p : hr.coeffs)
+                    rats.push_back(Rat(std::move(p), Poly(QD)));
+                return rats;
+            };
+
+            if (prims.size() == 1) {
+            // --- EUCLIDEAN PATH (single pole) ---
+            // For pole a_k = P_k/Q_k of order m_k, compute the m_k
+            // Laurent coefficients of rem(x) / R_other(x) expanded in
+            // powers of lin_k = Q_k*x - P_k.
+            //
+            // Algorithm: view rem.num() and R_other as univariate in var
+            // with multivariate coefficients. Extract c_k = coeff(poly, var, k),
+            // form the Q-homogenized polynomial g(t) = sum c_k * Q^{D-k} * t^k,
+            // and compute g(P), g'(P)/1!, ..., g^{(m-1)}(P)/(m-1)! via
+            // Horner's all-derivatives method. The lin_k-adic coefficient j
+            // is then g^{(j)}(P)/j! / Q^D as a Rat.
+            //
+            // This avoids Poly::divrem (broken for non-monomial Q_k under
+            // FLINT's lex multivariate term order) and FactoredRat derivatives
+            // (which cause O(10^4)-term numerator swell).
+
+            // Build R_other = everything in f.den() except lin_k^m,
+            // times rem.den().  Note: f.den() = den_remaining *
+            // prod_j lin_j^{m_j}, so R_other = den_remaining *
+            // prod_{j!=k} lin_j^{m_j} * rem.den().  There is NO Q^m
+            // factor: Q is already folded into each lin_j = Q_j*var - P_j.
+            Poly R_other = Poly(den_remaining);
+            for (size_t j = 0; j < prims.size(); ++j) {
+                if (j == kpole) continue;
+                R_other = R_other.mul(
+                    prims[j].lin.pow(
+                        static_cast<unsigned long>(prims[j].m)));
+            }
+            R_other = R_other.mul(rem.den());
+
+            std::vector<Rat> p_coeffs =
+                expand_horner(rem.num(), pk, m);
+            std::vector<Rat> r_coeffs =
+                expand_horner(R_other, pk, m);
+
+            // Cauchy-product recurrence (cf. laurent.cpp:43-54):
+            //   c_j = (p_j - sum_{i=1..j} r_i * c_{j-i}) / r_0.
+            const Rat& r0 = r_coeffs[0];
+            if (r0.is_zero()) {
+                throw std::runtime_error(
+                    "partial_fractions_impl Euclidean path: "
+                    "R_other(pole) == 0 (coincident pole?)");
+            }
+            std::vector<Rat> c_laurent;
+            c_laurent.reserve(static_cast<size_t>(m));
+            for (long j = 0; j < m; ++j) {
+                Rat acc = p_coeffs[static_cast<size_t>(j)];
+                for (long i = 1; i <= j; ++i) {
+                    acc = acc - r_coeffs[static_cast<size_t>(i)]
+                        * c_laurent[static_cast<size_t>(j - i)];
+                }
+                c_laurent.push_back(acc / r0);
+            }
+
+            // Map to PartialFractionPole::coefs convention:
+            // coefs[k-1] = coefficient of 1/(x - pole)^k (ascending, k=1..m).
+            // c_laurent[j] = coefficient of lin_k^j in the expansion of
+            // p(x)/r(x), so the coefficient of lin_k^{j-m} in p/(lin_k^m r)
+            // is c_laurent[j].  Since lin_k = Q_k*(x - pole), we have
+            // 1/lin_k^n = 1/(Q_k^n (x - pole)^n), so the coefficient of
+            // 1/(x - pole)^k is c_laurent[m-k] / Q_k^k.
+            PartialFractionPole pole_out{a, m, {}};
+            pole_out.coefs.reserve(static_cast<size_t>(m));
+            Poly Qk_pow = Poly(pk.Q);   // Q^1
+            for (long k = 1; k <= m; ++k) {
+                Rat coef = c_laurent[static_cast<size_t>(m - k)]
+                    / Rat(Poly(Qk_pow));
+                pole_out.coefs.push_back(std::move(coef));
+                if (k < m)
+                    Qk_pow = Qk_pow.mul(pk.Q);
+            }
+            fast_poles.push_back(std::move(pole_out));
+            } else {
+            // --- MULTI-POLE DISPATCH ---
+            // FR-Cauchy (default ON) or derivative-chain fallback.
+            // 1m-tbox A/B: steps 2-3 from 2643s to 207s (12.8×),
+            // total 2804s to 449s (6.2×); 643/643 value-identical
+            // (Mathematica Simplify). Opt-out: HF_FR_CAUCHY_PF=0.
+            static const bool use_fr_cauchy = []{
+                const char* e = std::getenv("HF_FR_CAUCHY_PF");
+                return !(e && *e == '0' && !e[1]);
+            }();
+            bool cauchy_ok = false;
+            if (use_fr_cauchy) {
+              try {
+                // Phase 1: δ_jk factors and truncated convolution.
+                // R_other = G_eval · ∏_{j≠k} lin_j^{m_j}, where
+                // G_eval = den_remaining · rem.den() (var-free).
+                // Substituting var = (P_k + t)/Q_k, lin_j becomes
+                // (δ_jk + Q_j·t)/Q_k, so Q_k^{M_other} · R_other =
+                // G_eval · ∏ (δ_jk + Q_j·t)^{m_j}.  The Taylor coeffs
+                // r̃_j of this product are all Polys (no GCD needed).
+                struct DeltaInfo { Poly delta; Poly Q_j; long m_j; };
+                std::vector<DeltaInfo> dinfos;
+                long M_other = 0;
+                for (size_t j = 0; j < prims.size(); ++j) {
+                    if (j == kpole) continue;
+                    Poly delta = prims[j].Q.mul(pk.P)
+                                     .sub(prims[j].P.mul(pk.Q));
+                    if (delta.is_zero())
+                        throw std::runtime_error(
+                            "FR-Cauchy: δ_jk == 0 (coincident poles?)");
+                    dinfos.push_back(
+                        {std::move(delta), Poly(prims[j].Q), prims[j].m});
+                    M_other += prims[j].m;
+                }
+
+                // Truncated convolution of ∏ (δ + Q_j·t)^{m_j} to order m.
+                std::vector<Poly> conv(
+                    static_cast<size_t>(m), Poly::zero_of(ctx));
+                conv[0] = Poly::one_of(ctx);
+                for (const auto& di : dinfos) {
+                    long mj = di.m_j;
+                    // Binomial expansion: b[s] = C(mj,s)·δ^{mj-s}·Q_j^s.
+                    std::vector<Poly> delta_pow;
+                    delta_pow.reserve(static_cast<size_t>(mj + 1));
+                    delta_pow.push_back(Poly::one_of(ctx));
+                    for (long r = 1; r <= mj; ++r)
+                        delta_pow.push_back(
+                            delta_pow[static_cast<size_t>(r - 1)]
+                                .mul(di.delta));
+                    std::vector<Poly> Qj_pow;
+                    Qj_pow.reserve(static_cast<size_t>(mj + 1));
+                    Qj_pow.push_back(Poly::one_of(ctx));
+                    for (long s = 1; s <= mj; ++s)
+                        Qj_pow.push_back(
+                            Qj_pow[static_cast<size_t>(s - 1)]
+                                .mul(di.Q_j));
+                    std::vector<Poly> binom;
+                    binom.reserve(static_cast<size_t>(mj + 1));
+                    long bc = 1;  // C(mj, s) via running product
+                    for (long s = 0; s <= mj; ++s) {
+                        binom.push_back(
+                            Poly::from_int(ctx, bc)
+                                .mul(delta_pow[static_cast<size_t>(mj - s)])
+                                .mul(Qj_pow[static_cast<size_t>(s)]));
+                        if (s < mj)
+                            bc = bc * (mj - s) / (s + 1);
+                    }
+                    // conv ← conv ⊛ binom (truncated to m terms).
+                    std::vector<Poly> nc(
+                        static_cast<size_t>(m), Poly::zero_of(ctx));
+                    for (long n = 0; n < m; ++n) {
+                        for (long s = 0; s <= std::min(mj, n); ++s) {
+                            long i = n - s;
+                            if (i >= static_cast<long>(conv.size()))
+                                continue;
+                            if (conv[static_cast<size_t>(i)].is_zero())
+                                continue;
+                            if (binom[static_cast<size_t>(s)].is_zero())
+                                continue;
+                            nc[static_cast<size_t>(n)] =
+                                nc[static_cast<size_t>(n)].add(
+                                    conv[static_cast<size_t>(i)].mul(
+                                        binom[static_cast<size_t>(s)]));
+                        }
+                    }
+                    conv = std::move(nc);
+                }
+                // Multiply by G_eval = den_remaining · rem.den().
+                Poly G_eval = Poly(den_remaining).mul(rem.den());
+                if (G_eval.is_zero())
+                    throw std::runtime_error(
+                        "FR-Cauchy: G_eval == 0 (unexpected)");
+                for (auto& c : conv)
+                    if (!c.is_zero()) c = c.mul(G_eval);
+
+                // Phase 1b: Horner Taylor coefficients of rem.num().
+                auto hr = horner_taylor_polys(rem.num(), pk, m);
+                const auto& p_tilde = hr.coeffs;
+                long D_N = hr.degree;
+
+                // Phase 2: Cauchy recurrence in FactoredRat space.
+                // inv_r̃₀ = FR(1, {G_eval, δ_{j1}^{m1}, …}) defers the
+                // division by r̃₀ = G_eval · ∏ δ^m so no GCD is needed.
+                FactoredRat inv_r0 =
+                    FactoredRat::from_poly(Poly::one_of(ctx));
+                if (!G_eval.is_one())
+                    inv_r0.push_factor(G_eval, 1);
+                for (const auto& di : dinfos)
+                    inv_r0.push_factor(di.delta, di.m_j);
+
+                std::vector<FactoredRat> c_hat;
+                c_hat.reserve(static_cast<size_t>(m));
+                for (long j = 0; j < m; ++j) {
+                    FactoredRat acc = FactoredRat::from_poly(
+                        Poly(p_tilde[static_cast<size_t>(j)]));
+                    for (long i = 1; i <= j; ++i) {
+                        if (conv[static_cast<size_t>(i)].is_zero())
+                            continue;
+                        acc = acc.sub(
+                            FactoredRat::from_poly(
+                                Poly(conv[static_cast<size_t>(i)]))
+                            .mul(c_hat[static_cast<size_t>(j - i)]));
+                    }
+                    acc = acc.mul(inv_r0);
+                    acc.peel_known_factors(1);
+                    c_hat.push_back(std::move(acc));
+                }
+
+                // Phase 3: materialize to PartialFractionPole.
+                // ĉ_j are Taylor coeffs of N̂/R̂; true Laurent coeffs are
+                // c_j = Q_k^{M_other - D_N} · ĉ_j, and
+                // coef[k-1] = c_{m-k} / Q_k^k = ĉ_{m-k} · Q_k^{M-D_N-k}.
+                PartialFractionPole pole_c{a, m, {}};
+                pole_c.coefs.reserve(static_cast<size_t>(m));
+                for (long k = 1; k <= m; ++k) {
+                    FactoredRat ck(
+                        c_hat[static_cast<size_t>(m - k)]);
+                    long q_exp = M_other - D_N - k;
+                    if (q_exp > 0) {
+                        ck = ck.mul(FactoredRat::from_poly(
+                            pk.Q.pow(static_cast<unsigned long>(
+                                q_exp))));
+                    } else if (q_exp < 0) {
+                        ck.push_factor(pk.Q, -q_exp);
+                    }
+                    pole_c.coefs.push_back(
+                        normalize_rat_content(ck.materialize_to_rat()));
+                }
+                fast_poles.push_back(std::move(pole_c));
+                cauchy_ok = true;
+              } catch (const std::exception&) {
+                // FR-Cauchy failed; fall through to derivative chain.
+              }
+            }
+            if (!cauchy_ok) {
+            // --- DERIVATIVE PATH (multi-pole fallback) ---
             FactoredRat expr_fac =
                 FactoredRat::from_poly(rem.num())
                     .mul(FactoredRat::from_rat(Rat(one, rem.den())))
                     .mul(FactoredRat::from_rat(Rat(one, Q)).pow(m))
                     .mul(FactoredRat::from_rat(Rat(one, den_remaining)));
             for (size_t j = 0; j < prims.size(); ++j) {
-                if (j == kpole) continue;  // lin_k cancelled by (var-a_k)^m
+                if (j == kpole) continue;
                 expr_fac = expr_fac.mul(
                     FactoredRat::from_rat(Rat(one, prims[j].lin))
                         .pow(prims[j].m));
             }
 
-            // Derivative chain in FactoredRat: derivs[t] = d^t/dvar^t expr_k.
-            // HF_FR_MAT_PEEL: peel removable base powers off each chain
-            // numerator as it is built. FactoredRat::derivative never
-            // cancels, so without the peel the chain numerators swell with
-            // whole powers of the den bases and the downstream eval_poly
-            // homogenization pays huge fmpz_mpoly_mul calls (ord_-4_face_90:
-            // ~10 s residual after the materialize-side peel alone).
-            // Value-preserving: each peel step is an exact division applied
-            // to numerator and factored denominator alike.
             std::vector<FactoredRat> derivs;
             derivs.reserve(static_cast<size_t>(m));
             derivs.push_back(expr_fac);
@@ -1045,20 +1358,15 @@ PartialFractionization partial_fractions_impl(
                                   P, Q);
                 Rat val = val_fac.materialize_to_rat();
                 if (deriv_order > 0) {
-                    // Divide by (m-j)! = deriv_order!.  NOTE: divide the
-                    // MATERIALIZED Rat by the scalar, NOT the FactoredRat: a
-                    // constant FactoredRat divisor is silently dropped by
-                    // FactoredRat::div (push_factor discards constant/one
-                    // bases), which would leave the factorial out.  The
-                    // scalar Rat divide here is identical to the legacy loop
-                    // below and reduces correctly.
                     long fact = 1;
                     for (long k = 2; k <= deriv_order; ++k) fact *= k;
                     val = val / Rat::from_int(ctx, fact);
                 }
-                pole.coefs.push_back(std::move(val));
+                pole.coefs.push_back(normalize_rat_content(std::move(val)));
             }
             fast_poles.push_back(std::move(pole));
+            }
+            } // end single-pole vs multi-pole dispatch
           }
       } catch (const std::exception&) {
         // divexact-exactness assumption (primitive factor == Q_k*var-P_k)

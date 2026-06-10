@@ -1,0 +1,15 @@
+{
+  "NickelIndex": "e12|e3|e4|e5|e6|e7|e7|e|",
+  "Name": "Octagon",
+  "PrimaryName": "Octagon",
+  "Loops": 1,
+  "Legs": 8,
+  "Propagators": 8,
+  "LoopediaURL": "",
+  "Families": [
+    {
+      "family": "ngon",
+      "parameter": 8
+    }
+  ]
+}

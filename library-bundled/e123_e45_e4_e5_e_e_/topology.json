@@ -1,9 +1,22 @@
 {
-  "NickelIndex": "e123|e45|e4|e5|e|e|",
-  "Name": "2-loop 6-pt planar double-box with extra leg",
-  "PrimaryName": "Double box",
-  "Loops": 2,
-  "Legs": 6,
-  "Propagators": 7,
-  "LoopediaURL": ""
+	"NickelIndex":"e123|e45|e4|e5|e|e|",
+	"Name":"2-loop 6-pt planar double-box with extra leg",
+	"PrimaryName":"Double box",
+	"Loops":2,
+	"Legs":6,
+	"Propagators":7,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"elliptic-ladder",
+			"parameter":[
+				1,
+				1
+			]
+		},
+		{
+			"family":"traintrack",
+			"parameter":2
+		}
+	]
 }

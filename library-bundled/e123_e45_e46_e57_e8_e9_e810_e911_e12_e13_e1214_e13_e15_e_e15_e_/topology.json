@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"e123|e45|e46|e57|e8|e9|e810|e911|e12|e13|e1214|e13|e15|e|e15|e|",
+	"Name":"traintrack_L7_massless-internal-offshell-external",
+	"PrimaryName":"Traintrack L7",
+	"Loops":7,
+	"Legs":16,
+	"Propagators":22,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"traintrack",
+			"parameter":7
+		}
+	]
+}

@@ -31,6 +31,19 @@ namespace handlers {
 // whether to append a newline / push to stdout.
 std::string find_lr_orders(const std::string& body);
 
+// Doppio-port phase 3 bridge op (2026-06-06): the projective Cheng-Wu
+// GAUGE SCAN with Doppio keep rules (lr_scan::find_lr_orders_scan).
+// Request shape:
+//   {"op":"find_lr_orders_scan", "groups":[[...]], "xvars":[...],
+//    "coeff_vars":[...], "exps":[[[a,b],...],...] (REQUIRED),
+//    "keep_rule":"Strict"|"FindRoots", "euler_filter":bool,
+//    "max_orders":N}
+// Response: envelope + {"projective":bool,"truncated":bool,
+//    "orders":[{order, gauge, score, carried_sqrts, kin_sqrts,
+//               terminal_quads}, ...]}  (score-ascending).
+// Never throws; errors as {"op":"find_lr_orders_scan","error":...}.
+std::string find_lr_orders_scan(const std::string& body);
+
 // Track 8.1b chunk-2b (iter-48): transport-neutral partial_fractions
 // handler.  Request shape:
 //   {"op":"partial_fractions", "f":<str>, "var":<str>,

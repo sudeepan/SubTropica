@@ -1,6 +1,6 @@
 # 🥥 SubTropica
 
-[![Version](https://img.shields.io/badge/version-1.2.2-blue)](https://github.com/SubTropica/SubTropica)
+[![Version](https://img.shields.io/badge/version-1.2.3-blue)](https://github.com/SubTropica/SubTropica)
 [![Mathematica](https://img.shields.io/badge/Mathematica-13.1%2B-red)](https://www.wolfram.com/mathematica/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Data: CC BY-NC-SA 4.0](https://img.shields.io/badge/data_license-CC_BY--NC--SA_4.0-orange)](LICENSE-DATA)
@@ -11,6 +11,16 @@ A Mathematica package for computing Feynman integrals via tropical geometry. Sub
 > **Paper:** M. Giroux, S. Mizera, G. Salvatori, *SubTropica*, [arXiv:2604.20954](https://arxiv.org/abs/2604.20954) [hep-th].
 
 Every code listing from the paper is reproduced and checked in [`PaperChecks.wl`](PaperChecks.wl) at the repository root — evaluate it end-to-end after ``Needs["SubTropica`"]`` to regenerate all quoted outputs.
+
+## New in v1.2
+
+This version introduces **[HyperFLINT](HyperFLINT/README.md)**, a new analytic integration engine: a C++17 reimplementation of the hyperlogarithm algorithm on [FLINT](https://flintlib.org), with 3–10× end-to-end speedups over the built-in HyperIntica engine on realistic Feynman diagrams. We encourage installing it alongside the core package:
+
+```mathematica
+PacletInstall["https://subtropi.ca/HyperFLINT.paclet"]
+```
+
+Once installed, it automatically becomes the default symbolic integrator of `STIntegrate`. More details are provided [below](#optional-the-hyperflint-backend-macos).
 
 ## Features
 
@@ -30,11 +40,11 @@ The library currently contains:
 
 |                         |       |
 | :---------------------- | ----: |
-| **Topologies**          | 361 |
-| **Mass configurations** | 861 |
-| **Literature records**  | 1,587 |
+| **Topologies**          | 424 |
+| **Mass configurations** | 997 |
+| **Literature records**  | 1,817 |
 | **Papers scanned**      | 1,298 |
-| **Computed results**    | 193 |
+| **Computed results**    | 203 |
 
 The full library ships with the package under `library-bundled/` and is compiled into `ui/library.json` for the web interface.
 
@@ -136,6 +146,8 @@ The configuration is persisted (`$UserBaseDirectory/Kernel/SubTropicaConfig.m`) 
 | [msolve](https://msolve.lip6.fr) | Optional | Groebner-basis backend for experimental linear-reducibility tooling; `brew install msolve` |
 | [IterInt](https://github.com/baugid/IterInt) | Optional | Iterated-integral symbolic evaluator for `STVerify` (`SymbolicEvaluator -> "iterint"`); building its driver needs GSL, Boost, MPFR, MPC (`brew install gsl boost mpfr libmpc`) |
 | [Maple](https://www.maplesoft.com/products/maple/) + [HyperInt](https://bitbucket.org/PanzerErik/hyperint) | Optional | Alternative integrator (`"Integrator" -> "HyperInt"`) |
+| [SOFIA](https://github.com/StrangeQuark007/SOFIA) | Optional | Landau-singularity / symbol-alphabet cross-checks (`stEnsureSOFIALoaded[]`; SOFIA.m is a loader that fetches its core from GitHub at load time) |
+| [Effortless](https://github.com/antonela-matijasic/Effortless) | Optional | Odd-letter construction from square roots + even alphabets (`stEnsureEffortlessLoaded[]`); cross-check for the SubTropica odd-letter tooling |
 | GNU `make` ≥ 4, `curl` | System | pySecDec builds (`make`); library sync / submission (`curl`) |
 | HyperFLINT add-on | Optional | Fast analytic backend (`"Integrator" -> "HyperFLINT"`); macOS arm64/x86_64 + Linux x86-64; `PacletInstall` the `HyperFLINT` paclet |
 
@@ -265,7 +277,7 @@ Mathieu Giroux, Sebastian Mizera, Giulio Salvatori
 
 ## Acknowledgments
 
-Development of SubTropica was assisted by Claude Opus 4.6-8.
+Development of SubTropica was assisted by Claude Opus 4.6-4.8 and Fable 5.
 
 ## License
 

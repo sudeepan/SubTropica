@@ -3080,6 +3080,11 @@ body:not(.mode-full) .config-footer { display: none; }
   color: var(--text-muted);
   margin-bottom: 2px;
 }
+.popup-topo-link {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.popup-topo-link:hover { color: var(--accent); }
 .popup-nickel {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -3314,6 +3319,21 @@ body:not(.mode-full) .config-footer { display: none; }
 }
 .badge-purple { background: #f0e4f5; color: #7b3f7f; }
 body.dark .badge-purple { background: #271230; color: #bc8cff; }
+/* hook for future styling; visual style inherits badge-purple */
+.badge-period { letter-spacing: .02em; }
+/* Ristretto proposal records (singularities / proposed-alphabet): a
+   dashed amber pill marks an Euler-discriminant / FindLetters proposal as
+   NOT a numerically verified result. The dashed border echoes the
+   algebraic-letter pills, signalling "candidate, re-verify before use". */
+.badge-proposal {
+  background: transparent;
+  color: #a06800;
+  border: 1px dashed #e0b040;
+  font-weight: 600;
+  letter-spacing: .02em;
+  cursor: help;
+}
+body.dark .badge-proposal { color: #e0b040; border-color: #8a6a20; }
 
 .config-section { margin-top: 10px; }
 .config-section-title {
@@ -4021,6 +4041,313 @@ body.dark .badge-purple { background: #271230; color: #bc8cff; }
   cursor: pointer;
 }
 .browser-import-btn:hover { opacity: 0.9; }
+
+/* ═══════════════════════════════════════════════════════════════
+   FAMILIES TAB + PER-FAMILY PAGES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Family index rows reuse .browser-toast; a gold left-border keys them
+   to the third tab (topos=maroon, diagrams=green, families=gold). */
+/* Column min-width matches the Topologies/Diagrams base grid (300px) so the
+   three tabs share the same card density and the layout does not jump when
+   switching tabs (review P2-4). */
+/* Column density matches the Topologies/Diagrams base grid (300px min).
+   No grid-auto-rows override: rows size naturally to content, matching
+   the height of topology/diagram toasts across tabs. */
+.fam-list {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+/* Collections toast: blue left accent (gold is reserved for the
+   "Subtopology of" toasts). */
+.browser-toast.fam-row {
+  border-left-color: var(--blue);
+  align-items: center;
+}
+.browser-toast.fam-row:hover { border-color: var(--blue); }
+.fam-row-body { width: 100%; }
+.fam-row-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.fam-row-def {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 5px;
+}
+.fam-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-mid);
+  margin-bottom: 6px;
+}
+.fam-row-meta .fam-fc { font-style: italic; }
+.fam-row-meta .fam-range { font-family: var(--font-mono); }
+/* Stat row mirrors the Topologies-card .notif-stats; wrap + breathing
+   room before the chips. */
+.fam-row-stats { flex-wrap: wrap; row-gap: 2px; margin-bottom: 6px; }
+/* Stat-row contrast (review P1-6): the inherited --text-muted on the cream
+   card was ~2.8:1, below AA. Scope a darker token to the Collections stat row
+   (and the defining-integral caption further down) without touching the shared
+   .notif-stats used by the Topologies/Diagrams cards. --text-mid clears 4.5:1
+   on both light and dark surfaces. */
+.fam-row-stats { color: var(--text-mid); }
+/* Chips row hidden on index cards to match topology/diagram toast height
+   (operator request: tabs should show cards at the same height). The chips
+   are visible on the detail page. */
+.fam-row-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+/* Spacetime-dimension marker (review P1-5): a small monospace tag that
+   distinguishes the 4D Basso-Dixon and 2D Yangian/Multi-leg fishnet cards.
+   Deliberately understated (no pill background) so it is not a return of the
+   removed function-class/batch pills. */
+.fam-dim-mark {
+  margin-left: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-mid);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0 3px;
+  vertical-align: 1px;
+}
+/* Function-class chip: italic, neutral, may contain KaTeX inline math. */
+.fam-chip-fc {
+  background: var(--surface-alt);
+  color: var(--text-mid);
+  font-style: italic;
+}
+.fam-chip-fc .katex { font-size: 1.15em; }
+
+/* Chips — small rounded pills, one variant per batch / kind. */
+.fam-chip {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 2px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.fam-chip-pilot   { background: var(--accent-light); color: var(--accent); }
+.fam-chip-core    { background: var(--royalblue-bg); color: var(--royalblue); }
+.fam-chip-wilhelm { background: var(--royalblue-bg); color: var(--royalblue); } /* legacy alias */
+.fam-chip-sweep   { background: var(--surface-alt);  color: var(--text-muted); }
+/* Shared-membership chip: clickable cross-link to the other collection
+   (review P0-3). Pointer + hover affordance mirror .fam-chip-related. */
+.fam-chip-sharedwith {
+  background: var(--royalblue-bg);
+  color: var(--royalblue);
+  font-size: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.fam-chip-sharedwith:hover {
+  background: color-mix(in srgb, var(--royalblue) 22%, var(--royalblue-bg));
+  color: var(--royalblue);
+}
+.fam-chip-sharedwith:focus-visible {
+  outline: 2px solid var(--royalblue);
+  outline-offset: 1px;
+}
+.fam-thumb { width: 84px; height: 84px; flex: 0 0 auto; }
+.fam-thumb svg { width: 100%; height: 100%; }
+/* Index-card preview frame: same warm framed look as the Topologies
+   cards' .notif-thumb so the three tabs read as one card language. */
+.fam-row-thumb {
+  margin-right: 10px;
+  align-self: center;
+  background: var(--bg-warm);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+/* Placeholder frame for collections without a seeded preview (umbrella,
+   not yet seeded): keeps every card's text column aligned. Sized to match the
+   64px index preview (review P2-4). */
+.fam-thumb-empty { width: 64px; height: 64px; opacity: 0.45; }
+.fam-row { display: flex; align-items: center; }
+.fam-member-tile .fam-thumb { margin: 0 auto 4px; }
+.fam-tile-shared { margin-top: 3px; display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; }
+.fam-caveat-note { border-color: var(--gold); color: var(--gold); }
+.fam-chip-period  { background: #f0e4f5; color: #7b3f7f; }
+body.dark .fam-chip-period { background: #271230; color: #bc8cff; }
+.fam-chip-umbrella { background: var(--royalblue-bg); color: var(--royalblue); }
+.fam-chip-closed  { background: var(--green-bg); color: var(--green); }
+.fam-chip-fc      { background: var(--gold-bg);  color: var(--gold); font-style: italic; }
+/* Function-class label pill (researched canonical label): blue, matching
+   the collections toast accent. */
+.fam-chip-fclabel { background: var(--blue-bg); color: var(--blue); }
+body.dark .fam-chip-fclabel { background: #1b2735; color: #9cc0ef; }
+.fam-chip-related {
+  background: var(--surface-alt);
+  color: var(--text-mid);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.fam-chip-related:hover { border-color: var(--gold); color: var(--text); }
+
+/* Family detail page (rendered into #detail-configs.fam-detail). */
+.fam-detail .fam-hero { margin-bottom: 4px; }
+.fam-detail-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+.fam-detail-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.fam-hero-desc {
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.5;
+  margin-top: 8px;
+}
+.fam-section { margin-top: 14px; }
+.fam-closedform-tex {
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 8px 4px;
+  background: var(--surface-alt);
+  border-radius: var(--radius-sm);
+}
+.fam-closedform-tex:has(+ .fam-closedform-norm) {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  padding-bottom: 4px;
+}
+/* Wide defining-integral / closed-form display math must scroll, not clip, at
+   narrow widths (review P1-1). KaTeX puts the equation in a .katex-display
+   block that overflows its container; let it scroll horizontally within the
+   tex wrapper instead of being cut off. */
+.fam-closedform .katex-display,
+.fam-defining .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding-bottom: 2px;  /* room for the scrollbar without clipping descenders */
+}
+.fam-def, .fam-norm {
+  font-size: 12px;
+  color: var(--text-mid);
+  line-height: 1.5;
+}
+/* Two-column row: closed-form box on the left, thumbnail on the right. */
+.fam-closedform-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.fam-closedform-box {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-warm);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 12px 14px 10px;
+  overflow-x: auto;
+}
+body.dark .fam-closedform-box { background: var(--surface-alt); }
+.fam-closedform-thumb {
+  flex: 0 0 auto;
+  width: 120px !important;
+  height: 120px !important;
+  background: var(--bg-warm);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+.fam-closedform-thumb svg { width: 100%; height: 100%; }
+.fam-closedform-norm {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+  margin-top: 6px;
+  padding: 6px 4px 0;
+  background: var(--surface-alt);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+.fam-closedform-norm .katex { font-size: 1em; }
+.fam-closedform-box .modal-btn-tiny { margin-top: 8px; }
+.fam-period-note {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #7b3f7f;
+  background: #f0e4f5;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+body.dark .fam-period-note { color: #bc8cff; background: #271230; }
+/* fam-ref-list / fam-ref-role / fam-ref-texkey / fam-ref-journal rules
+   removed: collection references now use the shared .popup-record card
+   style (same as diagram-window references). */
+.fam-related { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+
+/* Member grid — toast-style cards matching Topologies/Diagrams tabs. */
+.fam-member-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+/* Member toast cards: blue left accent (collection colour). */
+.browser-toast.fam-member-card {
+  border-left-color: var(--green);
+}
+.browser-toast.fam-member-card:hover {
+  border-color: var(--green);
+}
+/* Pending member cards: dashed border, muted. */
+.browser-toast.fam-member-card-pending {
+  border-style: dashed;
+  border-left-style: dashed;
+  border-color: var(--text-muted);
+  border-left-color: var(--text-muted);
+  cursor: default;
+  opacity: 0.7;
+}
+.browser-toast.fam-member-card-pending:hover {
+  transform: none;
+  border-color: var(--text-muted);
+}
+/* Parameter tag on member cards (small monospace label). */
+.fam-member-param-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--blue);
+  background: var(--blue-bg);
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+.fam-member-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.fam-tail-note {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--green);
+  font-style: italic;
+}
+
+/* "Member of: Family (L=n)" cross-link on the topology detail panel. */
+.fam-memberof {
+  margin-top: 8px;
+  font-size: 12px;
+  background: var(--gold-bg);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+}
+.fam-memberof-label { color: var(--text-muted); font-weight: 600; }
+.fam-memberof-link { color: var(--gold); text-decoration: none; cursor: pointer; }
+.fam-memberof-link:hover { text-decoration: underline; }
 
 /* ═══════════════════════════════════════════════════════════════
    SVG ANIMATIONS
@@ -5661,3 +5988,16 @@ body.review-mode.review-has-pdf .review-save-bar { left: var(--review-pdf-w, 480
    Mathematica (full) build the user already has a live kernel, so hide it.
    Mirrors the body.mode-full gating used for other full-only chrome. */
 body.mode-full #notebook-dl-btn { display: none; }
+
+/* Defining-integral note (small caption under the display equation).
+   Uses --text-mid (not --text-muted) for AA contrast on the cream card
+   (review P1-6). */
+.fam-defining-note {
+  font-size: 11px;
+  color: var(--text-mid);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* .fam-copy-wl removed: now uses .modal-btn-tiny (shared with the
+   integration-result copy buttons). */

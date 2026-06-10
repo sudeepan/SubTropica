@@ -1,9 +1,19 @@
 {
-  "NickelIndex": "e11|e|",
-  "Name": "1-loop 2-pt bubble",
-  "PrimaryName": "Bubble",
-  "Loops": 1,
-  "Legs": 2,
-  "Propagators": 2,
-  "LoopediaURL": ""
+	"NickelIndex":"e11|e|",
+	"Name":"1-loop 2-pt bubble",
+	"PrimaryName":"Bubble",
+	"Loops":1,
+	"Legs":2,
+	"Propagators":2,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"banana",
+			"parameter":1
+		},
+		{
+			"family":"ngon",
+			"parameter":2
+		}
+	]
 }

@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"123|23456|4|5|6|6||",
+	"Name":"wheel_L6_massless",
+	"PrimaryName":"Broadhurst wheel W6",
+	"Loops":6,
+	"Legs":0,
+	"Propagators":12,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"wheel",
+			"parameter":6
+		}
+	]
+}

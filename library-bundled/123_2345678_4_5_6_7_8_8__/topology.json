@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"123|2345678|4|5|6|7|8|8||",
+	"Name":"wheel_L8_massless",
+	"PrimaryName":"Broadhurst wheel W8",
+	"Loops":8,
+	"Legs":0,
+	"Propagators":16,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"wheel",
+			"parameter":8
+		}
+	]
+}

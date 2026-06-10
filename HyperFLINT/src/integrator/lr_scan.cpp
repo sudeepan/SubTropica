@@ -69,7 +69,65 @@ std::string canon_key(const Poly& p)
     return p.canonical_prop_form().to_string();
 }
 
+// dehomogenize at the gauge variable (skip when letter is gauge-free, or
+// when there is no gauge: gauge == kNoGauge => identity).  Shared by the
+// gauge scan and the gauge-free find_lr_orders carry path.
+Poly degauge_at(const Poly& p, size_t gauge)
+{
+    if (gauge == kNoGauge) return p;
+    if (p.degree_in_var(gauge) <= 0) return p;
+    return p.substitute_one_rat(gauge, "1");
+}
+
 }  // namespace
+
+// Extracted carry-discharge step (see lr_scan.hpp for the contract).
+// This is the single source of truth for the FindRoots tier's per-step
+// judgment; ScanDriver::step_fr below is a thin forwarder, and
+// find_lr_orders' carry path calls it with gauge == kNoGauge.
+bool step_fr_judge(const std::vector<Poly>& letters, size_t pivot,
+                   size_t gauge, const std::vector<size_t>& pending,
+                   PathState& st)
+{
+    // discharge obligations now free of pending variables
+    std::vector<Poly> kept;
+    std::set<std::string> kept_keys;
+    for (const auto& c : st.carried)
+        if (depends_on_any(c, pending) ||
+            c.degree_in_var(pivot) > 0) {
+            kept_keys.insert(canon_key(c));
+            kept.push_back(c);
+        }
+    // join (letters dehomogenized first) + dedup, table-first
+    std::vector<Poly> judged;
+    std::set<std::string> seen;
+    for (const auto& L : letters) {
+        Poly p = degauge_at(L, gauge);
+        const auto* ctx = p.ctx().raw();
+        if (fmpq_mpoly_is_fmpq(p.raw(), ctx)) continue;
+        if (seen.insert(canon_key(p)).second) judged.push_back(p);
+    }
+    for (const auto& c : kept)
+        if (seen.insert(canon_key(c)).second) judged.push_back(c);
+
+    std::vector<size_t> all_pending = pending;  // for kin-vs-carry split
+    for (const auto& p : judged) {
+        FrJudgment j = fr_judge(p, pivot, pending, all_pending);
+        if (!j.ok) return false;
+        st.nkin += j.kin;
+        st.ntq += j.term;
+        for (const auto& c : j.carry) {
+            const std::string k = canon_key(c);
+            if (kept_keys.insert(k).second) {
+                kept.push_back(c);
+                ++st.nsq;
+            }
+        }
+    }
+    st.carried = std::move(kept);
+    st.carried_keys = std::move(kept_keys);
+    return true;
+}
 
 bool conic_rationalizable(const Poly& letter, size_t pivot)
 {
@@ -169,13 +227,6 @@ bool projective_input(
 
 namespace {
 
-// per-gauge DFS state for KeepRule::FindRoots
-struct PathState {
-    std::vector<Poly> carried;            // canonical forms
-    std::set<std::string> carried_keys;   // dedup
-    unsigned long nsq = 0, nkin = 0, ntq = 0;
-};
-
 struct ScanDriver {
     const std::vector<std::vector<Poly>>& groups_aug;  // augmented
     const std::vector<size_t>& xv;                     // ctx indices
@@ -185,13 +236,6 @@ struct ScanDriver {
     std::unordered_map<uint64_t, std::vector<std::vector<Poly>>> table;
     ScanResult* result;
 
-    // dehomogenize at the gauge variable (skip when letter is gauge-free)
-    static Poly degauge(const Poly& p, size_t gauge)
-    {
-        if (p.degree_in_var(gauge) <= 0) return p;
-        return p.substitute_one_rat(gauge, "1");
-    }
-
     bool step_ok_strict(const std::vector<Poly>& letters, size_t pivot,
                         size_t gauge)
     {
@@ -199,7 +243,7 @@ struct ScanDriver {
             ? nullptr : letters.front().ctx().raw();
         (void) ctx0;
         for (const auto& L : letters) {
-            Poly p = degauge(L, gauge);
+            Poly p = degauge_at(L, gauge);
             const auto* ctx = p.ctx().raw();
             if (fmpq_mpoly_is_fmpq(p.raw(), ctx)) continue;
             const long d = p.degree_in_var(pivot);
@@ -207,53 +251,6 @@ struct ScanDriver {
             if (d == 2 && conic_rationalizable(p, pivot)) continue;
             return false;
         }
-        return true;
-    }
-
-    // FindRoots step: judges table letters + carried obligations on the
-    // DEHOMOGENIZED forms, with join-dedup by canonical key (parity with
-    // the Mathematica stepScan after its t24 counter-parity folds)
-    bool step_fr(const std::vector<Poly>& letters, size_t pivot,
-                 size_t gauge, const std::vector<size_t>& pending,
-                 PathState& st)
-    {
-        // discharge obligations now free of pending variables
-        std::vector<Poly> kept;
-        std::set<std::string> kept_keys;
-        for (const auto& c : st.carried)
-            if (depends_on_any(c, pending) ||
-                c.degree_in_var(pivot) > 0) {
-                kept_keys.insert(canon_key(c));
-                kept.push_back(c);
-            }
-        // join (letters dehomogenized first) + dedup, table-first
-        std::vector<Poly> judged;
-        std::set<std::string> seen;
-        for (const auto& L : letters) {
-            Poly p = degauge(L, gauge);
-            const auto* ctx = p.ctx().raw();
-            if (fmpq_mpoly_is_fmpq(p.raw(), ctx)) continue;
-            if (seen.insert(canon_key(p)).second) judged.push_back(p);
-        }
-        for (const auto& c : kept)
-            if (seen.insert(canon_key(c)).second) judged.push_back(c);
-
-        std::vector<size_t> all_pending = pending;  // for kin-vs-carry split
-        for (const auto& p : judged) {
-            FrJudgment j = fr_judge(p, pivot, pending, all_pending);
-            if (!j.ok) return false;
-            st.nkin += j.kin;
-            st.ntq += j.term;
-            for (const auto& c : j.carry) {
-                const std::string k = canon_key(c);
-                if (kept_keys.insert(k).second) {
-                    kept.push_back(c);
-                    ++st.nsq;
-                }
-            }
-        }
-        st.carried = std::move(kept);
-        st.carried_keys = std::move(kept_keys);
         return true;
     }
 
@@ -301,7 +298,7 @@ struct ScanDriver {
             if (rule == KeepRule::Strict) {
                 bool ok = true;
                 for (const auto& L : letters) {
-                    Poly p = degauge(L, xv[gauge_pos]);
+                    Poly p = degauge_at(L, xv[gauge_pos]);
                     const auto* ctx = p.ctx().raw();
                     if (fmpq_mpoly_is_fmpq(p.raw(), ctx)) continue;
                     const long d = p.degree_in_var(xv[bit]);
@@ -316,7 +313,7 @@ struct ScanDriver {
                 order.pop_back();
             } else {
                 PathState next = st;
-                if (!step_fr(letters, xv[bit], xv[gauge_pos], pending,
+                if (!step_fr_judge(letters, xv[bit], xv[gauge_pos], pending,
                         next))
                     continue;
                 order.push_back(xv[bit]);
@@ -342,6 +339,11 @@ ScanResult find_lr_orders_scan(
     if (!res.projective) return res;
     const size_t n = xvar_indices.size();
     if (n < 2 || n > 62) return res;
+
+    // Per-request lifetime for the st_fubini_lr memo layers (see
+    // lr_search.hpp::reset_lr_memos) and the chi-utility accounting.
+    lr_search::reset_lr_memos();
+    if (euler_filter) reset_chi_filter_stats();
 
     // augment each group with the boundary monomials (dpLungoCore seed)
     const PolyCtx& ctx = group_polys.front().front().ctx();

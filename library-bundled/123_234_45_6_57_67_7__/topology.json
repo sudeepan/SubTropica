@@ -1,0 +1,15 @@
+{
+	"NickelIndex":"123|234|45|6|57|67|7||",
+	"Name":"zigzag_L7_massless",
+	"PrimaryName":"Zigzag Z7",
+	"Loops":7,
+	"Legs":0,
+	"Propagators":14,
+	"LoopediaURL":"",
+	"Families":[
+		{
+			"family":"zigzag",
+			"parameter":7
+		}
+	]
+}
