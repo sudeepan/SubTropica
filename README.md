@@ -42,7 +42,7 @@ The library currently contains:
 | :---------------------- | ----: |
 | **Topologies**          | 424 |
 | **Mass configurations** | 997 |
-| **Literature records**  | 1,817 |
+| **Literature records**  | 1,816 |
 | **Papers scanned**      | 1,298 |
 | **Computed results**    | 203 |
 

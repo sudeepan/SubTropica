@@ -1,31 +1,33 @@
 {
-  "CNickelIndex": "123|24|e|e4|e|:123|45|6|07|0|",
-  "MassScales": 6,
-  "FunctionClass": "",
-  "EpsilonOrder": "",
-  "References": [
-    "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
-    "arXiv:2311.16219 (Comput.Phys.Commun. 303 (109278), 2024)"
-  ],
-  "Records": [
-    {
-      "reference": "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
-      "authors": "Fevola, C., Mizera, S., Telen, S.",
-      "description": "Landau singularities of the planar triangle-bubble with generic internal, zero external masses, computed via principal Landau determinants.",
-      "familyName": "PLD: pltrb"
-    }
-  ],
-  "Names": [
-    "Triangle-box, 6-mass propagators, 1 massive leg"
-  ],
-  "Source": "PLD",
-  "Loops": 2,
-  "NumPropagators": 6,
-  "edges": "{{{1, 2}, m[1]}, {{1, 3}, m[2]}, {{1, 4}, m[3]}, {{2, 3}, m[4]}, {{2, 5}, m[5]}, {{4, 5}, m[7]}}",
-  "nodes": "{{3, M}, {4, 0}, {5, 0}}",
-  "CanonicalName": "Triangle-box, 6-mass propagators, 1 massive leg",
-  "commonNames": [],
-  "Subsectors": [],
-  "ParentSectors": [],
-  "Results": []
+	"CNickelIndex": "123|24|e|e4|e|:123|45|6|07|0|",
+	"MassScales": 6,
+	"FunctionClass": "",
+	"EpsilonOrder": "",
+	"References": [
+		"arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+		"arXiv:2311.16219 (Comput.Phys.Commun. 303 (109278), 2024)"
+	],
+	"Records": [
+		{
+			"reference": "arXiv:2311.14669 (Phys.Rev.Lett. 132 (101601), 2024)",
+			"authors": "Fevola, C., Mizera, S., Telen, S.",
+			"description": "Landau singularities of the planar triangle-bubble with generic internal, zero external masses, computed via principal Landau determinants.",
+			"familyName": "PLD: pltrb",
+			"recordId": "bf_498f33712a4d",
+			"verified": false
+		}
+	],
+	"Names": [
+		"Triangle-box, 6-mass propagators, 1 massive leg"
+	],
+	"Source": "PLD",
+	"Loops": 2,
+	"NumPropagators": 6,
+	"edges": "{{{1, 2}, m[1]}, {{1, 3}, m[2]}, {{1, 4}, m[3]}, {{2, 3}, m[4]}, {{2, 5}, m[5]}, {{4, 5}, m[7]}}",
+	"nodes": "{{3, M}, {4, 0}, {5, 0}}",
+	"CanonicalName": "Triangle-box, 6-mass propagators, 1 massive leg",
+	"commonNames": [],
+	"Subsectors": [],
+	"ParentSectors": [],
+	"Results": []
 }
