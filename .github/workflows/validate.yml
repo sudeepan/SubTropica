@@ -227,7 +227,12 @@ jobs:
       # record anywhere fails CI here (de-migration guard against a re-run
       # legacy writer), in addition to split-pair consistency.
       - name: Results-split alignment + de-migration guard
-        run: python3 scripts/library_audit/validate_results_split.py --armed
+        run: |
+          if [ -f scripts/library_audit/validate_results_split.py ]; then
+            python3 scripts/library_audit/validate_results_split.py --armed
+          else
+            echo "skipped: validator not present in this tree (stripped public release)"
+          fi
 
   tex-parseability:
     runs-on: ubuntu-latest
@@ -237,6 +242,16 @@ jobs:
         with:
           node-version: "22"
       - name: TeX cleaner unit tests
-        run: node scripts/tests/test_tex_clean_unit.mjs
+        run: |
+          if [ -f scripts/tests/test_tex_clean_unit.mjs ]; then
+            node scripts/tests/test_tex_clean_unit.mjs
+          else
+            echo "skipped: TeX harness not present in this tree (stripped public release)"
+          fi
       - name: KaTeX parseability gate (corpus + version pin)
-        run: node scripts/tests/test_tex_parseability.mjs
+        run: |
+          if [ -f scripts/tests/test_tex_parseability.mjs ]; then
+            node scripts/tests/test_tex_parseability.mjs
+          else
+            echo "skipped: TeX harness not present in this tree (stripped public release)"
+          fi

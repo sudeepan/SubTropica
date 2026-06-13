@@ -430,6 +430,13 @@ jobs:
         id: texgate
         run: |
           set -euo pipefail
+          # The TeX parseability harness lives under scripts/tests/, which is
+          # stripped from the public release. Skip the gate when it is absent
+          # (the split-write itself does not depend on it); run it on dev.
+          if [ ! -f scripts/tests/test_tex_parseability.mjs ]; then
+            echo "skipped: TeX harness not present in this tree (stripped public release)"
+            exit 0
+          fi
           node scripts/tests/test_tex_parseability.mjs --json /tmp/texgate.json && exit 0
           # Remediation path (results-split spec §8.6): a failure ONLY in the
           # new record's resultTeXPreview degrades to empty preview + flag,
