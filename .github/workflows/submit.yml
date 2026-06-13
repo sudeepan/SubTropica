@@ -56,9 +56,11 @@ jobs:
           # out of the "git add -A" sweep in the Create PR step.
           echo "payload.json" >> .git/info/exclude
           if [ -n "$SUBMISSION_KEY" ]; then
+            # Worker base matches ui/app.js SUBMIT_WORKER_BASE (the worker is
+            # served on its workers.dev subdomain, not on subtropi.ca).
             code=$(curl -sS -o payload.json -w '%{http_code}' \
               -H "Authorization: Bearer $STAGED_TOKEN" \
-              "https://subtropi.ca/staged/$SUBMISSION_KEY")
+              "https://subtropica-submit.subtropica.workers.dev/staged/$SUBMISSION_KEY")
             if [ "$code" = "404" ]; then
               echo "::error::Submission expired or unknown (R2 lifecycle is 30 days); please resubmit." ; exit 1
             fi
