@@ -1,0 +1,11 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "123|24|e|e4|e|:101|02|0|01|0|",
+	"Results": {
+		"e7336413e44fb94a": {
+			"resultCompressed": "1:eJzFVUtugzAQJZCgKjlF79JFFixQ0gsQyUQjQV0xtJF69Er5eGzVIf5CVRUWA7Znnt98eT7wXZ0nSYJrIfasA4YvVV9hJpbsHUG8kjolhaUQBWBf0weuhHiFlqE6fBJiV/XA36oGFmIBqTYk1ZKfWFfTAdJe2yqlq3hMJX1Z2XygZXLXlrcrhKESveBMu9kDkMsuRk/68Oiu2pOahF/wo4EcYGzfkuogWFamWhTGQdaXm3z23GxCucnG0JPuZtGkSpsSxpWjC9NL5i/TP4GeUY4xl+N1ZQDmc9W3i8f/xH1C7ylu58jw8PUjfGtDOtg2/Djg+jNgBzPX03nKyFX8v4tCwNTf7FaQDD52IVkQngk9ofwvmvlc03jc7+ReEa4ojfJce9l+fUY6N8jcwlE1IC8icQNXHJQz",
+			"resultTeX": "\\frac{m_1^{-2} \\left(-m_1^4+m_2^4+2 m_1^2 m_2^2 \\log \\left(m_1^2 m_2^{-2}\\right)\\right)}{2 \\varepsilon \\left(m_1^2-m_2^2\\right)^3}+\\frac{m_1^{-2} \\left(-6 m_1^2 \\left(m_1^2+m_2^2\\right) H\\left(0,\\frac{1}{1-m_1^2 m_2^{-2}}\\,;1\\right)+6 \\zeta(2) m_1^4+6 \\zeta(2) m_1^2 m_2^2-\\pi ^2 m_1^4+3 m_1^4-\\pi ^2 m_1^2 m_2^2-3 m_2^4+3 m_1^4 \\log ^2\\left(m_1^2 m_2^{-2}\\right)+6 m_1^2 m_2^2 \\log ^2\\left(m_1^2 m_2^{-2}\\right)+6 m_1^2 m_2^2 \\log \\left(m_1^2 m_2^{-2}\\right)+6 \\log \\left(m_1^2\\right) \\left(m_1^4-m_2^4-2 m_1^2 m_2^2 \\log \\left(m_1^2 m_2^{-2}\\right)\\right)\\right)}{6 \\left(m_1^2-m_2^2\\right)^3}+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;\\frac{m_2^2}{\\left(m_1^2-m_2^2\\right)^3}\\,(m_1^2) + \\frac{m_2^2}{\\left(m_2^2-m_1^2\\right)^3}\\,(m_2^2) \\\\ \\varepsilon^{0}&\\colon\\;\\frac{m_1^2-2 m_2^2}{\\left(m_1^2-m_2^2\\right)^3}\\,(m_1^2 \\otimes m_1^2) - \\frac{m_1^2}{\\left(m_1^2-m_2^2\\right)^3}\\,(m_1^2 \\otimes m_2^2) + \\frac{m_2^2}{\\left(m_1^2-m_2^2\\right)^3}\\,(m_2^2 \\otimes m_1^2) + \\frac{m_2^2}{\\left(m_1^2-m_2^2\\right)^3}\\,(m_2^2 \\otimes m_2^2) + \\frac{m_1^{-2} \\left(m_1^4+m_1^2 m_2^2-m_2^4\\right)}{\\left(m_1^2-m_2^2\\right)^3}\\,(m_1^2) + \\frac{m_2^2}{\\left(m_2^2-m_1^2\\right)^3}\\,(m_2^2) + \\frac{-m_1^2-m_2^2}{\\left(m_1^2-m_2^2\\right)^3}\\,(m_1^2-m_2^2 \\otimes m_1^2) + \\frac{m_1^2+m_2^2}{\\left(m_1^2-m_2^2\\right)^3}\\,(m_1^2-m_2^2 \\otimes m_2^2)\\end{aligned}"
+		}
+	}
+}

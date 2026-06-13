@@ -96,8 +96,6 @@
   "NumPropagators": 3,
   "Results": [
     {
-      "resultCompressed": "1:eJyFjkEKgDAMBKtVEX/hXzx6EPUDFVIJWCum4vM1sSDe7GHKkM2SevK9LZRSVDEG2BGoMcGQZoWNkD9lUwlkjBYpRMsZIzqgqCWjNwH9aha8+GH6Lkq08yfsJOrcM7f6ryVh+W15L+uWg2Ja9p7zWz9/s7FQcAPOmTsQ",
-      "resultTeX": "-\\frac{1}{2 \\varepsilon m^2}+\\frac{\\log (m^2)+2}{2 m^2}+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -124,13 +122,14 @@
       ],
       "methodLR": "Lungo",
       "byteCount": 704,
-      "symbolTeX": "\\varepsilon^{0}\\colon\\;\\frac{m^{-2}}{2}\\,(m^2)",
       "alphabet": [
         "m^2"
       ],
       "symbolWeight": 1,
       "symbolTerms": 1,
-      "legOrder": []
+      "legOrder": [],
+      "resultDataId": "9002853abbf9b40a",
+      "resultTeXPreview": "-\\frac{1}{2 \\varepsilon m^2}+\\frac{\\log (m^2)+2}{2 m^2}+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{2, 3}, m}}",

@@ -80,6 +80,13 @@ struct LrResult {
     unsigned long carried_sqrts = 0;
     unsigned long kin_sqrts = 0;
     unsigned long terminal_quads = 0;
+    // Distinct carried obligations along best_order, deduped up to
+    // proportionality across the whole path (leaf-replay, spec
+    // 2026-06-11-carry-phase2 §3.1); size <= carried_sqrts (remints
+    // re-count in nsq, enter the ledger once).  Canonical
+    // proportionality forms.  Empty on the Strict / deg<=1 paths and
+    // whenever carry_discharge is off.
+    std::vector<Poly> obligation_polys;
     bool nolr() const { return order.empty() && score >= 1e300; }
 };
 
@@ -109,6 +116,27 @@ std::vector<Poly> dedup_proportional(const std::vector<Poly>& polys);
 // st_fubini_lr directly (lr_scan) must call it once per request to
 // bound memo memory.  Opt-outs: HF_LR_STEP_MEMO=0 / HF_LR_FACTOR_MEMO=0.
 void reset_lr_memos();
+
+// Shared admissibility test for the LR DP and the factor-table builder
+// (spec docs/superpowers/specs/2026-06-11-stfactorpredictor-design.md):
+// degree 1..max_deg in the pivot, plus the deg-2 forbidden-variable
+// guard mirrored from the runtime check in linear_factors.cpp.
+// `forbidden_after` lists wide-context variable indices still
+// un-integrated AFTER this step; the caller computes it (DP: complement
+// of the subset bitmask; factor-table builder: order[k+1..]).  Both
+// callers pass the same set on a full permutation, which a ctest
+// asserts.  Returns false for pivot-free polys (d < 1): they are not
+// letters in the pivot (the DP lets them pass through the step; the
+// builder skips them).
+bool lr_letter_admissible(const Poly& p, size_t var_idx,
+                          const std::vector<size_t>& forbidden_after,
+                          long max_deg);
+
+// Reset the HF_LR_TRACE accumulators (g_lr_trace).  find_lr_orders
+// does this internally on entry; external drivers of st_fubini_lr
+// (factor_table handler) call it alongside reset_lr_memos so stats
+// from a prior call in the same process don't bleed.
+void reset_lr_trace();
 
 // N-way intersection under proportionality equivalence.  Picks
 // representatives from the FIRST list.  Matches the semantics of Mma's
@@ -160,15 +188,17 @@ long leaf_count_proxy(const std::vector<Poly>& polys);
 // the whole order, not just the subset reached) is why this cannot be
 // threaded through the best-score subset-DP memo and is realized as a
 // DFS.  When ON the result's `root_polys` carries the deg-2 letters
-// encountered along the chosen (score-minimal) order, and the
+// encountered along the chosen ((carried_sqrts, score)-minimal) order, and the
 // LrResult.carried_sqrts profile is populated.  carry_discharge=false
-// reproduces the Strict subset-DP byte-for-byte (regression gate).
+// (the DEFAULT) reproduces the Strict subset-DP byte-for-byte
+// (regression gate); the handler passes the request value explicitly,
+// so this default agrees with the handler's default-OFF (spec 4a.1).
 LrResult find_lr_orders(
     const std::vector<std::vector<Poly>>& group_polys,
     const std::vector<size_t>& xvar_indices,
     bool allow_algebraic_letters = false,
     SingCollector* sings = nullptr,
-    bool carry_discharge = true);
+    bool carry_discharge = false);
 
 }  // namespace lr_search
 }  // namespace hyperflint

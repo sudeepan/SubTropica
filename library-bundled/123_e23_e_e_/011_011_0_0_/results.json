@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "123|e23|e|e|:011|011|0|0|",
+	"Results": {
+		"6b0414d5a2cc7f3a": {
+			"resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwQpYAESPpnFJWlMIB4rkAjJzE0tzvwPBAixgPzy1KJiEDc3FywFNiGTEUYAAO8LG9k=",
+			"resultTeX": "-\\frac{1}{m^2}+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

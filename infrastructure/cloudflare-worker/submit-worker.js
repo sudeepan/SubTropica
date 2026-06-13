@@ -1,6 +1,7 @@
 // Cloudflare Worker: SubTropica submission proxy + PDF proxy
 // Routes: POST /submit -> triggers GitHub workflow_dispatch
 //         GET  /pdf?arxivId=... -> proxies arXiv PDF with CORS headers
+//         GET  /staged/<sha256> -> serves a staged submission (token-gated)
 //
 // Deploy:
 //   cd infrastructure/cloudflare-worker
@@ -9,10 +10,19 @@
 // Secrets (set via wrangler secret put):
 //   GITHUB_PAT — fine-grained token scoped to SubTropica/SubTropica
 //                with Actions (write) permission only
+//   STAGED_TOKEN — bearer token for GET /staged/<sha256>, shared with the
+//                  GitHub Actions secret of the same name
+//   STAGED_TOKEN_NEXT — optional second token accepted during rotation
+//                       (set _NEXT, flip CI, retire old value into
+//                       STAGED_TOKEN, then clear _NEXT)
 //
 // KV namespace (for dedup):
 //   Create: wrangler kv namespace create SUBMISSIONS
 //   Then add the binding to wrangler.toml
+//
+// R2 bucket (for staged large submissions, results-split spec §5.1):
+//   Create: wrangler r2 bucket create subtropica-staged-submissions
+//   Binding STAGED in wrangler.toml
 
 const GITHUB_REPO = "SubTropica/SubTropica";
 const WORKFLOW_FILE = "submit.yml";
@@ -137,6 +147,45 @@ export default {
           headers: { "Access-Control-Allow-Origin": "*" }
         });
       }
+    }
+
+    // ── GET /staged/<sha256> — serve a staged submission to the workflow ──
+    // Auth: bearer token shared with GitHub Actions secrets. Two secrets are
+    // checked so rotation can overlap (set STAGED_TOKEN_NEXT, flip CI, then
+    // retire the old value into STAGED_TOKEN and clear _NEXT).
+    if (request.method === "GET" && url.pathname.startsWith("/staged/")) {
+      const auth = request.headers.get("Authorization") || "";
+      const tok = auth.replace(/^Bearer\s+/i, "");
+      const valid = [env.STAGED_TOKEN, env.STAGED_TOKEN_NEXT].filter(Boolean);
+      if (!valid.length || !valid.includes(tok)) {
+        return Response.json({ status: "error", error: "Unauthorized" }, { status: 401 });
+      }
+      const key = url.pathname.slice("/staged/".length);
+      if (!/^[0-9a-f]{64}$/.test(key)) {
+        return Response.json({ status: "error", error: "Bad key" }, { status: 400 });
+      }
+      if (!env.STAGED) {
+        return Response.json({ status: "error", error: "R2 binding missing" }, { status: 503 });
+      }
+      let obj;
+      try {
+        obj = await env.STAGED.get(`submissions/${key}.json`);
+      } catch (e) {
+        return Response.json(
+          { status: "error", error: "Staging storage unavailable" },
+          { status: 503 });
+      }
+      if (!obj) {
+        return Response.json(
+          { status: "error", error: "Submission expired or unknown; please resubmit" },
+          { status: 404 });
+      }
+      return new Response(obj.body, {
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        },
+      });
     }
 
     // ── POST /correction — correction-report proxy ──
@@ -361,11 +410,11 @@ export default {
         }
       }
 
-      // Size guard: reject payloads > 1 MB
+      // Size guard: reject payloads > 16 MB
       const payloadStr = JSON.stringify(payload);
-      if (payloadStr.length > 1_000_000) {
+      if (payloadStr.length > 16_000_000) {
         return Response.json(
-          { status: "error", error: "Payload too large (max 1 MB)" },
+          { status: "error", error: "Payload too large (max 16 MB)" },
           { status: 413 }
         );
       }
@@ -383,6 +432,31 @@ export default {
         }
       }
 
+      // Results-split spec §5.1: stage the payload in R2 and dispatch only a
+      // reference. Fixes the old latent ceiling (dispatch inputs ~64 KB, env
+      // var ~128 KiB) that made the nominal 1 MB cap partly fictional.
+      let inputs;
+      if (env.STAGED) {
+        const digest = await crypto.subtle.digest(
+          "SHA-256", new TextEncoder().encode(payloadStr));
+        const sha256 = [...new Uint8Array(digest)]
+          .map(b => b.toString(16).padStart(2, "0")).join("");
+        await env.STAGED.put(`submissions/${sha256}.json`, payloadStr);
+        inputs = { submission_key: sha256, sha256,
+                   size: String(payloadStr.length) };
+      } else {
+        // Legacy inline path (R2 not yet bound): only viable for payloads
+        // under the GitHub dispatch-input limit; preserved for rollout
+        // ordering, not as a permanent mode.
+        if (payloadStr.length > 60_000) {
+          return Response.json(
+            { status: "error",
+              error: "Large submissions need the R2 staging deployment" },
+            { status: 503 });
+        }
+        inputs = { payload: payloadStr };
+      }
+
       // Trigger GitHub workflow_dispatch
       const ghResp = await fetch(
         `https://api.github.com/repos/${GITHUB_REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches`,
@@ -394,10 +468,7 @@ export default {
             "User-Agent": "SubTropica-Worker",
             "X-GitHub-Api-Version": "2022-11-28"
           },
-          body: JSON.stringify({
-            ref: "main",
-            inputs: { payload: payloadStr }
-          })
+          body: JSON.stringify({ ref: "main", inputs })
         }
       );
 

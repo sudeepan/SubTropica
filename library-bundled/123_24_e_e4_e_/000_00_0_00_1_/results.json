@@ -1,0 +1,11 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "123|24|e|e4|e|:000|00|0|00|1|",
+	"Results": {
+		"dcc290ab9881fd55": {
+			"resultCompressed": "1:eJyNkd0KgkAQhTf7JQh6hHqWulQQ6wU2WGNIW3Hsh57RB+oispm1DMUtb85yds7MfswudzoIR0IInJJsVAoK1zKT2CerEgQ6RMgGByQuYBY67CYkgcxAH2UEPTLAN2VtSLKFWKEtOq8N9aMTwszWPSZZ6TiJ1NXAwKMoCuSSD40GUwr5BYPv6r3JeV5HrAUzjGpYh85YuR3rzljVna8vKn0nwbHNrwjyWvMvAt7qh+D/Ehr/Zaja2toQgem+4fh2Nil4Emu5SpYXXux/Hw==",
+			"resultTeX": "\\frac{1}{8 \\varepsilon^2}+\\frac{-4 \\log \\left(M^2\\right)-4 i \\pi +13}{16 \\varepsilon}+\\frac{1}{32} \\left(8 \\log ^2\\left(M^2\\right)+(-52+16 i \\pi ) \\log \\left(M^2\\right)+4 \\zeta(2)-8 \\pi ^2-52 i \\pi +107\\right)+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;-\\frac{1}{4}\\,(M^2) \\\\ \\varepsilon^{0}&\\colon\\;-\\frac{13}{8}\\,(M^2) + \\frac{1}{2}\\,(M^2 \\otimes M^2)\\end{aligned}"
+		}
+	}
+}

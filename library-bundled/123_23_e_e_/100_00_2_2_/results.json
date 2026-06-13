@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "123|23|e|e|:100|00|2|2|",
+	"Results": {
+		"a35dc9d97652b1fb": {
+			"resultCompressed": "1:eJzNVtuOgjAQxYLG7Nt+gv+yDz5IYnB/gE1a04RaY1ETP97dXgRb6KLYQeVhyITOzDkzpy2zH56RSRRF4kOaFd5RLL7yMhexdPFWUPmKyEgtSKRZUFGSz8pbFntBkPLG0nxThi13yY94J5SbpvRXPuaTipsXfE1VThLbiXUtUxDZJayldR2dUWdnrKumJwoSYidvxq4o03QYKKPKDJIebA4mFFgqcCpxgVUDcwPcapekXVpDDuUgjqHQvL05ByoEThy1kgEVAovuPRXS+wyyOg18XPQ/DgGFnQRzQTYXyInrm1N1asHXQ91qZuVUmiwvKd/khenN5B55Xbm0obrsW5C87BuRjvo0qrg9MQ8Bfa/d2h/DNLerLY+dIKgN5j/KITN7DJxnHi9qfJ2VnQ4GQs+N/RwFe3A2+Cb3tk8lUO/Gv9wfmA3KcA==",
+			"resultTeX": "\\left(M^{-2} H\\left(0,0,1-m^2 M^{-2}\\,;1\\right)-M^{-2} H\\left(0,0,\\frac{M^2}{m^2}\\,;1\\right)-M^{-2} H\\left(0,1-m^2 M^{-2},1\\,;1\\right)+M^{-2} H\\left(0,1-m^2 M^{-2},\\frac{M^2}{M^2+m^2}\\,;1\\right)+2 M^{-2} H\\left(0,\\frac{M^2}{M^2+m^2},1\\,;1\\right)-2 M^{-2} H\\left(1-m^2 M^{-2},0,1\\,;1\\right)+M^{-2} H\\left(1-m^2 M^{-2},0,\\frac{M^2}{M^2+m^2}\\,;1\\right)+2 M^{-2} H\\left(\\frac{M^2}{m^2},0,1\\,;1\\right)-M^{-2} H\\left(\\frac{M^2}{m^2},\\frac{M^2}{M^2+m^2},1\\,;1\\right)-M^{-2} \\log \\left(1-m^2 M^{-2}\\right) H\\left(0,\\frac{M^2}{M^2+m^2}\\,;1\\right)-M^{-2} H(0,1,1\\,;1)+2 \\zeta(2) M^{-2} \\log \\left(1-m^2 M^{-2}\\right)-\\zeta(2) M^{-2} \\log \\left(\\frac{m^2}{m^2-M^2}\\right)+\\frac{1}{6} M^{-2} \\log ^3\\left(-m^2 M^{-2}\\right)-\\frac{1}{6} M^{-2} \\log ^3\\left(\\frac{m^2}{m^2-M^2}\\right)+\\frac{1}{2} M^{-2} \\log \\left(1-m^2 M^{-2}\\right) \\log ^2\\left(-m^2 M^{-2}\\right)+4 \\zeta(3) M^{-2}\\right)+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

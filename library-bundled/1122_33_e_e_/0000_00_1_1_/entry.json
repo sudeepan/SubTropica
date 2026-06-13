@@ -37,8 +37,6 @@
   ],
   "Results": [
     {
-      "resultCompressed": "1:eJyVVEtOwzAQTRp+QUVCsGHLJWCLBBIsWikqrNgZyalGSnBVh+8xuBU3YMmSVU8ABM+4McQd03QzkSfj92bevOTwRo3yjSiK9LYJl3IKUp+JSujEHOVEg3lE+RoWYBiAriDGVNKksuJOAyLkPUytm3AFpdT2uGnCqSonhXwkKPiq61rjqwy8C/QqR3AiH6gx1Q2Htj/HddCZaxbkssctE0aiAnUrCng1xdBvYWfqQU7nANBzUy+jTR1I03OgkLLz/ri5l/acNihezxyaV2clr1uSl8/3XBVDjFcAp8t3Wrs5ibvu5v076IMXbOqfJXTC3w9vMmGE+HScOMtFocaezcn5hBw3wXMDHC3sfYV+a86rqy1ztqgbe5eb/4M3Qie/9zkbh7zE+dz9XkgzdEY3zd7+EHvzHIfXz0lH3/2y3q1JWlWclHsulxJ18XQuylIQovWNd2HXkaMG17IShEv/w1+3/QC5RyrM",
-      "resultTeX": "\\frac{1}{\\varepsilon^3}+\\frac{-3 \\log \\left(M^2\\right)-3 i \\pi +6}{\\varepsilon^2}+\\frac{\\frac{9}{2} \\log ^2\\left(M^2\\right)+9 i (\\pi +2 i) \\log \\left(M^2\\right)-\\zeta(2)-\\frac{55 \\pi ^2}{12}-18 i \\pi +24}{\\varepsilon}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": 0,
       "propExponents": [
@@ -73,7 +71,9 @@
           "var": "Msq",
           "value": "-59/37"
         }
-      ]
+      ],
+      "resultDataId": "bafa414db53c0fd5",
+      "resultTeXPreview": "\\frac{1}{\\varepsilon^3}+\\frac{-3 \\log \\left(M^2\\right)-3 i \\pi +6}{\\varepsilon^2}+\\frac{\\frac{9}{2} \\log ^2\\left(M^2\\right)+9 i (\\pi +2 i) \\log \\left(M^2\\right)-\\zeta(2)-\\frac{55 \\pi ^2}{12}-18 i \\pi +24}{\\varepsilon}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "Names": [

@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "123|e23|e|e|:100|000|0|0|",
+	"Results": {
+		"3593c18767b7e418": {
+			"resultCompressed": "1:eJyFUFsKwjAQjI0VES/hXfzsR6heIEIiC42Rbqvg0Qs+dk1FEkPNx4TZnZ3JZnPwtV0IIXBFsDMtGNzqTqMkas4IdAnLBOcEFWBnC2YlwR6cQXjS+daUv5oWmToXWjKWc2tKXnyyVNOP5jMusU3lj6M2cQ1TS4Jad+BPugEeAvknrIzChmiT6e0UJJsE+ZprufcmuuHXNjeWzbhHf+Jul7cKHlQOWzO8ACWpd5w=",
+			"resultTeX": "-\\frac{1}{\\varepsilon^2 m^2}+\\frac{2 (\\log (m^2)-1)}{\\varepsilon m^2}+\\frac{-6 \\log ^2(m^2)+12 \\log (m^2)-3 \\zeta(2)-\\pi ^2-6}{3 m^2}+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "1123|e2|e3|e|:0000|00|00|1|",
+	"Results": {
+		"34998568a2c0e25f": {
+			"resultCompressed": "1:eJyVVL1OwzAQTkgpFNEBJlakjrAiMVOJDq1UFSbEYiSnOsnBUR1+n6NPwLMw8Qy8AwsDCwWfTUwcOz/NcJGdu++++/w5hzd8FneDIBA7MlzQBVAxJBkRkVzSVIB8BXEHEzCMQWTxBq62ZZiRDPgtYRDKBSCK/rYpwyUkVOjllgxnPEkZfdRwLsCPfAC34yhvNWV3FfWgcvDTFFo1VPAxklRjjflcVU8m3mp3sgMk1i0Sg/e2w8JS9vaThQ+kZfam/IEu/jILWjThDwyTNVRr1gL2rQkVOV+ZZlqq3cU9k5w83/uyqtQeYWrfUvu631bt4Vel2qererVb4R+7quQgkUeIV3PCOMuI8bma8d/leKE0cpiH0rHDi3PAvlY1znf0WO8w31yXemsjD/eeZYSC2TrWPAOrRd08rGDiEs+96qPxjfVp/RMqPApHodfJrW5m8eY3Nlo6dHx+OjF7PTUjezonSUIUojZPqSA1sCj2Fc2IwoVv/OEay/0CB689SA==",
+			"resultTeX": "\\frac{1}{6 \\varepsilon^3}-\\frac{i \\left(-i \\log \\left(M^2\\right)+\\pi +3 i\\right)}{2 \\varepsilon^2}+\\frac{18 \\log ^2\\left(M^2\\right)+36 i (\\pi +3 i) \\log \\left(M^2\\right)+12 \\zeta(2)-17 \\pi ^2-108 i \\pi +220}{24 \\varepsilon}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": "\\begin{aligned}\\varepsilon^{-2}&\\colon\\;-\\frac{1}{2}\\,(M^2) \\\\ \\varepsilon^{-1}&\\colon\\;-\\frac{9}{2}\\,(M^2) + \\frac{3}{2}\\,(M^2 \\otimes M^2) \\\\ \\varepsilon^{0}&\\colon\\;\\frac{27}{2}\\,(M^2 \\otimes M^2) - \\frac{9}{2}\\,(M^2 \\otimes M^2 \\otimes M^2) - \\frac{55}{2}\\,(M^2)\\end{aligned}"
+		}
+	}
+}

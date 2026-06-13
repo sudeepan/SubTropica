@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "e111|e|:1002|1|",
+	"Results": {
+		"90c2f73c5ca752d6": {
+			"resultCompressed": "1:eJzNU0sKwkAMrbaK6Cm8iwsXFop6gQrTEmgdcaqC13btJ8nQL9PpuBDsIiWZecnLe+3yILfJ1PM8NcewE2cQahUXsfIxFScF+PISSlSAYQOqSMaUTTDsIRdKpzMM27gAeYwzGGECXKaQ5zU+yi5qGO938YOINz4QlIgw1BMrBJ+XzYgdr7eRaVlbWAgyHWcmD2Iy62XSp9bUNCOSN3HmagSsR2d8C0Ds15lMuV9dIse0iVWJdtS3LCoZSIQh3+iingPauglQ2Y2SmbpYNq9YmoBat8CZg2nxsotFk+ZkN64tO8xb1oaYpe/7Efq0/B9idut+x1P7+OUX2fyu8/uVD+BF3fgehQ+1girx",
+			"resultTeX": "\\frac{m^2}{2 \\varepsilon^2}+\\frac{-\\frac{M^2}{4}+\\frac{3 m^2}{2}+m^2 (-\\log (m^2))}{\\varepsilon}+\\left(m^2 H\\left(0,1-m^2 M^{-2}\\,;1\\right)+\\frac{1}{2} m^2^2 M^{-2} \\log \\left(\\frac{m^2}{m^2-M^2}\\right)-\\frac{1}{2} m^2 \\log ^2\\left(\\frac{m^2}{m^2-M^2}\\right)+\\frac{1}{2} M^2 \\log (m^2)-\\frac{1}{2} M^2 \\log \\left(\\frac{m^2}{m^2-M^2}\\right)-\\frac{13 M^2}{8}+\\frac{1}{2} m^2 \\zeta(2)+\\frac{\\pi ^2 m^2}{6}+3 m^2+m^2 \\log ^2(m^2)-3 m^2 \\log (m^2)\\right)+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

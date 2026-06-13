@@ -47,9 +47,9 @@ bool FactoredRat::peel_enabled() {
     return on;
 }
 
-void FactoredRat::peel_known_factors(long min_terms) {
-    if (numerator_.is_zero()) return;
-    if (static_cast<long>(numerator_.n_terms()) < min_terms) return;
+long FactoredRat::peel_known_factors(long min_terms) {
+    if (numerator_.is_zero()) return 0;
+    if (static_cast<long>(numerator_.n_terms()) < min_terms) return 0;
     // Note on constant bases (advisory A1, review of 5f62abe84): no
     // constant base can currently reach den_factors_ — every factor enters
     // via from_rat (whose Rat ctors absorb constant denominators into the
@@ -59,17 +59,32 @@ void FactoredRat::peel_known_factors(long min_terms) {
     // 1/c^e folds into the numerator's rational coefficients (verified by
     // the reviewer's T4 stress case). It is a non-issue for correctness,
     // only a mild inefficiency.
+    // DIAGNOSTIC (HF_FR_MAT_STATS=1): for big numerators, report whether
+    // the peel actually strips anything (face_67-class numerators are
+    // coprime to the den bases post-end-of-step-peel; face_74-class strip
+    // heavily — the reviewer's discriminating counter).
+    static const bool peel_stats =
+        std::getenv("HF_FR_MAT_STATS") != nullptr;
+    const long before_terms = static_cast<long>(numerator_.n_terms());
+    long strips = 0;
     for (auto& f : den_factors_) {
         while (f.exp > 0 && f.base.divides(numerator_)) {
             numerator_ = numerator_.divexact(f.base);
             --f.exp;
+            ++strips;
         }
     }
+    if (peel_stats && before_terms > 1000000)
+        std::fprintf(stderr,
+            "[fr-peel-big] before=%ld after=%ld strips=%ld nfac=%zu\n",
+            before_terms, static_cast<long>(numerator_.n_terms()),
+            strips, den_factors_.size());
     // Drop exhausted factors so expand_denominator()/add() never touch them.
     den_factors_.erase(
         std::remove_if(den_factors_.begin(), den_factors_.end(),
                        [](const Factor& f) { return f.exp == 0; }),
         den_factors_.end());
+    return strips;
 }
 
 Rat FactoredRat::materialize_to_rat() const {
@@ -176,16 +191,34 @@ FactoredRat FactoredRat::add(const FactoredRat& b) const {
         if (!found) common.push_back(bf);
     }
     // Lift this->numerator_ by prod base^(common_exp - my_exp).
-    Poly lifted_a = numerator_;
-    for (const auto& cf : common) {
-        long d = cf.exp - find_exp(den_factors_, cf.base);
-        if (d > 0) lifted_a = lifted_a.mul(cf.base.pow(static_cast<unsigned long>(d)));
-    }
-    Poly lifted_b = b.numerator_;
-    for (const auto& cf : common) {
-        long d = cf.exp - find_exp(b.den_factors_, cf.base);
-        if (d > 0) lifted_b = lifted_b.mul(cf.base.pow(static_cast<unsigned long>(d)));
-    }
+    // DIAGNOSTIC (HF_FR_MAT_STATS=1): [fr-lift] provenance line when a
+    // single lift multiply is projected past 10M term-pairs — attributes
+    // the face_67-class cost (budget-scale numerator x factor power
+    // product) before it is paid. Print-gated, O(1) per lift.
+    static const bool lift_stats =
+        std::getenv("HF_FR_MAT_STATS") != nullptr;
+    auto lift = [&](Poly num, const std::vector<Factor>& own) {
+        for (const auto& cf : common) {
+            long d = cf.exp - find_exp(own, cf.base);
+            if (d > 0) {
+                Poly pw = cf.base.pow(static_cast<unsigned long>(d));
+                if (lift_stats &&
+                    static_cast<double>(num.n_terms()) *
+                        static_cast<double>(pw.n_terms()) > 1e7)
+                    std::fprintf(stderr,
+                        "[fr-lift] num_terms=%ld pow_terms=%ld d=%ld "
+                        "base_terms=%ld nfac=%zu\n",
+                        static_cast<long>(num.n_terms()),
+                        static_cast<long>(pw.n_terms()), d,
+                        static_cast<long>(cf.base.n_terms()),
+                        common.size());
+                num = num.mul(pw);
+            }
+        }
+        return num;
+    };
+    Poly lifted_a = lift(numerator_, den_factors_);
+    Poly lifted_b = lift(b.numerator_, b.den_factors_);
     FactoredRat r(lifted_a.add(lifted_b));
     r.den_factors_ = common;
     return r;

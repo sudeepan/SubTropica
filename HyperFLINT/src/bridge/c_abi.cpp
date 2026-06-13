@@ -228,6 +228,27 @@ char* hf_find_lr_orders(const char* request_json) {
     }
 }
 
+char* hf_factor_table(const char* request_json) {
+    // Factor-prediction table (spec 2026-06-11): same delegation shape
+    // as hf_find_lr_orders; handlers::factor_table emits the envelope
+    // at the head of its response, so splice_envelope passes it
+    // through verbatim.
+    try {
+        if (request_json == nullptr) {
+            return dup_to_owned(error_envelope(
+                "factor_table", "request_json is NULL"));
+        }
+        return dup_to_owned(splice_envelope(
+            hyperflint::handlers::factor_table(std::string(request_json)),
+            "factor_table"));
+    } catch (const std::exception& e) {
+        return dup_to_owned(error_envelope("factor_table", e.what()));
+    } catch (...) {
+        return dup_to_owned(error_envelope(
+            "factor_table", "unknown exception"));
+    }
+}
+
 char* hf_find_lr_orders_scan(const char* request_json) {
     // Doppio-port phase 3 bridge (2026-06-06): typed C-ABI entry for the
     // projective Cheng-Wu gauge scan, mirroring hf_find_lr_orders.  The

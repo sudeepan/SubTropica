@@ -1,0 +1,11 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "e12|e2|e|:011|01|1|",
+	"Results": {
+		"208b97835b04db60": {
+			"resultCompressed": "1:eJxtjUsKgDAMROsXcekNvItLF6JeoEIKA9aKKXh8TYTuzOINw0yYfguzq40x3AoWukA82Gi5EEsnQ8S4TAulYARHpxFXghWe2OVqG8FsI8Jhdzxy6PQxT9Up3HSxWu+//C+aAJVvE1nCCxTHJPg=",
+			"resultTeX": "-\\frac{\\pi ^2}{18 m^2}+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": ""
+		}
+	}
+}

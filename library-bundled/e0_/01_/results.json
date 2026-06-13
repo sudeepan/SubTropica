@@ -1,0 +1,11 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "e0|:01|",
+	"Results": {
+		"4b82e940bc969ab9": {
+			"resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwIpYAESPpnFJcUgXm4uQjAgp7QYJgjSVswKJEIyc1OLM/8DAUyKESQFkvfJT4eKgeUzQRJgAgCEKyD0",
+			"resultTeX": "\\frac{m^2}{\\varepsilon}+(m^2-m^2 \\log (m^2))+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;m^2 \\\\ \\varepsilon^{0}&\\colon\\;-m^2\\,(m^2)\\end{aligned}"
+		}
+	}
+}

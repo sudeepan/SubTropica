@@ -174,8 +174,6 @@
   "ParentSectors": [],
   "Results": [
     {
-      "resultCompressed": "1:eJzVVsFOwzAM7UbHJj6AO//CcZWqgcS5SCmytFBrLkPab++2w8BJF1LadMkoK6MHt44d5/n5qe3dc7HIr6Moohs2D2IFgu6zMqMrdgUS8C3KlUMxmzlQSWN+kNIupss3ytUiTdg8ghQEOnhI/B6q3BmbRVZC8Zot4YMviM2OJKlK22J7jptiIxVS8XnxYtZujyGZ1pA46tr0tHgXq0MmqJsrlCQarb+nrepp1tmTY4fqzM2bPT6FClmjkZ2HoLCzxzW0/io2vQXVtduFu0sKgZWbk9aDGZm9T9J2lcfBBPTVQy+YQ9KD/4Me7KRHZ7ZULzfrwJ6+uPzFnuoT1UmTc6M4WWlhuM/OXguWl6m+GjydqdZCOCuu9+iPxqNd821zwxpoYp26wQvVO3r0jn+jd7w8vWNTWDiA3t3jOar32sT0z1vlKvMJcRJ3Mw==",
-      "resultTeX": "\\frac{m^2}{\\varepsilon^2}+\\frac{-\\frac{M^2}{4}+3 m^2-2 m^2 \\log (m^2)}{\\varepsilon}+\\left(-\\frac{1}{2} m^2^2 M^{-2} W_1^--\\frac{1}{2} m^2^2 M^{-2} W_1^-^{-1}+\\frac{1}{2} m^2^2 M^{-2} \\log ^2\\left(-W_1^-\\right)+\\frac{1}{2} m^2^2 M^{-2} W_1^- \\log \\left(-W_1^-\\right)-\\frac{1}{2} m^2^2 M^{-2} W_1^-^{-1} \\log \\left(-W_1^-\\right)-\\frac{M^2 \\log \\left(-W_1^-\\right)}{2 \\left(W_1^-+1\\right)}-\\frac{1}{2} m^2 \\log ^2\\left(-W_1^-\\right)-\\frac{1}{2} m^2^2 M^{-2} W_1^+-\\frac{1}{2} m^2^2 M^{-2} W_1^+^{-1}+\\frac{1}{2} m^2^2 M^{-2} \\log ^2\\left(-W_1^+\\right)+\\frac{1}{2} m^2^2 M^{-2} W_1^+ \\log \\left(-W_1^+\\right)-\\frac{1}{2} m^2^2 M^{-2} W_1^+^{-1} \\log \\left(-W_1^+\\right)-\\frac{M^2 \\log \\left(-W_1^+\\right)}{2 \\left(W_1^++1\\right)}-\\frac{1}{2} m^2 \\log ^2\\left(-W_1^+\\right)-2 m^2^2 M^{-2}+\\frac{1}{2} M^2 \\log (m^2)-\\frac{13 M^2}{8}-m^2 \\zeta(2)+\\frac{\\pi ^2 m^2}{3}+7 m^2+2 m^2 \\log ^2(m^2)-6 m^2 \\log (m^2)\\right)+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -203,24 +201,6 @@
       "methodLR": "Lungo",
       "findRoots": true,
       "byteCount": 8640,
-      "algebraicLetters": [
-        {
-          "index": 1,
-          "variable": "x3",
-          "polynomial": "mm + 2*mm*x3 - MM*x3 + mm*x3^2",
-          "LC": "mm",
-          "sum": "(-2*mm + MM)/mm",
-          "product": "1",
-          "discriminant": "-4*mm^2 + (2*mm - MM)^2",
-          "minusRoot": "(-2*mm + MM - Sqrt[-((4*mm - MM)*MM)])/(2*mm)",
-          "plusRoot": "(-2*mm + MM + Sqrt[-((4*mm - MM)*MM)])/(2*mm)",
-          "polynomialTeX": "x_{3}^2 m^2+2 x_{3} m^2+m^2-x_{3} M^2",
-          "discriminantTeX": "\\left(2 m^2-M^2\\right)^2-4 m^4",
-          "minusRootTeX": "\\frac{1}{2} m^{-2} \\left(-\\sqrt{-\\left(M^2 \\left(4 m^2-M^2\\right)\\right)}-2 m^2+M^2\\right)",
-          "plusRootTeX": "\\frac{1}{2} m^{-2} \\left(\\sqrt{-\\left(M^2 \\left(4 m^2-M^2\\right)\\right)}-2 m^2+M^2\\right)"
-        }
-      ],
-      "symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;-2 m^2\\,(m^2) \\\\ \\varepsilon^{0}&\\colon\\;\\frac{1}{2} \\left(M^2-12 m^2\\right)\\,(m^2) + 4 m^2\\,(m^2 \\otimes m^2) + m^2 M^{-2} \\left(m^2-M^2\\right)\\,(W_1^- \\otimes W_1^-) + m^2 M^{-2} \\left(m^2-M^2\\right)\\,(W_1^+ \\otimes W_1^+) + \\frac{M^{-2} W_1^-^{-1} \\left(m^4 \\left(-W_1^-\\right)+m^4 W_1^-^2+m^4 W_1^-^3-M^4 W_1^--m^4\\right)}{2 \\left(W_1^-+1\\right)}\\,(W_1^-) + \\frac{M^{-2} W_1^+^{-1} \\left(m^4 \\left(-W_1^+\\right)+m^4 W_1^+^2+m^4 W_1^+^3-M^4 W_1^+-m^4\\right)}{2 \\left(W_1^++1\\right)}\\,(W_1^+)\\end{aligned}",
       "alphabet": [
         "m^2",
         "W_1^-",
@@ -228,33 +208,14 @@
       ],
       "symbolWeight": 2,
       "symbolTerms": 7,
-      "normalizedSymbolTeX": "\\varepsilon^{0}&\\colon\\;\\frac{M^{-2} W_1^-^{-1} W_1^+^{-1}}{2 \\left(W_1^-+1\\right) \\left(W_1^++1\\right)}\\!\\left[2 m^2 W_1^- \\left(W_1^-+1\\right) W_1^+ \\left(W_1^++1\\right) \\left(m^2-M^2\\right)\\,(W^-_1 \\otimes W^-_1) + 2 m^2 W_1^- \\left(W_1^-+1\\right) W_1^+ \\left(W_1^++1\\right) \\left(m^2-M^2\\right)\\,(W^+_1 \\otimes W^+_1) - W_1^+ \\left(W_1^++1\\right) \\left(m^4 W_1^--m^4 W_1^-^2-m^4 W_1^-^3+M^4 W_1^-+m^4\\right)\\,(W^-_1) - W_1^- \\left(W_1^-+1\\right) \\left(m^4 W_1^+-m^4 W_1^+^2-m^4 W_1^+^3+M^4 W_1^++m^4\\right)\\,(W^+_1)\\right]",
-      "wDefinitions": [
-        {
-          "label": "W^-_1",
-          "kind": "algebraic",
-          "pairIndex": 1,
-          "definition": "\\frac{1}{2} m^{-2} \\left(-\\sqrt{-\\left(M^2 \\left(4 m^2-M^2\\right)\\right)}-2 m^2+M^2\\right)",
-          "originalLetter": "W_1^-",
-          "polynomialTeX": "x_{3}^2 m^2+2 x_{3} m^2+m^2-x_{3} M^2",
-          "discriminantTeX": "\\left(2 m^2-M^2\\right)^2-4 m^4"
-        },
-        {
-          "label": "W^+_1",
-          "kind": "algebraic",
-          "pairIndex": 1,
-          "definition": "\\frac{1}{2} m^{-2} \\left(\\sqrt{-\\left(M^2 \\left(4 m^2-M^2\\right)\\right)}-2 m^2+M^2\\right)",
-          "originalLetter": "W_1^+",
-          "polynomialTeX": "x_{3}^2 m^2+2 x_{3} m^2+m^2-x_{3} M^2",
-          "discriminantTeX": "\\left(2 m^2-M^2\\right)^2-4 m^4"
-        }
-      ],
       "normalizedAlphabet": [
         "W^-_1",
         "W^+_1"
       ],
       "symbolScale": "m^2",
-      "normalizedSymbolTerms": 4
+      "normalizedSymbolTerms": 4,
+      "resultDataId": "c91e7af3b143471b",
+      "resultTeXPreview": "\\frac{m^2}{\\varepsilon^2}+\\frac{-\\frac{M^2}{4}+3 m^2-2 m^2 \\log (m^2)}{\\varepsilon}+\\left(-\\frac{1}{2} m^2^2 M^{-2} W_1^--\\frac{1}{2} m^2^2 M^{-2} W_1^-^{-1}+\\frac{1}{2} m^2^2 M^{-2} \\log ^2\\left(-W_1^-\\right)+\\frac{1}{2} m^2^2 M^{-2} W_1^- \\log \\left(-W_1^-\\right)-\\frac{1}{2} m^2^2 M^{-2} W_1^-^{-1} \\log \\left(-W_1^-\\right)-\\frac{M^2 \\log \\left(-W_1^-\\right)}{2 \\left(W_1^-+1\\right)}-\\frac{1}{2} m^2 \\log ^2\\left(-W_1^-\\right)-\\frac{1}{2} m^2^2 M^{-2} W_1^+-\\frac{1}{2} m^2^2 M^{-2} W_1^+^{-1}+\\frac{1}{2} m^2^2 M^{-2} \\log ^2\\left(-W_1^+\\right)+\\frac{1}{2} m^2^2 M^{-2} W_1^+ \\log \\left(-W_1^+\\right)-\\frac{1}{2} m^2^2 M^{-2} W_1^+^{-1} \\log \\left(-W_1^+\\right)-\\frac{M^2 \\log \\left(-W_1^+\\right)}{2 \\left(W_1^++1\\right)}-\\frac{1}{2} m^2 \\log ^2\\left(-W_1^+\\right)-2 m^2^2 M^{-2}+\\frac{1}{2} M^2 \\log (m^2)-\\frac{13 M^2}{8}-m^2 \\zeta(2)+\\frac{\\pi ^2 m^2}{3}+7 m^2+2 m^2 \\log ^2(m^2)-6 m^2 \\log (m^2)\\right)+O\\left(\\varepsilon^1\\right)"
     }
   ]
 }

@@ -54,8 +54,6 @@
     "NumPropagators": 6,
     "Results": [
         {
-            "resultCompressed": "1:eJylkFEOwiAQRLG1jfEW3sXPfpDqBTABs0kR08WaeGhvoLiAtmlDo4k/QwaG4S2bg6lVyRjDNclOtiBxK6zAnKw8I9DClDe4JKkArcq8K0j2oCVGuyKphQVzEg0syIDfHqLcXGWL3moNT+dc7Py7JfuQ8eaCkI/SoTjGfFcYqTLH9/0fAcovAMUI4NEzDQBzI3CYHMX4fY53kkuApa4l3wj/1If1rQupMFCc2ssLsml3/Q==",
-            "resultTeX": "\\frac{1}{2 \\varepsilon^2 m^2^2}+\\frac{3-2 \\log (m^2)}{2 \\varepsilon m^2^2}+\\frac{6 \\log ^2(m^2)-18 \\log (m^2)+3 \\zeta(2)+2 \\pi ^2-3}{6 m^2^2}+O\\left(\\varepsilon^1\\right)",
             "dimension": "4 - 2*eps",
             "epsOrder": "0",
             "epsOrders": "0",
@@ -85,7 +83,9 @@
             ],
             "methodLR": "Lungo",
             "findRoots": false,
-            "byteCount": 1664
+            "byteCount": 1664,
+            "resultDataId": "f9dc57fe8134464b",
+            "resultTeXPreview": "\\frac{1}{2 \\varepsilon^2 m^2^2}+\\frac{3-2 \\log (m^2)}{2 \\varepsilon m^2^2}+\\frac{6 \\log ^2(m^2)-18 \\log (m^2)+3 \\zeta(2)+2 \\pi ^2-3}{6 m^2^2}+O\\left(\\varepsilon^1\\right)"
         }
     ],
     "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, m}, {{2, 5}, 0}, {{3, 5}, m}, {{4, 5}, 0}}",

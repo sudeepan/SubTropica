@@ -65,8 +65,6 @@
   ],
   "Results": [
     {
-      "resultCompressed": "1:eJyNUcsOgjAQrKBgjD/ht+gREoL+QE1aswlYwtZH/G8TT+J20UOhJlymne3uzLTdHE2pEyEErgj2qgWFO2klxkRVg0CL0I7gnCADtDDzSkV1QXAbHbnSguAAtcKepgRbUzeVurMUvLuuQ3dUwGCAj7QTZ/PMnLgvz3Xqea0ne73+evV0SVBKC+YsK3hSMySedmFuqv0KQDS2ZYNg4nhKPHejX7yQyMAsGmcLjQWD+k9bP67cxWX+ToYPoTxzrA==",
-      "resultTeX": "\\frac{1}{\\varepsilon^2}+\\frac{-2 \\log \\left(M^2\\right)-2 i \\pi +4}{\\varepsilon}+\\left(2 \\log ^2\\left(M^2\\right)+4 i \\pi  \\log \\left(M^2\\right)-8 \\log \\left(M^2\\right)-2 \\zeta(2)-\\frac{11 \\pi ^2}{6}-8 i \\pi +12\\right)+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -94,7 +92,9 @@
       ],
       "methodLR": "Lungo",
       "findRoots": false,
-      "byteCount": 1568
+      "byteCount": 1568,
+      "resultDataId": "0aed491d4baf3fae",
+      "resultTeXPreview": "\\frac{1}{\\varepsilon^2}+\\frac{-2 \\log \\left(M^2\\right)-2 i \\pi +4}{\\varepsilon}+\\left(2 \\log ^2\\left(M^2\\right)+4 i \\pi  \\log \\left(M^2\\right)-8 \\log \\left(M^2\\right)-2 \\zeta(2)-\\frac{11 \\pi ^2}{6}-8 i \\pi +12\\right)+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "Names": [

@@ -267,8 +267,6 @@
 	"ParentSectors": [],
 	"Results": [
 		{
-			"resultCompressed": "1:eJzdVs0KwjAMrnN68C18BOcrePCgMFTwPKEdBWXFTHx5sfbHurVzc4pI3SUjIV+S72vKOt5lKzJECMFImDU+UgyzJE+gL1zMgIoPIj2ZEAqzoJCTkfHi/QmITISBMBt6wEAvnHMSmIz5PkupRBchWUJXDQwyzs74WGTIshqk+sr49qAClD+q1+BIaI8TmArLpaIEk6hS1cVcRZN6DCtN4nAPLaJf487+gXvQhrsLeknpPkqRU+DMeJbTvZ26trlPfunaoX219amo9omy0fS1Mh3eVE8U9XNHnwB1poQtstTRwJn83sNSpgmue1am90eORrbvMyvdeS/oPWn2w9Nmvp12i3/Y2/Q8O3L19tOuNDcwa4m5",
-			"resultTeX": "\\left(\\frac{2 H\\left(\\frac{M^2}{M^2-s_{23}},\\frac{1}{W_1^-+1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}-\\frac{2 H\\left(\\frac{M^2}{M^2-s_{23}},\\frac{1}{W_1^++1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}-\\frac{4 H\\left(0,\\frac{1}{W_1^-+1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}+\\frac{4 H\\left(0,\\frac{1}{W_1^++1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}+\\frac{2 H\\left(-\\frac{s_{12}}{M^2-s_{12}},\\frac{1}{W_1^-+1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}-\\frac{2 H\\left(-\\frac{s_{12}}{M^2-s_{12}},\\frac{1}{W_1^++1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}-\\frac{2 \\log \\left(-W_1^-\\right) \\log \\left(s_{23} M^{-2}\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}+\\frac{2 \\log \\left(-W_1^+\\right) \\log \\left(s_{23} M^{-2}\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}+\\frac{\\log ^2\\left(-W_1^-\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}-\\frac{\\log ^2\\left(-W_1^+\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}\\right)+O\\left(\\varepsilon^1\\right)",
 			"dimension": "4 - 2*eps",
 			"epsOrder": "0",
 			"epsOrders": "0",
@@ -296,7 +294,6 @@
 			],
 			"methodLR": "Lungo",
 			"byteCount": 9784,
-			"symbolTeX": "\\varepsilon^{0}\\colon\\;-\\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(s_{12} W_1^-+M^2 \\otimes W_1^-) + \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(s_{12} W_1^-+M^2 \\otimes M^2) - \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(s_{12} W_1^-+M^2 \\otimes s_{12}) + \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(s_{12} W_1^++M^2 \\otimes W_1^+) - \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(s_{12} W_1^++M^2 \\otimes M^2) + \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(s_{12} W_1^++M^2 \\otimes s_{12}) - \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(M^2 W_1^-+s_{23} \\otimes W_1^-) - \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(M^2 W_1^-+s_{23} \\otimes M^2) + \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(M^2 W_1^-+s_{23} \\otimes s_{23}) + \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(M^2 W_1^++s_{23} \\otimes W_1^+) + \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(M^2 W_1^++s_{23} \\otimes M^2) - \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(M^2 W_1^++s_{23} \\otimes s_{23}) + \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(W_1^- \\otimes W_1^-) - \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(W_1^+ \\otimes W_1^+) + \\frac{2 M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(M^2 \\otimes \\frac{W_1^-}{W_1^+}) + \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(\\frac{W_1^-}{W_1^+} \\otimes M^2) - \\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\,(\\frac{W_1^-}{W_1^+} \\otimes s_{23})",
 			"alphabet": [
 				"s_{12} W_1^-+M^2",
 				"W_1^-",
@@ -311,69 +308,6 @@
 			],
 			"symbolWeight": 2,
 			"symbolTerms": 17,
-			"normalizedSymbolTeX": "\\varepsilon^{0}&\\colon\\;\\frac{M^{-2}}{s_{12} \\left(W_1^--W_1^+\\right)}\\!\\left[-(W_1 \\otimes W^-_1) - (W_1 \\otimes W_2) + (W_3 \\otimes W^+_1) + (W_3 \\otimes W_2) - (W_4 \\otimes W^-_1) + (W_4 \\otimes W_5) + (W_6 \\otimes W^+_1) - (W_6 \\otimes W_5) + (W^-_1 \\otimes W^-_1) - (W^+_1 \\otimes W^+_1) - (\\frac{W^-_1}{W^+_1} \\otimes W_5)\\right]",
-			"wDefinitions": [
-				{
-					"label": "W^-_1",
-					"kind": "algebraic",
-					"pairIndex": 1,
-					"definition": "\\frac{M^{-2} \\left(-\\sqrt{-s_{12} s_{23} \\left(4 M^4-s_{12} s_{23}\\right)}-s_{12} s_{23}\\right)}{2 s_{12}}",
-					"originalLetter": "W_1^-",
-					"polynomialTeX": "s_{12} x_{2}^2 M^2+s_{23} M^2+s_{12} s_{23} x_{2}",
-					"discriminantTeX": "s_{12}^2 s_{23}^2-4 s_{12} s_{23} M^4"
-				},
-				{
-					"label": "W_1",
-					"kind": "rational",
-					"pairIndex": null,
-					"definition": "\\frac{s_{12} W_1^-+M^2}{M^2}",
-					"originalLetter": "s_{12} W_1^-+M^2"
-				},
-				{
-					"label": "W_2",
-					"kind": "rational",
-					"pairIndex": null,
-					"definition": "\\frac{s_{12}}{M^2}",
-					"originalLetter": "s_{12}"
-				},
-				{
-					"label": "W^+_1",
-					"kind": "algebraic",
-					"pairIndex": 1,
-					"definition": "\\frac{M^{-2} \\left(\\sqrt{-s_{12} s_{23} \\left(4 M^4-s_{12} s_{23}\\right)}-s_{12} s_{23}\\right)}{2 s_{12}}",
-					"originalLetter": "W_1^+",
-					"polynomialTeX": "s_{12} x_{2}^2 M^2+s_{23} M^2+s_{12} s_{23} x_{2}",
-					"discriminantTeX": "s_{12}^2 s_{23}^2-4 s_{12} s_{23} M^4"
-				},
-				{
-					"label": "W_3",
-					"kind": "rational",
-					"pairIndex": null,
-					"definition": "\\frac{s_{12} W_1^++M^2}{M^2}",
-					"originalLetter": "s_{12} W_1^++M^2"
-				},
-				{
-					"label": "W_4",
-					"kind": "rational",
-					"pairIndex": null,
-					"definition": "\\frac{s_{23}+W_1^- M^2}{M^2}",
-					"originalLetter": "M^2 W_1^-+s_{23}"
-				},
-				{
-					"label": "W_5",
-					"kind": "rational",
-					"pairIndex": null,
-					"definition": "\\frac{s_{23}}{M^2}",
-					"originalLetter": "s_{23}"
-				},
-				{
-					"label": "W_6",
-					"kind": "rational",
-					"pairIndex": null,
-					"definition": "\\frac{s_{23}+W_1^+ M^2}{M^2}",
-					"originalLetter": "M^2 W_1^++s_{23}"
-				}
-			],
 			"normalizedAlphabet": [
 				"W^-_1",
 				"W_1",
@@ -388,23 +322,8 @@
 			"normalizedSymbolTerms": 11,
 			"legOrder": [],
 			"findRoots": true,
-			"algebraicLetters": [
-				{
-					"index": 1,
-					"variable": "x2",
-					"polynomial": "MM*s23 + s12*s23*x2 + MM*s12*x2^2",
-					"LC": "MM*s12",
-					"sum": "-(s23/MM)",
-					"product": "s23/s12",
-					"discriminant": "-4*MM^2*s12*s23 + s12^2*s23^2",
-					"minusRoot": "(-(s12*s23) - Sqrt[-(s12*s23*(4*MM^2 - s12*s23))])/(2*MM*s12)",
-					"plusRoot": "(-(s12*s23) + Sqrt[-(s12*s23*(4*MM^2 - s12*s23))])/(2*MM*s12)",
-					"polynomialTeX": "s_{12} x_{2}^2 M^2+s_{23} M^2+s_{12} s_{23} x_{2}",
-					"discriminantTeX": "s_{12}^2 s_{23}^2-4 s_{12} s_{23} M^4",
-					"minusRootTeX": "\\frac{M^{-2} \\left(-\\sqrt{-s_{12} s_{23} \\left(4 M^4-s_{12} s_{23}\\right)}-s_{12} s_{23}\\right)}{2 s_{12}}",
-					"plusRootTeX": "\\frac{M^{-2} \\left(\\sqrt{-s_{12} s_{23} \\left(4 M^4-s_{12} s_{23}\\right)}-s_{12} s_{23}\\right)}{2 s_{12}}"
-				}
-			]
+			"resultDataId": "004eb2fe8a9a5c37.1",
+			"resultTeXPreview": "\\left(\\frac{2 H\\left(\\frac{M^2}{M^2-s_{23}},\\frac{1}{W_1^-+1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}-\\frac{2 H\\left(\\frac{M^2}{M^2-s_{23}},\\frac{1}{W_1^++1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}-\\frac{4 H\\left(0,\\frac{1}{W_1^-+1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}+\\frac{4 H\\left(0,\\frac{1}{W_1^++1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}+\\frac{2 H\\left(-\\frac{s_{12}}{M^2-s_{12}},\\frac{1}{W_1^-+1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}-\\frac{2 H\\left(-\\frac{s_{12}}{M^2-s_{12}},\\frac{1}{W_1^++1}\\,;1\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}-\\frac{2 \\log \\left(-W_1^-\\right) \\log \\left(s_{23} M^{-2}\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}+\\frac{2 \\log \\left(-W_1^+\\right) \\log \\left(s_{23} M^{-2}\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}+\\frac{\\log ^2\\left(-W_1^-\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}-\\frac{\\log ^2\\left(-W_1^+\\right)}{2 s_{12} M^2 W_1^--2 s_{12} M^2 W_1^+}\\right)+O\\left(\\varepsilon^1\\right)"
 		}
 	]
 }

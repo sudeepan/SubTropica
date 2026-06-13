@@ -23,8 +23,6 @@
   ],
   "Results": [
     {
-      "resultCompressed": "1:eJytkssOwiAQRelDNP6F36ILFzZpqj+ACW0modKU+oj/bpCHtlLQdOHmkqHDudMLqyMvSowQEksle9oCFRvSEZGokjYC1ILKWDekSnYguqHK2VkM1ZbxCiLdnny2G4LZtx+1GHp9v4Bey7nPmyk5QE0FYMd/oseI8ZBShhipz/gNktNBkUOz4/Ygy1goKUgH/ESY7ceOZ86vtBW6zAFiL7s4MCAOJxxy16mved0werNzuinpu3h5j0y+HDfZ9NY7XpnTWfb35zL6ZT+Y9D3OgHkC+z2Itg==",
-      "resultTeX": "\\frac{H(0,1,1\\,;1)+\\zeta(3)}{\\varepsilon}+\\left(-3 i \\left(\\pi -i \\log \\left(M^2\\right)\\right) (H(0,1,1\\,;1)+\\zeta(3))+6 H(0,1,1\\,;1)-3 H(0,0,1,1\\,;1)-H(0,1,0,1\\,;1)+\\frac{1}{6} \\pi ^2 \\zeta(2)+6 \\zeta(3)+2 \\zeta(4)\\right)+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": 0,
       "propExponents": [
@@ -61,10 +59,11 @@
         "verifiedAt": "2026-04-18T11:56:05"
       },
       "legOrder": [],
-      "symbolTeX": "",
       "alphabet": [],
       "symbolWeight": 0,
-      "symbolTerms": 0
+      "symbolTerms": 0,
+      "resultDataId": "87b7f09880cddf5c",
+      "resultTeXPreview": "\\frac{H(0,1,1\\,;1)+\\zeta(3)}{\\varepsilon}+\\left(-3 i \\left(\\pi -i \\log \\left(M^2\\right)\\right) (H(0,1,1\\,;1)+\\zeta(3))+6 H(0,1,1\\,;1)-3 H(0,0,1,1\\,;1)-H(0,1,0,1\\,;1)+\\frac{1}{6} \\pi ^2 \\zeta(2)+6 \\zeta(3)+2 \\zeta(4)\\right)+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "Names": [

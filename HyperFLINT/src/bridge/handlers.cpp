@@ -24,6 +24,7 @@
 #include "hyperflint/core/poly.hpp"
 #include "hyperflint/core/rat.hpp"
 #include "hyperflint/integrator/lr_scan.hpp"  // find_lr_orders_scan op (Doppio-port bridge, 2026-06-06)
+#include "hyperflint/integrator/factor_table.hpp"  // factor_table op (spec 2026-06-11)
 #include "hyperflint/core/addpf_probe.hpp"  // period-tuples Phase 0 census
 #include "hyperflint/core/symcoef.hpp"
 #include "hyperflint/integrator/ctx_probe.hpp"
@@ -656,13 +657,15 @@ std::string find_lr_orders(const std::string& body) {
         }
 
         // Carry-discharge (Doppio FindRoots) keep rule (2026-06-07),
-        // DEFAULT ON: absent => true.  Only active when algebraic_letters
-        // is on (deg-2 letters allowed); for the deg<=1 path it is a
-        // no-op.  An explicit "carry_discharge":false selects the Strict
-        // (terminal-only) subset-DP, byte-identical to the pre-change
-        // response (regression gate).  Mirrors fr_judge exactly via the
-        // shared lr_scan::step_fr_judge primitive — see find_lr_orders.
-        bool carry_discharge = true;
+        // DEFAULT OFF: absent => false (spec 2026-06-10-carry-option-
+        // design.md 4a.1 — the 2026-06-07 WIP default-ON escaped into
+        // the v1.2.3 release with no WL sender; absent => false
+        // restores released 1.2.2.x semantics for all field-less
+        // callers).  Only active when algebraic_letters is on; an
+        // explicit "carry_discharge":true selects the carry DFS.
+        // Mirrors fr_judge exactly via the shared
+        // lr_scan::step_fr_judge primitive — see find_lr_orders.
+        bool carry_discharge = false;
         {
             std::regex re("\"carry_discharge\"\\s*:\\s*(true|false)");
             std::smatch m;
@@ -805,6 +808,21 @@ std::string find_lr_orders(const std::string& body) {
             o << ",\"carried_sqrts\":" << result.carried_sqrts
               << ",\"kin_sqrts\":" << result.kin_sqrts
               << ",\"terminal_quads\":" << result.terminal_quads;
+            // Phase 2 (spec 2026-06-11-carry-phase2 §3.2): the distinct
+            // carried obligations along best_order (leaf-replay,
+            // proportionality-deduped; size <= carried_sqrts).  Same
+            // string serialization as root_polys above.  Additive and
+            // carry-gated, so the Strict envelope stays byte-identical;
+            // kSchemaVersion stays 2 (bump policy reserves bumps for
+            // renames/removals/semantic changes).
+            o << ",\"carried_polys\":[";
+            for (size_t i = 0; i < result.obligation_polys.size(); ++i) {
+                if (i) o << ",";
+                o << "\""
+                  << json_escape(result.obligation_polys[i].to_string())
+                  << "\"";
+            }
+            o << "]";
         }
         // Order-resolved singularities: emit the collected canonical
         // irreducible kinematic divisors and their count.  Only present
@@ -826,6 +844,259 @@ std::string find_lr_orders(const std::string& body) {
         return error_json(e.what());
     } catch (...) {
         return error_json("unknown exception in find_lr_orders");
+    }
+}
+
+// ---------- factor_table ----------
+//
+// Factor-prediction table for the Fubini reduction (spec
+// docs/superpowers/specs/2026-06-11-stfactorpredictor-design.md).
+// Single-chain replay along the supplied LR order; tabulates monic
+// pair differences (deg-1) and per-letter coefficient/disc factor
+// lists, trial-divided against the stage pool with exact fallback.
+//
+// Request:
+//   {"op":"factor_table", "groups":[[...]] | "polys":[...],
+//    "xvars":[...], "coeff_vars":[...], "order":[...],
+//    "algebraic_letters":bool?, "max_pairs":N?, "max_singletons":N?,
+//    "max_response_mb":N?}
+// Response: spec section 4.4 (interned "polys" array + "stages" +
+// "pairs" + "singletons" + "stats", schema/version envelope).
+// All guards are loud errors, never truncation.
+
+namespace {
+
+size_t json_size_field(const std::string& body, const std::string& key,
+                       size_t dflt) {
+    std::regex re("\"" + key + "\"\\s*:\\s*([0-9]+)");
+    std::smatch m;
+    if (std::regex_search(body, m, re)) {
+        try {
+            return std::stoull(m[1]);
+        } catch (const std::exception&) {
+            throw std::runtime_error("bad value for " + key
+                                     + " (out of range)");
+        }
+    }
+    // Key present but not a nonnegative integer: loud error, never a
+    // silent fall-back to the default (review fold).
+    std::regex re_key("\"" + key + "\"\\s*:");
+    if (std::regex_search(body, re_key))
+        throw std::runtime_error("bad value for " + key
+                                 + " (expected a nonnegative integer)");
+    return dflt;
+}
+
+void emit_factored_object(std::ostringstream& o,
+                          const hyperflint::factor_table::FactoredObject& fo) {
+    o << "\"c\":\"" << json_escape(fo.c) << "\",\"factors\":[";
+    for (size_t j = 0; j < fo.factors.size(); ++j)
+        o << (j ? "," : "") << "[" << fo.factors[j].first << ","
+          << fo.factors[j].second << "]";
+    o << "],\"oop\":" << (fo.oop ? "true" : "false");
+}
+
+}  // namespace
+
+std::string factor_table(const std::string& body) {
+    static const char* kOp = "factor_table";
+    try {
+        {
+            std::regex re_sv(R"~("schema_version_min"\s*:\s*([0-9]+))~");
+            std::smatch m_sv;
+            if (std::regex_search(body, m_sv, re_sv)) {
+                const int requested = std::stoi(m_sv[1]);
+                if (requested > kSchemaVersion) {
+                    return error_json_op(kOp,
+                        "schema_version_min=" + std::to_string(requested)
+                        + " exceeds supported schema_version="
+                        + std::to_string(kSchemaVersion)
+                        + " (hf_version=" + kHFVersion() + ")");
+                }
+            }
+        }
+
+        auto xvars = json_str_array(body, "xvars");
+        if (xvars.empty()) return error_json_op(kOp, "need \"xvars\"");
+        auto coeff_vars = json_str_array(body, "coeff_vars");
+
+        std::vector<std::vector<std::string>> group_strs;
+        std::string groups_inner = extract_top_array(body, "groups");
+        if (!groups_inner.empty()) {
+            int depth = 0;
+            size_t start = 0;
+            for (size_t i = 0; i < groups_inner.size(); ++i) {
+                if (groups_inner[i] == '[') {
+                    if (depth == 0) start = i;
+                    depth++;
+                } else if (groups_inner[i] == ']') {
+                    depth--;
+                    if (depth == 0) {
+                        std::string sub_obj = "{\"xs\":" +
+                            groups_inner.substr(start, i - start + 1) + "}";
+                        group_strs.push_back(json_str_array(sub_obj, "xs"));
+                    }
+                }
+            }
+        } else {
+            auto polys_str = json_str_array(body, "polys");
+            if (polys_str.empty())
+                return error_json_op(kOp, "need \"polys\" or \"groups\"");
+            group_strs.push_back(std::move(polys_str));
+        }
+        if (group_strs.empty()) return error_json_op(kOp, "empty group list");
+
+        auto order_strs = json_str_array(body, "order");
+        if (order_strs.empty()) return error_json_op(kOp, "need \"order\"");
+        {
+            // Permutation validation: string multisets must agree
+            // (spec 4.2; exact-name matching, no aliasing).
+            std::vector<std::string> a = order_strs, b = xvars;
+            std::sort(a.begin(), a.end());
+            std::sort(b.begin(), b.end());
+            if (a != b)
+                return error_json_op(kOp,
+                    "order is not a permutation of xvars");
+        }
+
+        std::vector<std::string> all_vars = xvars;
+        for (const auto& cv : coeff_vars) all_vars.push_back(cv);
+
+        hyperflint::PolyCtx ctx(all_vars);
+        std::vector<size_t> order_indices;
+        order_indices.reserve(order_strs.size());
+        for (const auto& v : order_strs) {
+            const size_t i = ctx.index_of(v);
+            if (i == SIZE_MAX)
+                return error_json_op(kOp,
+                    "unknown variable in order: " + v);
+            order_indices.push_back(i);
+        }
+
+        std::vector<std::vector<hyperflint::Poly>> group_polys;
+        group_polys.reserve(group_strs.size());
+        for (size_t g = 0; g < group_strs.size(); ++g) {
+            std::vector<hyperflint::Poly> parsed;
+            parsed.reserve(group_strs[g].size());
+            for (const auto& s : group_strs[g]) {
+                try {
+                    parsed.emplace_back(ctx, s);
+                } catch (const std::exception& e) {
+                    return error_json_op(kOp,
+                        std::string("poly parse failed in group ")
+                        + std::to_string(g) + ": " + e.what());
+                }
+            }
+            group_polys.push_back(std::move(parsed));
+        }
+
+        bool allow_al = false;
+        {
+            std::regex re("\"algebraic_letters\"\\s*:\\s*(true|false)");
+            std::smatch m;
+            if (std::regex_search(body, m, re)) allow_al = (m[1] == "true");
+        }
+
+        hyperflint::factor_table::Limits lim;
+        lim.max_pairs = json_size_field(body, "max_pairs", lim.max_pairs);
+        lim.max_singletons =
+            json_size_field(body, "max_singletons", lim.max_singletons);
+        lim.max_response_mb =
+            json_size_field(body, "max_response_mb", lim.max_response_mb);
+
+        // Per-request memo hygiene: cold memos, bounded memory, clean
+        // trace stats (spec 4.1; warm sharing deliberately deferred).
+        hyperflint::lr_search::reset_lr_memos();
+        hyperflint::lr_search::reset_lr_trace();
+
+        hyperflint::factor_table::FactorTable t =
+            hyperflint::factor_table::build(ctx, group_polys, order_indices,
+                                            allow_al, lim);
+
+        std::ostringstream o;
+        o << "{\"op\":\"factor_table\""
+          << ",\"schema_version\":" << kSchemaVersion
+          << ",\"hf_version\":\"" << json_escape(kHFVersion()) << "\""
+          << ",\"order\":[";
+        for (size_t i = 0; i < order_strs.size(); ++i)
+            o << (i ? "," : "") << "\"" << json_escape(order_strs[i]) << "\"";
+        o << "],\"polys\":[";
+        for (size_t i = 0; i < t.intern_strs.size(); ++i)
+            o << (i ? "," : "") << "\"" << json_escape(t.intern_strs[i])
+              << "\"";
+        o << "],\"stages\":[";
+        for (size_t s = 0; s < t.stages.size(); ++s) {
+            const auto& st = t.stages[s];
+            o << (s ? "," : "") << "{\"var\":\""
+              << json_escape(ctx.vars()[st.var_idx])
+              << "\",\"admissible\":[";
+            for (size_t g = 0; g < st.admissible.size(); ++g) {
+                o << (g ? "," : "") << "[";
+                for (size_t i = 0; i < st.admissible[g].size(); ++i)
+                    o << (i ? "," : "") << st.admissible[g][i];
+                o << "]";
+            }
+            o << "],\"pool\":[";
+            for (size_t i = 0; i < st.pool.size(); ++i)
+                o << (i ? "," : "") << st.pool[i];
+            o << "],\"n_pairs\":" << st.n_pairs
+              << ",\"n_singletons\":" << st.n_singletons
+              << ",\"n_inadmissible\":" << st.n_inadmissible
+              << ",\"t_build_s\":" << st.t_build_s << "}";
+        }
+        o << "],\"pairs\":[";
+        for (size_t i = 0; i < t.pairs.size(); ++i) {
+            const auto& pe = t.pairs[i];
+            o << (i ? "," : "") << "{\"var\":\""
+              << json_escape(ctx.vars()[pe.var_idx])
+              << "\",\"f\":" << pe.f_id << ",\"g\":" << pe.g_id << ",";
+            emit_factored_object(o, pe.diff);
+            o << "}";
+        }
+        o << "],\"singletons\":[";
+        for (size_t i = 0; i < t.singletons.size(); ++i) {
+            const auto& se = t.singletons[i];
+            o << (i ? "," : "") << "{\"var\":\""
+              << json_escape(ctx.vars()[se.var_idx])
+              << "\",\"id\":" << se.id << ",\"deg\":" << se.deg
+              << ",\"coeffs\":[";
+            for (size_t j = 0; j < se.coeffs.size(); ++j) {
+                o << (j ? "," : "") << "{\"power\":" << se.coeffs[j].power
+                  << ",";
+                emit_factored_object(o, se.coeffs[j].fo);
+                o << "}";
+            }
+            o << "]";
+            if (se.has_disc) {
+                o << ",\"disc\":{";
+                emit_factored_object(o, se.disc);
+                o << "}";
+            }
+            o << "}";
+        }
+        o << "],\"stats\":{\"pairs_total\":" << t.stats.pairs_total
+          << ",\"singletons_total\":" << t.stats.singletons_total
+          << ",\"oop\":" << t.stats.oop
+          << ",\"pair_fallbacks\":" << t.stats.pair_fallbacks
+          << ",\"trial_s\":" << t.stats.trial_s
+          << ",\"fallback_s\":" << t.stats.fallback_s << "}}";
+
+        // Post-hoc bound: the response is fully materialized before
+        // this check; the in-build max_pairs / max_singletons guards
+        // bound the size in practice (review fold: documented, not a
+        // streaming cap).
+        std::string out = o.str();
+        if (out.size() > lim.max_response_mb * 1024ull * 1024ull)
+            return error_json_op(kOp,
+                "max_response_mb exceeded (response "
+                + std::to_string(out.size() / (1024ull * 1024ull))
+                + " MB, cap " + std::to_string(lim.max_response_mb)
+                + " MB)");
+        return out;
+    } catch (const std::exception& e) {
+        return error_json_op(kOp, e.what());
+    } catch (...) {
+        return error_json_op(kOp, "unknown exception in factor_table");
     }
 }
 

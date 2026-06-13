@@ -8,3 +8,11 @@ compatibility_date = "2024-01-01"
 [[kv_namespaces]]
 binding = "SUBMISSIONS"
 id = "01c6cf180b924f15a6b6c18a1d40a53b"
+
+# R2 bucket for staged large submissions (results-split spec §5.1).
+# Create with:  wrangler r2 bucket create subtropica-staged-submissions
+# Lifecycle (30-day auto-delete) is set in the Cloudflare dashboard or via
+# the R2 lifecycle API; staged objects are one-shot transport, not storage.
+[[r2_buckets]]
+binding = "STAGED"
+bucket_name = "subtropica-staged-submissions"

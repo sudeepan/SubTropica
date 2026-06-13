@@ -1,0 +1,11 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "123|234|4|4||:000|000|0|0||",
+	"Results": {
+		"3cf8110b96ac2f6a": {
+			"resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwIpYAESPpnFJRAeK5AIycxNLYZwOYBEUGJJZn5eYk4mI5CTyQPSyAnTGJBTWoymMdMMxWiPnPx0sM40VmTbwA5AIhhhBLppoiSaxojCQjdNhRzTcLqNn3jTEM7C6TayTMPpNk4STUMLN2ZU0/4DAcKGgPzy1KJiEDcgMxNEpYH0gNNWblVZJjMW58hhqGLFYo0QhiqE6SA3R6WWJGIzHldiBYmkyaIkVjQbvxHwGJYQZCGUVtDt+E0VO/AnbBkmama6S8QnHiLclsFIzUw3jcSEzYDXbWSZhtNtUSSaRl6csuGLU/wOlMARFXiNxO/KB2QbidOVLCQaSUE8EzYSpysDyDESf1hqkG0kTlduId5ItGCkRlhiiRmsRtqQYyT+sHwDL3VJNRKnK1NIdCUR6XIXia4kIl1uIMdIvGGJo/ICmYWltiaxhiXYdNBhxNp0QFO1hwldFRsWx/jgCBtmPGGDrfmBZuwW7CFBWGMP9hDA1AhugSHcBAAvcN39",
+			"resultTeX": "\\frac{54 H(0,0,0,1,1\\,;1)+21 H(0,0,1,0,1\\,;1)+36 H(0,0,1,1,1\\,;1)+15 H(0,1,0,0,1\\,;1)+15 H(0,1,0,1,1\\,;1)+9 H(0,1,1,0,1\\,;1)+18 \\zeta(2) \\zeta(3)-\\pi ^2 \\zeta(3)+30 \\zeta(5)}{12 \\varepsilon}+\\frac{1}{8} \\left(-180 \\zeta(3) H(0,1,1\\,;1)-10 \\pi ^2 H(0,0,1,1\\,;1)-5 \\pi ^2 H(0,1,0,1\\,;1)+540 H(0,0,0,1,1\\,;1)+210 H(0,0,1,0,1\\,;1)+360 H(0,0,1,1,1\\,;1)+150 H(0,1,0,0,1\\,;1)+150 H(0,1,0,1,1\\,;1)+90 H(0,1,1,0,1\\,;1)+540 H(0,0,0,0,1,1\\,;1)+280 H(0,0,0,1,0,1\\,;1)+480 H(0,0,0,1,1,1\\,;1)+260 H(0,0,1,0,0,1\\,;1)+150 H(0,0,1,0,1,1\\,;1)+80 H(0,0,1,1,0,1\\,;1)+40 H(0,0,1,1,1,1\\,;1)+180 H(0,1,0,0,0,1\\,;1)+150 H(0,1,0,0,1,1\\,;1)+60 H(0,1,0,1,0,1\\,;1)-20 H(0,1,0,1,1,1\\,;1)+100 H(0,1,1,0,0,1\\,;1)-70 H(0,1,1,0,1,1\\,;1)-80 H(0,1,1,1,0,1\\,;1)+180 \\zeta(2) \\zeta(3)+140 \\zeta(3) \\zeta(3)+\\pi ^4 \\zeta(2)-10 \\pi ^2 \\zeta(3)+300 \\zeta(5)+700 \\zeta(6)\\right)+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": ""
+		}
+	}
+}

@@ -128,6 +128,18 @@ struct PathState {
     std::vector<Poly>          carried;       // canonical forms
     std::set<std::string>      carried_keys;  // dedup
     unsigned long nsq = 0, nkin = 0, ntq = 0; // carried / kin / terminal
+    // Executability tie-break coordinate (spec 2026-06-11-carry-phase2
+    // §4).  Monotone OR: set at mint when the fresh obligation is not
+    // single-int-var deg<=2 shaped; support(fresh obligation) ⊆ pending
+    // by construction (it is the pivot-free odd part of the pivot
+    // discriminant, carried precisely because it depends on a pending
+    // variable), so the test counts |support ∩ (pending ∪ {pivot})|.
+    // Obligations are never un-minted, so the flag never clears along a
+    // path — the lexicographic (nsq, nonexec, score) prune stays sound.
+    // NECESSARY-not-sufficient for executability: the deg-1 b != 0
+    // refinement stays WL-side (a b == 0 demote can re-expose a
+    // shadowing case; accepted residual for v1).
+    bool nonexec = false;
 };
 
 // ---------------------------------------------------------------------
@@ -150,10 +162,18 @@ struct PathState {
 //      accumulate kin / terminal counters.
 // `pending` is the set of integration-variable ctx indices that remain
 // un-integrated AFTER this step (it excludes the pivot, and — in the
-// gauge scan — the gauge).  Returns true iff the step is admissible;
-// `st` is updated in place.
+// gauge scan — the gauge).  `all_int_vars` is the FULL integration-
+// variable index set (pending ∪ integrated ∪ pivot ∪ gauge): the
+// nonexec executability shape test counts a fresh obligation's support
+// over it, because a second-generation mint (the discriminant of a
+// CARRIED obligation re-judged at a later pivot) can contain ALREADY-
+// INTEGRATED variables that pending ∪ {pivot} misses (physics review
+// 2026-06-11 finding 3).  The discharge/mint predicates themselves
+// stay pending-based (G3b semantics, untouched).  Returns true iff
+// the step is admissible; `st` is updated in place.
 bool step_fr_judge(const std::vector<Poly>& letters, size_t pivot,
                    size_t gauge, const std::vector<size_t>& pending,
+                   const std::vector<size_t>& all_int_vars,
                    PathState& st);
 
 // ---------------------------------------------------------------------

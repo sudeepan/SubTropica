@@ -92,8 +92,6 @@
   "NumPropagators": 3,
   "Results": [
     {
-      "resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwQpYAESPpnFJWlMIB4rkAjJzE0thkiClPvkp2OVA4nl5maC2Aj5gPzy1CIUeRCV+R8I0BUxwWwPyCktRrMBogHDGqzmgv0ClgcTAOy4NKQ=",
-      "resultTeX": "\\frac{\\log \\left(m_1^2 m_2^{-2}\\right)}{m_2^2-m_1^2}+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -120,27 +118,20 @@
       ],
       "methodLR": "Lungo",
       "byteCount": 888,
-      "symbolTeX": "\\varepsilon^{0}\\colon\\;\\frac{1}{m_2^2-m_1^2}\\,(m_1^2) + \\frac{1}{m_1^2-m_2^2}\\,(m_2^2)",
       "alphabet": [
         "m_1^2",
         "m_2^2"
       ],
       "symbolWeight": 1,
       "symbolTerms": 2,
-      "normalizedSymbolTeX": "\\varepsilon^{0}&\\colon\\;\\frac{1}{m_1^2-m_2^2}\\,(W_1)",
-      "wDefinitions": [
-        {
-          "label": "W_1",
-          "definition": "\\frac{m_2^2}{m_1^2}",
-          "originalLetter": "m_2^2"
-        }
-      ],
       "normalizedAlphabet": [
         "W_1"
       ],
       "symbolScale": "m_1^2",
       "normalizedSymbolTerms": 1,
-      "legOrder": []
+      "legOrder": [],
+      "resultDataId": "f6e52899d3acd4ec",
+      "resultTeXPreview": "\\frac{\\log \\left(m_1^2 m_2^{-2}\\right)}{m_2^2-m_1^2}+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "edges": "{{{1, 2}, 0}, {{1, 3}, m[1]}, {{2, 3}, m[2]}}",

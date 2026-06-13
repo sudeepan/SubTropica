@@ -86,8 +86,6 @@
     "NumPropagators": 6,
     "Results": [
         {
-            "resultCompressed": "1:eJyNkd0KgkAQhTf7JQh6hHqWulQQ6wU2WGNIW3Hsh57RB+oispm1DMUtb85yds7MfswudzoIR0IInJJsVAoK1zKT2CerEgQ6RMgGByQuYBY67CYkgcxAH2UEPTLAN2VtSLKFWKEtOq8N9aMTwszWPSZZ6TiJ1NXAwKMoCuSSD40GUwr5BYPv6r3JeV5HrAUzjGpYh85YuR3rzljVna8vKn0nwbHNrwjyWvMvAt7qh+D/Ehr/Zaja2toQgem+4fh2Nil4Emu5SpYXXux/Hw==",
-            "resultTeX": "\\frac{1}{8 \\varepsilon^2}+\\frac{-4 \\log \\left(M^2\\right)-4 i \\pi +13}{16 \\varepsilon}+\\frac{1}{32} \\left(8 \\log ^2\\left(M^2\\right)+(-52+16 i \\pi ) \\log \\left(M^2\\right)+4 \\zeta(2)-8 \\pi ^2-52 i \\pi +107\\right)+O\\left(\\varepsilon^1\\right)",
             "dimension": "6 - 2*eps",
             "epsOrder": 0,
             "propExponents": [
@@ -109,7 +107,6 @@
             "contributor": "SM",
             "timestamp": "2026-04-19T19:00:57",
             "byteCount": 1784,
-            "symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;-\\frac{1}{4}\\,(M^2) \\\\ \\varepsilon^{0}&\\colon\\;-\\frac{13}{8}\\,(M^2) + \\frac{1}{2}\\,(M^2 \\otimes M^2)\\end{aligned}",
             "alphabet": [
                 "M^2"
             ],
@@ -119,7 +116,9 @@
                 1,
                 3,
                 2
-            ]
+            ],
+            "resultDataId": "dcc290ab9881fd55",
+            "resultTeXPreview": "\\frac{1}{8 \\varepsilon^2}+\\frac{-4 \\log \\left(M^2\\right)-4 i \\pi +13}{16 \\varepsilon}+\\frac{1}{32} \\left(8 \\log ^2\\left(M^2\\right)+(-52+16 i \\pi ) \\log \\left(M^2\\right)+4 \\zeta(2)-8 \\pi ^2-52 i \\pi +107\\right)+O\\left(\\varepsilon^1\\right)"
         }
     ],
     "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{1, 4}, 0}, {{2, 3}, 0}, {{2, 5}, 0}, {{4, 5}, 0}}",

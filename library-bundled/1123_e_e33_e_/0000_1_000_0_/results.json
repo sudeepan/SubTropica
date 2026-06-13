@@ -1,0 +1,11 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "1123|e|e33|e|:0000|1|000|0|",
+	"Results": {
+		"71ad615c8b5e48e6": {
+			"resultCompressed": "1:eJytVEtOwzAQTZvyVSQEN0DiJiDBopWi0gsYyalGcnBVh69YsuEuPRZruAAQPHbj4GZcXMRmIs/3zZuZHF/JcbGdJIna1+KSz4GrM1YxleonnynQn6QYoAOKIaiq6ONrV4sxq0BeMwE9/QBUW9uWFhMouVrrmjZJc3GjYCcUjYZTWc4Evzdg4LOua4WmHFYCjKnACgb+UE6N32gUCQs1lgwH6zka1iIM6x1hOV0u7/h86RkmzSFYeMHrEJygdongdxLgyCttUFFhFET48IguH283mb6hOfOazPqxNFdfQZpf/kBzJ/9Bl5UmSRoiwg3sQsip6bFdbrwYm7nXCGukBvFf17DZMN+6vJGxVP+v9CKkMdAzal8DKWxxaqvdv8kQ9xR9LZMf1VeaOgzvAMXfwIMWOAbiZCg+213YM6XFwzkrS2Yy2g3Cgbe79A15FDEQ",
+			"resultTeX": "\\frac{1}{2 \\varepsilon^3}+\\frac{-3 \\log \\left(M^2\\right)-3 i \\pi +7}{2 \\varepsilon^2}+\\frac{18 \\log ^2\\left(M^2\\right)+(-84+36 i \\pi ) \\log \\left(M^2\\right)-4 \\zeta(2)-17 \\pi ^2-84 i \\pi +132}{8 \\varepsilon}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": "\\begin{aligned}\\varepsilon^{-2}&\\colon\\;-\\frac{3}{2}\\,(M^2) \\\\ \\varepsilon^{-1}&\\colon\\;-\\frac{21}{2}\\,(M^2) + \\frac{9}{2}\\,(M^2 \\otimes M^2) \\\\ \\varepsilon^{0}&\\colon\\;\\frac{63}{2}\\,(M^2 \\otimes M^2) - \\frac{27}{2}\\,(M^2 \\otimes M^2 \\otimes M^2) - \\frac{99}{2}\\,(M^2)\\end{aligned}"
+		}
+	}
+}

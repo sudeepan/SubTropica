@@ -10,8 +10,20 @@ on:
   workflow_dispatch:
     inputs:
       payload:
-        description: "JSON payload from SubTropica"
-        required: true
+        description: "Inline JSON payload from SubTropica (legacy path, results-split spec §5.2; superseded by submission_key for staged submissions)"
+        required: false
+        type: string
+      submission_key:
+        description: "R2 staged-submission key (64-hex sha256) minted by the submit worker (results-split spec §5.2)"
+        required: false
+        type: string
+      sha256:
+        description: "Expected sha256 of the staged payload; verified after the /staged fetch (results-split spec §5.2)"
+        required: false
+        type: string
+      size:
+        description: "Staged payload size in bytes (informational, results-split spec §5.2)"
+        required: false
         type: string
 
 permissions:
@@ -26,13 +38,50 @@ jobs:
         with:
           ref: main
 
+      # Node 22 for the TeX parseability gate (the harness npm-installs its
+      # pinned katex into a scratch dir on first run; node >= 20 required).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Resolve payload (staged or inline)
+        env:
+          SUBMISSION_KEY: ${{ inputs.submission_key }}
+          EXPECTED_SHA: ${{ inputs.sha256 }}
+          INLINE_PAYLOAD: ${{ inputs.payload }}
+          STAGED_TOKEN: ${{ secrets.STAGED_TOKEN }}
+        run: |
+          set -euo pipefail
+          # payload.json is transport scratch, not library content; keep it
+          # out of the "git add -A" sweep in the Create PR step.
+          echo "payload.json" >> .git/info/exclude
+          if [ -n "$SUBMISSION_KEY" ]; then
+            code=$(curl -sS -o payload.json -w '%{http_code}' \
+              -H "Authorization: Bearer $STAGED_TOKEN" \
+              "https://subtropi.ca/staged/$SUBMISSION_KEY")
+            if [ "$code" = "404" ]; then
+              echo "::error::Submission expired or unknown (R2 lifecycle is 30 days); please resubmit." ; exit 1
+            fi
+            [ "$code" = "200" ] || { echo "::error::Staged fetch failed (HTTP $code)"; exit 1; }
+            actual=$(shasum -a 256 payload.json | cut -d' ' -f1)
+            [ "$actual" = "$EXPECTED_SHA" ] || {
+              echo "::error::Payload sha256 mismatch (got $actual, expected $EXPECTED_SHA)"; exit 1; }
+          elif [ -n "$INLINE_PAYLOAD" ]; then
+            printf '%s' "$INLINE_PAYLOAD" > payload.json   # legacy path
+          else
+            echo "::error::Neither submission_key nor payload provided"; exit 1
+          fi
+
       - name: Parse and write entry
         id: write
         shell: python3 {0}
         run: |
           import json, os, hashlib
 
-          payload = json.loads(os.environ["PAYLOAD"])
+          # Written by "Resolve payload (staged or inline)"; reading a file
+          # instead of an env var retires the ~128 KiB env ceiling
+          # (results-split spec §5.2).
+          payload = json.load(open("payload.json"))
 
           def _extract_graph_from_stcommand(cmd):
               # Pulls "{edges, nodes}" out of "STIntegrate[{edges,nodes}, ...]"
@@ -298,6 +347,18 @@ jobs:
               if k in payload:
                   result_record[k] = payload[k]
 
+          import sys as _ssys
+          _ssys.path.insert(0, "scripts")
+          import _results_split_common as _rs
+
+          # Old-kernel preview fallback (spec §3.4): payloads from kernels
+          # that do not ship resultTeXPreview get the copy-or-flag rule
+          # inside split_record; new kernels' preview passes through.
+          if "resultTeXPreview" in payload:
+              result_record["resultTeXPreview"] = payload["resultTeXPreview"]
+              if payload.get("resultTeXTruncated"):
+                  result_record["resultTeXTruncated"] = True
+
           # Read existing entry.json or create new
           entry_path = f"{config_dir}/entry.json"
           if os.path.exists(entry_path):
@@ -351,9 +412,7 @@ jobs:
                   "Names": []
               }
 
-          with open(entry_path, "w") as f:
-              json.dump(entry, f, indent="\t")
-              f.write("\n")
+          _rs.write_split_entry(entry_path, entry)
 
           # Set outputs
           short_hash = hashlib.md5(json.dumps(payload).encode()).hexdigest()[:8]
@@ -366,8 +425,17 @@ jobs:
               f.write(f"branch={branch}\n")
               f.write(f"title={title}\n")
               f.write(f"cnickel={cnickel}\n")
-        env:
-          PAYLOAD: ${{ inputs.payload }}
+
+      - name: TeX parseability gate (submission)
+        id: texgate
+        run: |
+          set -euo pipefail
+          node scripts/tests/test_tex_parseability.mjs --json /tmp/texgate.json && exit 0
+          # Remediation path (results-split spec §8.6): a failure ONLY in the
+          # new record's resultTeXPreview degrades to empty preview + flag,
+          # not a reject. Any other failure exits 1 here and fails the run.
+          python3 .github/scripts/texgate_remediate.py /tmp/texgate.json
+          node scripts/tests/test_tex_parseability.mjs
 
       - name: Create PR
         env:

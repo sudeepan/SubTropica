@@ -67,11 +67,18 @@ public:
     // argument below (advisory A3, review of 5f62abe84).
     static constexpr long kPeelMinTerms = 64;
 
-    void peel_known_factors(long min_terms = kPeelMinTerms);
+    // Returns the number of exponent decrements performed (0 == nothing
+    // stripped): callers use this for adaptive-backoff decisions (the
+    // FR-Cauchy recurrence stops attempting intra-loop peels after a run
+    // of zero-strip attempts; physics review 2026-06-11 verified peel is
+    // value-preserving in every ordering, so attempts are value-neutral).
+    long peel_known_factors(long min_terms = kPeelMinTerms);
 
     // True when HF_FR_MAT_PEEL is set (non-empty, not "0"): callers gate
-    // peel_known_factors() invocations on this so the flag stays the single
-    // switch for the whole peel lever (materialize + derivative chain).
+    // the MATERIALIZE and DERIVATIVE-CHAIN peel sites on this. NOTE: the
+    // FR-Cauchy recurrence's adaptive peels are deliberately UNGATED (they
+    // are the face-family cure, not an optimization toggle); this flag is
+    // not "the single switch for the whole peel lever".
     static bool peel_enabled();
 
     const PolyCtx& ctx() const { return numerator_.ctx(); }

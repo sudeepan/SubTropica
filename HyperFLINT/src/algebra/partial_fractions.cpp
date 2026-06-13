@@ -1181,6 +1181,41 @@ PartialFractionization partial_fractions_impl(
                 const char* e = std::getenv("HF_FR_CAUCHY_PF");
                 return !(e && *e == '0' && !e[1]);
             }();
+            // Growth budget for the c_hat recurrence. On the 1m-tbox
+            // (1+var)*denBase^d face family, G_eval is a large kinematic
+            // polynomial; add/sub lifts numerators by the accumulated
+            // G_eval^j den powers, so c_hat numerators grow geometrically
+            // in j, peel cannot strip the resulting SUM-form numerators,
+            // and materialize pays multi-GB Brown GCDs (face_74: >1800 s
+            // vs 643 s on the derivative chain; see
+            // notes/hf_tree_merge/FACE_REGRESSION_FRCAUCHY.md). When any
+            // c_hat numerator exceeds this term count POST-PEEL, bail out:
+            // the existing catch falls back to the derivative chain, where
+            // HF_FR_MAT_PEEL operates (value-identical path). Non-positive
+            // values disable. The same value triggers the intra-loop
+            // on-the-spot peel, which is what actually cures the face
+            // family (adaptive peeling keeps the recurrence small; the
+            // bail is the safety net). Measured trade-off (Neso, OMP=8,
+            // quiet box): tbox-single 826 s @250k (peel-attempt overhead)
+            // vs 218 s @1M (== budget-off 224.8 s); face_74 144.5 s @250k
+            // vs 247.7 s @1M (vs >1800 s cap un-budgeted, 643 s pure
+            // chain, 351 s historical best). Default 8M: face_71 (six
+            // cross-add counterterms, double (1+var) cofactors) has a
+            // post-peel residue that collapses between 1M and 4M — at
+            // the 1M default it bailed into a derivative chain whose
+            // intra-derivative products reach 15M terms (16 h wall,
+            // never completed); at >=4M FR-Cauchy completes it in
+            // 1117 s (4M and 8M value-identical). Worst observed cost
+            // of the high default is minutes (face_89: 28 s @1M vs
+            // 210 s @8M — deep grind instead of early profitable
+            // bail); worst cost of a low default is the 16 h chain
+            // wall. tbox-single is best at 8M (213 s). Shallow-residue
+            // face workloads can tune down to 250k-1M.
+            static const long cauchy_num_budget = []{
+                const char* e =
+                    std::getenv("HF_FR_CAUCHY_MAX_NUM_TERMS");
+                return e ? std::atol(e) : 8000000L;
+            }();
             bool cauchy_ok = false;
             if (use_fr_cauchy) {
               try {
@@ -1283,9 +1318,35 @@ PartialFractionization partial_fractions_impl(
 
                 std::vector<FactoredRat> c_hat;
                 c_hat.reserve(static_cast<size_t>(m));
+                auto check_budget = [&](const FactoredRat& fr) {
+                    if (cauchy_num_budget > 0 &&
+                        static_cast<long>(fr.numerator().n_terms())
+                            > cauchy_num_budget)
+                        throw std::runtime_error(
+                            "FR-Cauchy: c_hat numerator over "
+                            "HF_FR_CAUCHY_MAX_NUM_TERMS budget");
+                };
+                // Intra-loop peel TRIGGER, decoupled from the bail
+                // threshold (two-knob split, reviews 2026-06-11): an
+                // EAGER trigger collapses face_67 S-class accumulators
+                // (1.1-1.8M-term numerators that peel to 132-276 terms
+                // mid-recurrence) before their lifts compound, while the
+                // bail stays high for face_71-class late-collapsing
+                // residues. tbox-single's legitimate swells strip
+                // nothing; the zero-strip BACKOFF below disables further
+                // attempts after kPeelBackoff consecutive failures, so
+                // the lazy-trigger optimum is recovered adaptively
+                // instead of via a contended default.
+                static const long cauchy_peel_trigger = []{
+                    const char* e =
+                        std::getenv("HF_FR_CAUCHY_PEEL_TRIGGER");
+                    return e ? std::atol(e) : 250000L;
+                }();
+                constexpr int kPeelBackoff = 3;
                 for (long j = 0; j < m; ++j) {
                     FactoredRat acc = FactoredRat::from_poly(
                         Poly(p_tilde[static_cast<size_t>(j)]));
+                    int zero_strip_streak = 0;
                     for (long i = 1; i <= j; ++i) {
                         if (conv[static_cast<size_t>(i)].is_zero())
                             continue;
@@ -1293,9 +1354,36 @@ PartialFractionization partial_fractions_impl(
                             FactoredRat::from_poly(
                                 Poly(conv[static_cast<size_t>(i)]))
                             .mul(c_hat[static_cast<size_t>(j - i)]));
+                        // Peel-then-check (raw pre-peel bail tripped
+                        // tbox-single's winning recurrences; post-peel-
+                        // only checks let the faces' subs compound — see
+                        // FACE_REGRESSION_FRCAUCHY.md placement table).
+                        if (cauchy_peel_trigger > 0 &&
+                            zero_strip_streak < kPeelBackoff &&
+                            static_cast<long>(
+                                acc.numerator().n_terms())
+                                > cauchy_peel_trigger) {
+                            if (acc.peel_known_factors(1) > 0)
+                                zero_strip_streak = 0;
+                            else
+                                ++zero_strip_streak;
+                            check_budget(acc);
+                        }
                     }
                     acc = acc.mul(inv_r0);
                     acc.peel_known_factors(1);
+                    // End-of-step check on the post-peel coefficient
+                    // (catches growth that stays under budget intra-loop
+                    // but compounds across j-steps).
+                    check_budget(acc);
+                    static const bool cauchy_stats =
+                        std::getenv("HF_FR_MAT_STATS") != nullptr;
+                    if (cauchy_stats)
+                        std::fprintf(stderr,
+                            "[fr-cauchy] j=%ld num_terms=%ld nfac=%zu\n",
+                            j,
+                            static_cast<long>(acc.numerator().n_terms()),
+                            acc.den_factors().size());
                     c_hat.push_back(std::move(acc));
                 }
 
@@ -1316,13 +1404,27 @@ PartialFractionization partial_fractions_impl(
                     } else if (q_exp < 0) {
                         ck.push_factor(pk.Q, -q_exp);
                     }
+                    // NOTE: no budget check here. The Q^q_exp multiply
+                    // legitimately inflates passing c_hat far past any
+                    // recurrence-scale threshold (tbox-single: 170k-term
+                    // c_hat with multi-M-term materialize operands ARE the
+                    // happy path; a 10x-budget guard here tripped them and
+                    // reverted the FR-Cauchy win). The recurrence checks
+                    // above bound the pathology; review fold C2's
+                    // just-under-budget materialize is bounded by them to
+                    // budget x |Q|^q_exp and was never observed costly.
                     pole_c.coefs.push_back(
                         normalize_rat_content(ck.materialize_to_rat()));
                 }
                 fast_poles.push_back(std::move(pole_c));
                 cauchy_ok = true;
-              } catch (const std::exception&) {
+              } catch (const std::exception& ex) {
                 // FR-Cauchy failed; fall through to derivative chain.
+                static const bool cauchy_bail_stats =
+                    std::getenv("HF_FR_MAT_STATS") != nullptr;
+                if (cauchy_bail_stats)
+                    std::fprintf(stderr, "[fr-cauchy] BAIL: %s\n",
+                                 ex.what());
               }
             }
             if (!cauchy_ok) {

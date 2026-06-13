@@ -43,8 +43,6 @@
   "NumPropagators": 3,
   "Results": [
     {
-      "resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwIpYAESPpnFJRAeK5AIycxNLU5jBHFByn3y09Hl4BoDckqLi0G83Fw0NZn/gQBiCEjC1zeTCW4lSFFAfnlqEXkGgRwFEcVnGnHuIWAuxLusmOaCeB45+emZjAQDkmw/4vce7qAlPtiQYppoe6kXrJgpjKwkNaQSKiGfQ9ITMxaDUR0EdcKwCRKs+XkIeANiJLb4Gsg4JuRnMkpT8osbCAGSAhMAwr+CWA==",
-      "resultTeX": "\\frac{\\log \\left(\\frac{m^2-M_2^2}{m^2-M_3^2}\\right)}{\\varepsilon \\left(M_3^2-M_2^2\\right)}+\\frac{H\\left(\\frac{m^2-M_3^2}{M_2^2-M_3^2},\\frac{M_3^2}{M_3^2-M_2^2}\\,;1\\right)-\\log ^2\\left(\\frac{m^2-M_2^2}{m^2-M_3^2}\\right)+\\log \\left(m^2-M_2^2\\right) \\log \\left(\\frac{m^2-M_2^2}{m^2-M_3^2}\\right)+\\log \\left(1-\\frac{M_2^2}{m^2}\\right) \\log \\left(\\frac{m^2-M_2^2}{m^2-M_3^2}\\right)-\\log \\left(M_2^2 M_3^{-2}\\right) \\log \\left(1-\\frac{M_2^2}{m^2}\\right)}{M_2^2-M_3^2}+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -71,7 +69,9 @@
       ],
       "methodLR": "Lungo",
       "findRoots": false,
-      "byteCount": 6000
+      "byteCount": 6000,
+      "resultDataId": "e828c2754d98bf51",
+      "resultTeXPreview": "\\frac{\\log \\left(\\frac{m^2-M_2^2}{m^2-M_3^2}\\right)}{\\varepsilon \\left(M_3^2-M_2^2\\right)}+\\frac{H\\left(\\frac{m^2-M_3^2}{M_2^2-M_3^2},\\frac{M_3^2}{M_3^2-M_2^2}\\,;1\\right)-\\log ^2\\left(\\frac{m^2-M_2^2}{m^2-M_3^2}\\right)+\\log \\left(m^2-M_2^2\\right) \\log \\left(\\frac{m^2-M_2^2}{m^2-M_3^2}\\right)+\\log \\left(1-\\frac{M_2^2}{m^2}\\right) \\log \\left(\\frac{m^2-M_2^2}{m^2-M_3^2}\\right)-\\log \\left(M_2^2 M_3^{-2}\\right) \\log \\left(1-\\frac{M_2^2}{m^2}\\right)}{M_2^2-M_3^2}+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "edges": "{{{1, 2}, 0}, {{1, 3}, 0}, {{2, 3}, m}}",

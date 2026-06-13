@@ -8,8 +8,6 @@
   "Source": "SubTropica",
   "Results": [
     {
-      "resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIA3GKWYCET2ZxSRoTiMcKJEIyc1OLIVwOIBGUWJKZn5eYk8kI5GQ2OAM1wpUG5JenFhWDuL6+mSxwMwmacmAFEaaAWAE5pcWZ7gzIqpEMZgcSzvm5BTmpFWAfZX78//8/2KCATDQNYKk0kOXgMPDJT4daSNjFQI3/MxkstjLjczEbiovtTz37T5yLHWI4GXC4+MBn7IEUkJnJhBnUmQcUYcopDDhsgYTmtAdM//+jOQ2bNog70fQK8AHF4Ipzq8rAqjL/gUIZnDhABAC4sZf2",
-      "resultTeX": "\\frac{M^8}{17280 \\varepsilon^2}+\\frac{M^8 \\left(-15 \\log \\left(M^2\\right)-15 i \\pi +71\\right)}{43200 \\varepsilon}-\\frac{M^8 \\left(-64800 \\log ^2\\left(M^2\\right)+8640 (71-15 i \\pi ) \\log \\left(M^2\\right)+3600 \\zeta(2)+62400 \\pi ^2+613440 i \\pi -1652161\\right)}{62208000}+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": 0,
       "propExponents": [
@@ -43,7 +41,9 @@
           "var": "Msq",
           "value": "-31/97"
         }
-      ]
+      ],
+      "resultDataId": "614f3405272138cb",
+      "resultTeXPreview": "\\frac{M^8}{17280 \\varepsilon^2}+\\frac{M^8 \\left(-15 \\log \\left(M^2\\right)-15 i \\pi +71\\right)}{43200 \\varepsilon}-\\frac{M^8 \\left(-64800 \\log ^2\\left(M^2\\right)+8640 (71-15 i \\pi ) \\log \\left(M^2\\right)+3600 \\zeta(2)+62400 \\pi ^2+613440 i \\pi -1652161\\right)}{62208000}+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "Names": [],

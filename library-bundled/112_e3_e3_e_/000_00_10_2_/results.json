@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "112|e3|e3|e|:000|00|10|2|",
+	"Results": {
+		"7ba1f8c0f8de9475": {
+			"resultCompressed": "1:eJzNV81ugzAMzkrLpqmXPcKeZTv00Eqo2wswKVSRYKka9qM9905I+4mTQUMSWA4khIORQ2x/dvyBuX2i+yJFCLFrLh7wiWB2n9c5S7iKj4zwGypAYUsutoTVxQK0FRePpMKsuAAVdmzpQX/WqRl9wye5FdZ2OwI38sOv3ir40a0WbfSsfGFaBOHG8Ktv+raFkcETC+ArLvZ5TehzXhIwk05XYziEsw7ppqQHYXlegtLJatrqZwVvS/+/VK0VVdDZKjfp4dkKesnFHa2OJX4XJRAHIqwy4h2CcvptFMPCew9PHsBvq7ixIvUJ4WaMbU38bHPiQdqach7EnY62M+nBOyNODMRRwR7qGxN2JIjjrtRcYGNitvIWjJa84x8/zc8azTcXfIacC5pe2wtPf7HDzEYi2+CDydLlHNatlX4OAQAO0mtgmrJPRh4nOkdcUwSVuThRp1GoMwcsSSfHN02YoVj5z/Ee2da6X0ZFJmnEzmP18Sr3wR+OHMlB/AJv/zpF",
+			"resultTeX": "\\frac{\\log \\left(M_2^{-2} M_3^2\\right)}{\\varepsilon^2 \\left(2 M_2^2-2 M_3^2\\right)}+\\frac{-H\\left(0,\\frac{M_2^2}{M_2^2-M_3^2}\\,;1\\right)+\\log ^2\\left(M_2^{-2} M_3^2\\right)-2 \\log \\left(M_3^2\\right) \\log \\left(M_2^{-2} M_3^2\\right)-2 i \\pi  \\log \\left(M_2^{-2} M_3^2\\right)+2 \\log \\left(M_2^{-2} M_3^2\\right)}{2 \\varepsilon \\left(M_2^2-M_3^2\\right)}+\\frac{6 i \\pi  H\\left(0,\\frac{M_2^2}{M_2^2-M_3^2}\\,;1\\right)-6 H\\left(0,\\frac{M_2^2}{M_2^2-M_3^2}\\,;1\\right)+3 H\\left(0,0,\\frac{M_2^2}{M_2^2-M_3^2}\\,;1\\right)-6 H\\left(0,\\frac{M_2^2}{M_2^2-M_3^2},\\frac{M_2^2}{M_2^2-M_3^2}\\,;1\\right)-6 H\\left(\\frac{M_2^2}{M_2^2-M_3^2},0,\\frac{M_2^2}{M_2^2-M_3^2}\\,;1\\right)+6 \\log \\left(M_3^2\\right) H\\left(0,\\frac{M_2^2}{M_2^2-M_3^2}\\,;1\\right)-3 \\zeta(2) \\log \\left(M_2^{-2} M_3^2\\right)+2 \\log ^3\\left(M_2^{-2} M_3^2\\right)-6 \\log \\left(M_3^2\\right) \\log ^2\\left(M_2^{-2} M_3^2\\right)-6 i \\pi  \\log ^2\\left(M_2^{-2} M_3^2\\right)+6 \\log ^2\\left(M_2^{-2} M_3^2\\right)+6 \\log ^2\\left(M_3^2\\right) \\log \\left(M_2^{-2} M_3^2\\right)+12 i \\pi  \\log \\left(M_3^2\\right) \\log \\left(M_2^{-2} M_3^2\\right)-12 \\log \\left(M_3^2\\right) \\log \\left(M_2^{-2} M_3^2\\right)-6 \\pi ^2 \\log \\left(M_2^{-2} M_3^2\\right)-12 i \\pi  \\log \\left(M_2^{-2} M_3^2\\right)+12 \\log \\left(M_2^{-2} M_3^2\\right)}{6 \\left(M_2^2-M_3^2\\right)}+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

@@ -1,0 +1,21 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "e1122|e|e|:10000|2|3|",
+	"Results": {
+		"b0a3c677ea8ea29e": {
+			"resultCompressed": "1:eJyVU9sOgjAMnaJojD/ht+gjJkT9AUw20wScoXiJ/23ig3G2m0RBlPlyoF17enYKk7VeqFAIgSOCpcxB4iwpEgwolDsEegjFAfYIIsACOpzqlak43SPwi+pyqk+wgkyiCwcEU53tUnmyVHA3xiAfxVBrADoxisnt8EhvXMBV8zl0P0e0dHBOjSo6x946r191unBIsEgK0NskhQsVQ1jhjvVR5k8Cpz3wGfu6Zan5R2Gpz9MzK+l3cZPLDfdl39vJazRewt5W1zTFrf3WvnZvs1s9DP7xMPjiof3sX23Z+eDs5rT9nyw8ANuEuL4=",
+			"resultTeX": "\\frac{1}{\\varepsilon^2}+\\frac{-\\log \\left(M_2^2\\right)-\\log \\left(M_3^2\\right)-2 i \\pi +4}{\\varepsilon}+\\left(\\log ^2\\left(M_2^2\\right)-\\frac{1}{2} \\log ^2\\left(M_2^2 M_3^{-2}\\right)+\\log ^2\\left(M_3^2\\right)+2 i (\\pi +2 i) \\log \\left(M_2^2\\right)+2 i \\pi  \\log \\left(M_3^2\\right)-4 \\log \\left(M_3^2\\right)-2 \\zeta(2)-\\frac{11 \\pi ^2}{6}-8 i \\pi +12\\right)+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": "\\begin{aligned}\\varepsilon^{-2}&\\colon\\;1 \\\\ \\varepsilon^{-1}&\\colon\\;-(M_2^2) - (M_3^2) \\\\ \\varepsilon^{0}&\\colon\\;-4\\,(M_2^2) + (M_2^2 \\otimes M_2^2) + (M_2^2 \\otimes M_3^2) + (M_3^2 \\otimes M_2^2) + (M_3^2 \\otimes M_3^2) - 4\\,(M_3^2)\\end{aligned}",
+			"normalizedSymbolTeX": "\\begin{aligned}\\varepsilon^{-2}&\\colon\\;1 \\\\ \\varepsilon^{-1}&\\colon\\;-(W_1) \\\\ \\varepsilon^{0}&\\colon\\;(W_1 \\otimes W_1) - 4\\,(W_1)\\end{aligned}",
+			"wDefinitions": [
+				{
+					"label": "W_1",
+					"kind": "rational",
+					"pairIndex": null,
+					"definition": "\\frac{M_3^2}{M_2^2}",
+					"originalLetter": "M_3^2"
+				}
+			]
+		}
+	}
+}

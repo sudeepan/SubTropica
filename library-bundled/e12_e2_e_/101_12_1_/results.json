@@ -1,0 +1,131 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "e12|e2|e|:101|12|1|",
+	"Results": {
+		"93c4d463f18d8735": {
+			"resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwQpYAESPpnFJWkcMF5ATmlxGhOIxwokQjJzU6FckKRHTn56JkgjQgikG2IgXFNAfnlqEUIFyESIJrCVIPHwXLBA5n8gwKsP3SVwE3JzsRuZxoyiAWIDHl0FSA7BppX6Xi8YLl4nMcKZiPL1kEgoJGYPugTUyExWBaPJirYBNQSSFUQRSMwnPx13ksPlcAw7mQg4DBGQ6KKoLsFrTji6ZQMdpiy4tA61gC0YXAELbiBAuCACAIt/DbI=",
+			"resultTeX": "\\left(\\frac{H\\left(0,\\frac{1}{W_1^-+1}\\,;1\\right)}{m_1^2 W_1^--m_1^2 W_1^+}-\\frac{H\\left(0,\\frac{1}{W_1^++1}\\,;1\\right)}{m_1^2 W_1^--m_1^2 W_1^+}-\\frac{H\\left(\\frac{1}{W_2^-+1},\\frac{1}{W_1^-+1}\\,;1\\right)}{m_1^2 W_1^--m_1^2 W_1^+}+\\frac{H\\left(\\frac{1}{W_2^-+1},\\frac{1}{W_1^++1}\\,;1\\right)}{m_1^2 W_1^--m_1^2 W_1^+}-\\frac{H\\left(\\frac{1}{W_2^++1},\\frac{1}{W_1^-+1}\\,;1\\right)}{m_1^2 W_1^--m_1^2 W_1^+}+\\frac{H\\left(\\frac{1}{W_2^++1},\\frac{1}{W_1^++1}\\,;1\\right)}{m_1^2 W_1^--m_1^2 W_1^+}+\\frac{\\log \\left(-\\frac{m_2^2}{m_1^2-m_2^2}\\right) \\log \\left(-W_1^-\\right)}{m_1^2 W_1^--m_1^2 W_1^+}-\\frac{\\log \\left(-\\frac{m_2^2}{m_1^2-m_2^2}\\right) \\log \\left(-W_1^+\\right)}{m_1^2 W_1^--m_1^2 W_1^+}\\right)+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": "\\varepsilon^{0}\\colon\\;-\\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_1^-+1 \\otimes W_1^-) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_1^++1 \\otimes W_1^+) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_1^--W_2^- \\otimes W_1^-) - \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_2^- \\otimes W_1^-) - \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_2^--W_1^- \\otimes W_2^-) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_2^- \\otimes W_1^+) - \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_2^--W_1^+ \\otimes W_1^+) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_2^--W_1^+ \\otimes W_2^-) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_1^--W_2^+ \\otimes W_1^-) - \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_2^+ \\otimes W_1^-) - \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_2^+-W_1^- \\otimes W_2^+) - \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_1^+-W_2^+ \\otimes W_1^+) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_2^+ \\otimes W_1^+) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_2^+-W_1^+ \\otimes W_2^+) - \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(m_1^2-m_2^2 \\otimes W_1^-) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(m_2^2 \\otimes W_1^-) - \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_1^- \\otimes m_1^2-m_2^2) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_1^- \\otimes m_2^2) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(m_1^2-m_2^2 \\otimes W_1^+) - \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(m_2^2 \\otimes W_1^+) + \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_1^+ \\otimes m_1^2-m_2^2) - \\frac{m_1^{-2}}{W_1^--W_1^+}\\,(W_1^+ \\otimes m_2^2)",
+			"normalizedSymbolTeX": "\\varepsilon^{0}&\\colon\\;\\frac{m_1^{-2}}{W_1^--W_1^+}\\!\\left[-(W_1 \\otimes W^-_1) + (W_2 \\otimes W^+_1) + (W_3 \\otimes W^-_1) - (W^-_2 \\otimes W^-_1) - (W_3 \\otimes W^-_2) + (W^-_2 \\otimes W^+_1) - (W_4 \\otimes W^+_1) + (W_4 \\otimes W^-_2) + (W_5 \\otimes W^-_1) - (W^+_2 \\otimes W^-_1) - (W_5 \\otimes W^+_2) - (W_6 \\otimes W^+_1) + (W^+_2 \\otimes W^+_1) + (W_6 \\otimes W^+_2) - (W_7 \\otimes W^-_1) - (W^-_1 \\otimes W_7) + (W_7 \\otimes W^+_1) + (W^+_1 \\otimes W_7)\\right]",
+			"wDefinitions": [
+				{
+					"label": "W_1",
+					"kind": "rational",
+					"pairIndex": null,
+					"definition": "\\frac{1+W_1^-}{m_2^2}",
+					"originalLetter": "W_1^-+1"
+				},
+				{
+					"label": "W^-_1",
+					"kind": "algebraic",
+					"pairIndex": 1,
+					"definition": "-\\frac{1}{2} i \\left(\\sqrt{3}-i\\right)",
+					"originalLetter": "W_1^-",
+					"polynomialTeX": "x_{2}^2+x_{2}+1",
+					"discriminantTeX": "-3"
+				},
+				{
+					"label": "W_2",
+					"kind": "rational",
+					"pairIndex": null,
+					"definition": "\\frac{1+W_1^+}{m_2^2}",
+					"originalLetter": "W_1^++1"
+				},
+				{
+					"label": "W^+_1",
+					"kind": "algebraic",
+					"pairIndex": 1,
+					"definition": "\\frac{1}{2} i \\left(\\sqrt{3}+i\\right)",
+					"originalLetter": "W_1^+",
+					"polynomialTeX": "x_{2}^2+x_{2}+1",
+					"discriminantTeX": "-3"
+				},
+				{
+					"label": "W_3",
+					"kind": "rational",
+					"pairIndex": null,
+					"definition": "\\frac{W_1^--W_2^-}{m_2^2}",
+					"originalLetter": "W_1^--W_2^-"
+				},
+				{
+					"label": "W^-_2",
+					"kind": "algebraic",
+					"pairIndex": 2,
+					"definition": "\\frac{1}{2} m_1^{-2} \\left(-m_2^2-\\sqrt{-\\left(\\left(4 m_1^2-m_2^2\\right) m_2^2\\right)}\\right)",
+					"originalLetter": "W_2^-",
+					"polynomialTeX": "x_{2}^2 m_1^2+x_{2} m_2^2+m_2^2",
+					"discriminantTeX": "m_2^4-4 m_1^2 m_2^2"
+				},
+				{
+					"label": "W_4",
+					"kind": "rational",
+					"pairIndex": null,
+					"definition": "\\frac{-W_1^++W_2^-}{m_2^2}",
+					"originalLetter": "W_2^--W_1^+"
+				},
+				{
+					"label": "W_5",
+					"kind": "rational",
+					"pairIndex": null,
+					"definition": "\\frac{W_1^--W_2^+}{m_2^2}",
+					"originalLetter": "W_1^--W_2^+"
+				},
+				{
+					"label": "W^+_2",
+					"kind": "algebraic",
+					"pairIndex": 2,
+					"definition": "\\frac{1}{2} m_1^{-2} \\left(\\sqrt{-\\left(\\left(4 m_1^2-m_2^2\\right) m_2^2\\right)}-m_2^2\\right)",
+					"originalLetter": "W_2^+",
+					"polynomialTeX": "x_{2}^2 m_1^2+x_{2} m_2^2+m_2^2",
+					"discriminantTeX": "m_2^4-4 m_1^2 m_2^2"
+				},
+				{
+					"label": "W_6",
+					"kind": "rational",
+					"pairIndex": null,
+					"definition": "\\frac{W_1^+-W_2^+}{m_2^2}",
+					"originalLetter": "W_1^+-W_2^+"
+				},
+				{
+					"label": "W_7",
+					"kind": "rational",
+					"pairIndex": null,
+					"definition": "\\frac{m_1^2-m_2^2}{m_2^2}",
+					"originalLetter": "m_1^2-m_2^2"
+				}
+			],
+			"algebraicLetters": [
+				{
+					"index": 1,
+					"variable": "x2",
+					"polynomial": "1 + x2 + x2^2",
+					"LC": "1",
+					"sum": "-1",
+					"product": "1",
+					"discriminant": "-3",
+					"minusRoot": "(-1/2*I)*(-I + Sqrt[3])",
+					"plusRoot": "(I/2)*(I + Sqrt[3])",
+					"polynomialTeX": "x_{2}^2+x_{2}+1",
+					"discriminantTeX": "-3",
+					"minusRootTeX": "-\\frac{1}{2} i \\left(\\sqrt{3}-i\\right)",
+					"plusRootTeX": "\\frac{1}{2} i \\left(\\sqrt{3}+i\\right)"
+				},
+				{
+					"index": 2,
+					"variable": "x2",
+					"polynomial": "x2^2*mm[1] + mm[2] + x2*mm[2]",
+					"LC": "mm[1]",
+					"sum": "-(mm[2]/mm[1])",
+					"product": "mm[2]/mm[1]",
+					"discriminant": "-4*mm[1]*mm[2] + mm[2]^2",
+					"minusRoot": "(-mm[2] - Sqrt[-((4*mm[1] - mm[2])*mm[2])])/(2*mm[1])",
+					"plusRoot": "(-mm[2] + Sqrt[-((4*mm[1] - mm[2])*mm[2])])/(2*mm[1])",
+					"polynomialTeX": "x_{2}^2 m_1^2+x_{2} m_2^2+m_2^2",
+					"discriminantTeX": "m_2^4-4 m_1^2 m_2^2",
+					"minusRootTeX": "\\frac{1}{2} m_1^{-2} \\left(-m_2^2-\\sqrt{-\\left(\\left(4 m_1^2-m_2^2\\right) m_2^2\\right)}\\right)",
+					"plusRootTeX": "\\frac{1}{2} m_1^{-2} \\left(\\sqrt{-\\left(\\left(4 m_1^2-m_2^2\\right) m_2^2\\right)}-m_2^2\\right)"
+				}
+			]
+		}
+	}
+}

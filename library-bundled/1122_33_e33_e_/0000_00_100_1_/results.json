@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "1122|33|e33|e|:0000|00|100|1|",
+	"Results": {
+		"130384f534bf6a07": {
+			"resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwEpABE+mcUlaUwgHiuQCMnMTS2GcDmARFBiSWZ+XmJOJiOQkykC0ghXGpBfnlpUDOL6+maCqDRmokzRIMYUkMsCckqLMzVRVCMZzA4knPNzC3JSK8A+yvz2//9/sEEBmWgawFJpIMvBYeCTnw61kLCLgRr/ZwYQcDEbiovl/wAtI8rFs4BOwuFiYxxWBmRiC+pMLrhyCgMOWyChOe3cf2T/gZ2GTRvEnWh6Qa5DKM6tKiMl4TxgxB8NvCj+v3+LWP8v6saZcOqfY/gVJRqIMl+ICWdcMmMJoxfw8AX5xSMnPx3sfUS+AOVYiMmMMAI9PUyjVnogM555/hGXRrD5X+QfcmbFm0YwnF7BgMhRhIzIlENJjEgJHl420i8/E5dPsKUUFFXYwvMLPNtwgq3OqXRPzM1NBJsISTxoGjb8hhkLckZUakki2NzMv6CyEJ7kAK1MUqA=",
+			"resultTeX": "\\frac{M^4}{20 \\varepsilon^3}+\\frac{M^4 \\left(-10 \\log \\left(M^2\\right)-10 i \\pi +41\\right)}{40 \\varepsilon^2}-\\frac{M^4 \\left(-50 \\log ^2\\left(M^2\\right)+10 (41-10 i \\pi ) \\log \\left(M^2\\right)+4 \\zeta(2)+51 \\pi ^2+410 i \\pi -993\\right)}{80 \\varepsilon}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

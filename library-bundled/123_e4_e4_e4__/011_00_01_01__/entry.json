@@ -77,8 +77,6 @@
     "NumPropagators": 6,
     "Results": [
         {
-            "resultCompressed": "1:eJyFj0EOwjAMBAOFCvgFf+HYQ1X4QJActFJDUB3E74F1KiJu9WGidey1fbymIbTOOT0QZ5kgevLZa0MpDwUfF9ZWsCE6aJ7Vlrggis5yRww+I939iA8DbW200j69ZFKTMeLN/9AsuawosF9wqZv141P/UtUYNieYVzmpS7dff9myDDF8AT+DQmA=",
-            "resultTeX": "-\\frac{1}{6 \\varepsilon m^2^2}+\\frac{3 \\log (m^2)-2}{9 m^2^2}+O\\left(\\varepsilon^1\\right)",
             "dimension": "4 - 2*eps",
             "epsOrder": "0",
             "epsOrders": "0",
@@ -108,7 +106,9 @@
             ],
             "methodLR": "Lungo",
             "findRoots": false,
-            "byteCount": 776
+            "byteCount": 776,
+            "resultDataId": "8af4b64de36f97cd",
+            "resultTeXPreview": "-\\frac{1}{6 \\varepsilon m^2^2}+\\frac{3 \\log (m^2)-2}{9 m^2^2}+O\\left(\\varepsilon^1\\right)"
         }
     ],
     "edges": "{{{1, 2}, 0}, {{1, 3}, m}, {{1, 4}, m}, {{2, 5}, 0}, {{3, 5}, m}, {{4, 5}, m}}",

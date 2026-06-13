@@ -33,8 +33,6 @@
 	],
 	"Results": [
 		{
-			"resultCompressed": "1:eJx9UEEKwjAQTG2r4gu8+g6PeuihhVL9QIS0DKSmuFHEd3uPm5RaEetllsnMzg7ZnExVz4UQtGI4qAsU7aWVFDNVHYGHqGfekDDkINuzJUMlLcxZakRMkLydKcMRraIp69pb0yG01FfCdmp7wbAzbafVPZTB0zlHXirxtRCksWymTRPu1fFn/z4lGuBnhhfCF+SmCbeK4r+vfdzgJ/jVjeEvYINOdw==",
-			"resultTeX": "\\frac{1}{4 \\varepsilon}+\\frac{1}{24} \\left(-12 H(0,1,1\\,;1)-12 \\log \\left(M^2\\right)-12 \\zeta(3)-12 i \\pi +59\\right)+O\\left(\\varepsilon^1\\right)",
 			"dimension": "6 - 2*eps",
 			"epsOrder": 0,
 			"propExponents": [
@@ -56,7 +54,6 @@
 			"contributor": "SM",
 			"timestamp": "2026-04-19T19:01:04",
 			"byteCount": 1096,
-			"symbolTeX": "\\varepsilon^{0}\\colon\\;-\\frac{1}{2}\\,(M^2)",
 			"alphabet": [
 				"M^2"
 			],
@@ -66,7 +63,9 @@
 				2,
 				3,
 				1
-			]
+			],
+			"resultDataId": "68128b64fae27cd9.1",
+			"resultTeXPreview": "\\frac{1}{4 \\varepsilon}+\\frac{1}{24} \\left(-12 H(0,1,1\\,;1)-12 \\log \\left(M^2\\right)-12 \\zeta(3)-12 i \\pi +59\\right)+O\\left(\\varepsilon^1\\right)"
 		}
 	],
 	"Names": [

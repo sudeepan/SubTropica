@@ -54,8 +54,6 @@
     "NumPropagators": 6,
     "Results": [
         {
-            "resultCompressed": "1:eJxFjEsKgDAMBesX8RbexaULqV4gQgoBa6UpeHtrogs38xgY3rAF61pjDPeCBSMhj5CAK1E8mWSMKzSoBRNxcqVaI1jJI3/aCSwkCgfspDlp/qdzuDCyqvd055zf469UPH4aHGc=",
-            "resultTeX": "\\frac{1}{4 m^2^2}+O\\left(\\varepsilon^1\\right)",
             "dimension": "4 - 2*eps",
             "epsOrder": "0",
             "epsOrders": "0",
@@ -85,7 +83,9 @@
             ],
             "methodLR": "Lungo",
             "findRoots": false,
-            "byteCount": 384
+            "byteCount": 384,
+            "resultDataId": "9776cd689bc7a9cd",
+            "resultTeXPreview": "\\frac{1}{4 m^2^2}+O\\left(\\varepsilon^1\\right)"
         }
     ],
     "edges": "{{{1, 2}, 0}, {{1, 3}, m}, {{1, 4}, m}, {{2, 3}, m}, {{2, 5}, m}, {{4, 5}, m}}",

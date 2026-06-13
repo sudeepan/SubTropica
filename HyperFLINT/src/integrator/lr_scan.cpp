@@ -87,6 +87,7 @@ Poly degauge_at(const Poly& p, size_t gauge)
 // find_lr_orders' carry path calls it with gauge == kNoGauge.
 bool step_fr_judge(const std::vector<Poly>& letters, size_t pivot,
                    size_t gauge, const std::vector<size_t>& pending,
+                   const std::vector<size_t>& all_int_vars,
                    PathState& st)
 {
     // discharge obligations now free of pending variables
@@ -121,6 +122,28 @@ bool step_fr_judge(const std::vector<Poly>& letters, size_t pivot,
             if (kept_keys.insert(k).second) {
                 kept.push_back(c);
                 ++st.nsq;
+                // Executability shape test (spec P2 §4): a fresh
+                // obligation that is not a single-integration-variable
+                // deg<=2 polynomial can never feed the Euler-substitution
+                // executor; OR the monotone nonexec flag.  Support is
+                // counted over ALL integration variables (physics review
+                // 2026-06-11 finding 3): a second-generation mint — the
+                // disc factor of a CARRIED obligation re-judged at a
+                // later pivot — can contain already-integrated variables
+                // that pending ∪ {pivot} misses.  NOTE the under-count
+                // was provably masked at PATH level (such a factor's
+                // gen-1 ancestor had >= 3 then-pending variables in its
+                // support — discs never introduce variables — so the
+                // monotone flag was already set on the same path); the
+                // full count makes the local test locally correct rather
+                // than changing selection behavior.  Gate 9 pins it.
+                std::size_t nsup = 0;
+                long dmax = 0;
+                for (size_t v : all_int_vars) {
+                    const long dv = c.degree_in_var(v);
+                    if (dv > 0) { ++nsup; dmax = std::max(dmax, dv); }
+                }
+                if (nsup > 1 || dmax > 2) st.nonexec = true;
             }
         }
     }
@@ -314,7 +337,7 @@ struct ScanDriver {
             } else {
                 PathState next = st;
                 if (!step_fr_judge(letters, xv[bit], xv[gauge_pos], pending,
-                        next))
+                        xv, next))
                     continue;
                 order.push_back(xv[bit]);
                 dfs(bits | (1ull << bit), order, ext, gauge_pos, next);

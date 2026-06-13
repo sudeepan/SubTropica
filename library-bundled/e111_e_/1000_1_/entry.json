@@ -244,8 +244,6 @@
   "NumPropagators": 3,
   "Results": [
     {
-      "resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwIpYAESPpnFJRAeK5AIycxNLYZwOYBEUGJJZn5eYk7mfyDIBCkvBsn5+qYxE9LBCORkcqDrABkRkFNanPkZaCBWa9mBhHN+bkFOagXYpQhbAzLRNICl0kAWgf3mk58OtQviXLALQAQAPfk7kg==",
-      "resultTeX": "-\\frac{M^2}{4 \\varepsilon}+\\frac{1}{8} M^2 \\left(4 \\log \\left(M^2\\right)+4 i \\pi -13\\right)+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -272,7 +270,9 @@
       ],
       "methodLR": "Lungo",
       "findRoots": false,
-      "byteCount": 752
+      "byteCount": 752,
+      "resultDataId": "b7236ee91633a7e7",
+      "resultTeXPreview": "-\\frac{M^2}{4 \\varepsilon}+\\frac{1}{8} M^2 \\left(4 \\log \\left(M^2\\right)+4 i \\pi -13\\right)+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "edges": "{{{1, 2}, 0}, {{1, 2}, 0}, {{1, 2}, 0}}",

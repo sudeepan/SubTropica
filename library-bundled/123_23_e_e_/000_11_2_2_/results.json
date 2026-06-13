@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "123|23|e|e|:000|11|2|2|",
+	"Results": {
+		"c77f21c9700a56d3": {
+			"resultCompressed": "1:eJy9U9sKwjAM7eYc4l/4Lz74sMGY/kCFdgQ2K2bi12ttVtbNWRiy4ktK2pOTk0t3Z1XKlDGGW2OO4gYC97zluDKuuCKYg8mIAIkxGWBr4eQV9R0lAXFtzAkagfDUWsu4vyvUQ9yQ3DwH7Z4o+FCrCojYMvTsXUKbNR7nGUGHZMTYsTfNbE4XtVxdFFTdJOoVooHB1HlDl0oMp24YR+KZ8caYkregLry2+NT1ZmZThqcCIHZ/gFRmqppslF/oZ5VfmEmd/m34scvuKvwi/Kn+YaKdeQNdjiHM",
+			"resultTeX": "\\left(-3 M^{-2} H\\left(0,0,1-m^2 M^{-2}\\,;1\\right)+M^{-2} H\\left(0,1,1-m^2 M^{-2}\\,;1\\right)-2 M^{-2} H\\left(0,1-m^2 M^{-2},1\\,;1\\right)-2 M^{-2} H\\left(1-m^2 M^{-2},0,1\\,;1\\right)+M^{-2} \\log \\left(\\frac{m^2}{m^2-M^2}\\right) H\\left(0,1-m^2 M^{-2}\\,;1\\right)-\\frac{1}{6} \\pi ^2 M^{-2} \\log \\left(\\frac{m^2}{m^2-M^2}\\right)\\right)+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

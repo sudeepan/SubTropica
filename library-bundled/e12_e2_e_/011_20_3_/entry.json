@@ -13,8 +13,6 @@
   ],
   "Results": [
     {
-      "resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwQpYAESPpnFJWlMMF5ATmlxGkhhMSuQCMnMTS3O/A8ECBUeOfnpmSDdCCGEEXBNqCYWg3i5uWhqIAaDHQKS8PXNZIYbC1IUkF+eWoTmNGTVTCiq8RiJ5AOEA0mzl5A1TPAwxW0vlf3DgkslSIlPfjqaURhxgMU5xMYTE9wReCzE4zeI1XQNLnCqB6dbMAEA7w204g==",
-      "resultTeX": "\\left(-\\frac{H\\left(\\frac{m^2-M_3^2}{M_2^2-M_3^2},\\frac{M_3^2}{M_3^2-M_2^2}\\,;1\\right)}{M_2^2-M_3^2}-\\frac{\\log \\left(M_2^2 M_3^{-2}\\right) \\log \\left(\\frac{m^2}{m^2-M_2^2}\\right)}{M_2^2-M_3^2}\\right)+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -41,7 +39,9 @@
       ],
       "methodLR": "Lungo",
       "findRoots": false,
-      "byteCount": 2904
+      "byteCount": 2904,
+      "resultDataId": "e107862116e81579",
+      "resultTeXPreview": "\\left(-\\frac{H\\left(\\frac{m^2-M_3^2}{M_2^2-M_3^2},\\frac{M_3^2}{M_3^2-M_2^2}\\,;1\\right)}{M_2^2-M_3^2}-\\frac{\\log \\left(M_2^2 M_3^{-2}\\right) \\log \\left(\\frac{m^2}{m^2-M_2^2}\\right)}{M_2^2-M_3^2}\\right)+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "Names": [

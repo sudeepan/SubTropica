@@ -1,0 +1,16 @@
+{
+ "SchemaVersion": 1,
+ "CNickelIndex": "123|24|e|e4|e|:000|00|1|00|0|",
+ "Results": {
+  "ee7ea565d4462b4e.1": {
+   "resultCompressed": "1:eJy1VktOwzAQTZNQaNUd4gDs2HAKkGDRSlHhAA0iqUZKSFWXUlizQhyAA3AAjsJBECsWSNCmtkN+9rh2KrFx63Tm+b2Z50kPr5Jh2LYsi3TpchFMISCn/swnDt0GEwL0wwp3WIBLlz6QWWizHXt0CXFAsu0eXYb+DJIbP4IW3QALL0O95C6YErYdDGCVpmno6FBoUAq2BsXOmXnRLUGZ7dLlJIknUbDgYjg7juFByL8zJv1k/IerJ8bl9TTE3A3E4KegXk/2IBOMUZB09DQ6hDPbMmEsTah4ltthz4rg+GGuptm8Ut1qpeC7VppN+lXWoEV0EA0HxTN21nmUjDm9TETu7dIhlR9LjK76SLtWIo2dJC1fVHXeyy179Ct7Cs11jA32WSGlaz4PRvXLmQLxY8lcWPvKcdLh8qL7Mz+OfY5o6EY+UBYaN+5X3WhmxBHWvIz1Un3RXURku4N7tBgmpUcFowpA77YxUKuGJgLNGwIpGY1U/jCy4pGia/ld1wPDtRoCmSTqa2fE963ZfcYM/2F4n12ZFLy2tph1//4qhWdNC+RR4ZqweFkhc2rjBBJ49Q1LrSBp5IhHBylVMewEQixYLwVzzdOyes1YFOIPBUWv0s0Gk5bnqf+BKED4+6p03xpCchTp",
+   "resultTeX": "\\frac{M^{-4}}{4 \\varepsilon^4}-\\frac{M^{-4} \\left(\\log \\left(M^2\\right)+i \\pi \\right)}{2 \\varepsilon^3}+\\frac{M^{-4} \\left(6 \\log ^2\\left(M^2\\right)+12 i \\pi  \\log \\left(M^2\\right)+9 \\zeta(2)-5 \\pi ^2\\right)}{12 \\varepsilon^2}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)",
+   "symbolTeX": "\\begin{aligned}\\varepsilon^{-3}&\\colon\\;-\\frac{M^{-4}}{2}\\,(M^2) \\\\ \\varepsilon^{-2}&\\colon\\;M^{-4}\\,(M^2 \\otimes M^2) \\\\ \\varepsilon^{-1}&\\colon\\;-2 M^{-4}\\,(M^2 \\otimes M^2 \\otimes M^2) \\\\ \\varepsilon^{0}&\\colon\\;-\\frac{2}{3} (\\psi ^{(2)}(2)-2) M^{-4}\\,(M^2) + 4 M^{-4}\\,(M^2 \\otimes M^2 \\otimes M^2 \\otimes M^2)\\end{aligned}"
+  },
+  "9c063e8718b98609.1": {
+   "resultCompressed": "1:eJyNkU0KwjAQhWP9RRA8gp5Fly2U6gUqJDLYmtKpP3jGHseFC7HOpFpoabSbF97MvORjstzpQI2EEDgl2cgUJK7DLMQ+WZkg0CEUGxyQuICZcthNSIIwA30MI+iRAa6UvSHJFmKJttF57VI/OiHMbOkxyUrHSSSvBgaeRVEgt3xoBExL8QsG39V7M+d5HbEWzDCqYR06Y+V2rAdjVTVfX2T6mQTHdn9FkNfCvwh4q1+C/0to/Jehaou1IcK9tuj4djZT8KJyuUqWN+ozgww=",
+   "resultTeX": "\\frac{1}{8 \\varepsilon^2}+\\frac{-4 \\log \\left(M^2\\right)-4 i \\pi +13}{16 \\varepsilon}+\\frac{1}{32} \\left(8 \\log ^2\\left(M^2\\right)+(-52+16 i \\pi ) \\log \\left(M^2\\right)-12 \\zeta(2)-8 \\pi ^2-52 i \\pi +107\\right)+O\\left(\\varepsilon^1\\right)",
+   "symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;-\\frac{1}{4}\\,(M^2) \\\\ \\varepsilon^{0}&\\colon\\;-\\frac{13}{8}\\,(M^2) + \\frac{1}{2}\\,(M^2 \\otimes M^2)\\end{aligned}"
+  }
+ }
+}

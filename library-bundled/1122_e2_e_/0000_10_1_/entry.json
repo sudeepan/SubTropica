@@ -36,8 +36,6 @@
   ],
   "Results": [
     {
-      "resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIA3GKWYCET2ZxSRoTiMcKJEIyc1OLIVwOIBGUWJKZn5eYk/kfCDLBekByvr4Q/fh0MAI5mDpANgbklBZnfgMaiNVadiDhnJ9bkJNaAXYpwoyATDQNYKk0kEVgv/nkp5PmOhUk17GjuI7hL7Guy2DE6TpzkOvgYgH55alFUJWZTChSEOUgk4j2DIY7pgDDE+YObIagWXYKJfjBbsOmDatDeVBCPbeqDKwq8x8oiYDDFUQAABMahP4=",
-      "resultTeX": "-\\frac{M^2}{3 \\varepsilon^2}+\\frac{M^2 \\left(3 \\log \\left(M^2\\right)+3 i \\pi -10\\right)}{3 \\varepsilon}+\\frac{1}{36} M^2 \\left(-54 \\log ^2\\left(M^2\\right)-108 i \\pi  \\log \\left(M^2\\right)+360 \\log \\left(M^2\\right)+12 \\zeta(2)+55 \\pi ^2+360 i \\pi -768\\right)+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": 0,
       "propExponents": [
@@ -73,12 +71,13 @@
         "verifiedAt": "2026-04-18T11:41:49"
       },
       "legOrder": [],
-      "symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;M^2\\,(M^2) \\\\ \\varepsilon^{0}&\\colon\\;10 M^2\\,(M^2) - 3 M^2\\,(M^2 \\otimes M^2)\\end{aligned}",
       "alphabet": [
         "M^2"
       ],
       "symbolWeight": 2,
-      "symbolTerms": 3
+      "symbolTerms": 3,
+      "resultDataId": "031362e6ab5b9787",
+      "resultTeXPreview": "-\\frac{M^2}{3 \\varepsilon^2}+\\frac{M^2 \\left(3 \\log \\left(M^2\\right)+3 i \\pi -10\\right)}{3 \\varepsilon}+\\frac{1}{36} M^2 \\left(-54 \\log ^2\\left(M^2\\right)-108 i \\pi  \\log \\left(M^2\\right)+360 \\log \\left(M^2\\right)+12 \\zeta(2)+55 \\pi ^2+360 i \\pi -768\\right)+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "Names": [

@@ -238,6 +238,14 @@ int handle_find_lr_orders(const std::string& body) {
     return 0;
 }
 
+// Factor-prediction table (spec 2026-06-11): transport-neutral
+// handlers.cpp::factor_table does all the work; this shim just wraps
+// stdout + newline emission, mirroring handle_find_lr_orders.
+int handle_factor_table(const std::string& body) {
+    std::cout << hyperflint::handlers::factor_table(body) << "\n";
+    return 0;
+}
+
 // Doppio-port phase 3 bridge op (2026-06-06): CLI shim for the
 // projective Cheng-Wu gauge scan.  Pure forward to the transport-
 // neutral handler (src/bridge/handlers.cpp::find_lr_orders_scan);
@@ -3161,6 +3169,7 @@ int main(int argc, char** argv) {
             if (op == "discriminant")           return handle_discriminant(body);
             if (op == "find_lr_orders")         return handle_find_lr_orders(body);
             if (op == "find_lr_orders_scan")    return handle_find_lr_orders_scan(body);
+            if (op == "factor_table")          return handle_factor_table(body);
             if (op == "add" || op == "sub" ||
                 op == "mul")                    return handle_binary(op, body);
             if (op == "neg")                    return handle_neg(body);

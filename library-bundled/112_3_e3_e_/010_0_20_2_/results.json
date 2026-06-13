@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "112|3|e3|e|:010|0|20|2|",
+	"Results": {
+		"90970e8f234ccc2c": {
+			"resultCompressed": "1:eJy9Vc1OwzAMLls3Jo68Ac8CBw6bVA1eoEjpZKkh01J+xJNzgEHikI04qdtN3Xbw5MY/32c78c2TWlbTLMv0lREPYgNC35VNqcdGFWsN5i+rrKJzI+agm2pktYkRjyCFhh/z238r1JvYaKsuFu5oHJg7y0sjbpVc1+IdM8CFTcMEyT2Con7pF8OBQ9WKAshRSxDMZiNhBeZqRfCjAUaUkgPcK9mWJvsL4egS75kRy7IB9VzWyBXJpTBIyTUFk14H9SQUv/cUOUARnZkv9s7Plz50hzwyTGEtwDEkzqMWZ2t2X6vVvznwI+umePfJcnZWw/U26gBCDwYpdEvnCUFGNgRm+opxzT8nqrzlvK3pZ8LVd6hO9Aj0aMlxySah11dc7uilMQEHSHzo5R4gpysaYbzlGR/J7uChZG7mwOPfOdUdM8DcFBopftqTeyvsSMua+IxQ+TXRvQpTlJgyBneMRJoylOTHK/rgTLlla8UvuBIm7g==",
+			"resultTeX": "-\\frac{M^{-2}}{\\varepsilon^2}+\\frac{i M^{-2} \\left(-i \\log \\left(-m^2 M^{-2}\\right)-2 i \\log \\left(M^2\\right)+2 \\pi +i\\right)}{\\varepsilon}+\\frac{M^{-4} \\left(2 m^2 M^2 H\\left(0,1-m^2 M^{-2}\\,;1\\right)+m^2^2 \\log \\left(\\frac{m^2}{m^2-M^2}\\right)+6 m^2 \\zeta(2) M^2+4 \\pi ^2 m^2 M^2+8 i \\pi  m^2 M^2-3 m^2 M^2+4 m^2 M^2 \\log ^2\\left(-m^2 M^{-2}\\right)+m^2 M^2 \\log ^2\\left(m^2 M^{-2}\\right)-m^2 M^2 \\log ^2\\left(\\frac{m^2}{m^2-M^2}\\right)-4 m^2 M^2 \\log ^2\\left(M^2\\right)-4 m^2 M^2 \\log (m^2) \\log \\left(-m^2 M^{-2}\\right)+2 m^2 M^2 \\log \\left(-m^2 M^{-2}\\right)-2 m^2 M^2 \\log \\left(-m^2 M^{-2}\\right) \\log \\left(m^2 M^{-2}\\right)-4 m^2 M^2 \\log \\left(-M^2\\right)-8 i \\pi  m^2 M^2 \\log \\left(M^2\\right)+8 m^2 M^2 \\log \\left(M^2\\right)+M^4 \\log \\left(-m^2 M^{-2}\\right)-M^4 \\log \\left(\\frac{m^2}{m^2-M^2}\\right)\\right)}{2 m^2}+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

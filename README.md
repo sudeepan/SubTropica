@@ -1,6 +1,6 @@
 # 🥥 SubTropica
 
-[![Version](https://img.shields.io/badge/version-1.2.3-blue)](https://github.com/SubTropica/SubTropica)
+[![Version](https://img.shields.io/badge/version-1.2.4-blue)](https://github.com/SubTropica/SubTropica)
 [![Mathematica](https://img.shields.io/badge/Mathematica-13.1%2B-red)](https://www.wolfram.com/mathematica/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Data: CC BY-NC-SA 4.0](https://img.shields.io/badge/data_license-CC_BY--NC--SA_4.0-orange)](LICENSE-DATA)
@@ -126,7 +126,9 @@ ConfigureSubTropica[
   (* optional — alternative integrators *)
   GinshPath        -> "path/to/ginsh",
   MaplePath        -> "path/to/maple",
-  HyperIntPath     -> "path/to/HyperInt.mpl"
+  HyperIntPath     -> "path/to/HyperInt.mpl",
+  FormPath         -> "path/to/form",          (* resolved from PATH if omitted *)
+  HyperFormPath    -> "path/to/HyperFORM/src"  (* dir containing hyperform.h *)
 ];
 ```
 
@@ -146,6 +148,7 @@ The configuration is persisted (`$UserBaseDirectory/Kernel/SubTropicaConfig.m`) 
 | [msolve](https://msolve.lip6.fr) | Optional | Groebner-basis backend for experimental linear-reducibility tooling; `brew install msolve` |
 | [IterInt](https://github.com/baugid/IterInt) | Optional | Iterated-integral symbolic evaluator for `STVerify` (`SymbolicEvaluator -> "iterint"`); building its driver needs GSL, Boost, MPFR, MPC (`brew install gsl boost mpfr libmpc`) |
 | [Maple](https://www.maplesoft.com/products/maple/) + [HyperInt](https://bitbucket.org/PanzerErik/hyperint) | Optional | Alternative integrator (`"Integrator" -> "HyperInt"`) |
+| [FORM](https://github.com/vermaseren/form) ≥ 5.0 + [HyperFORM](https://github.com/adamkardos/HyperFORM) | Optional | Alternative integrator (`"Integrator" -> "HyperFORM"`, also standalone `STHyperForm`); individually-convergent rational faces with MZV-class boundary constants (faces needing regularized boundary values or kinematic parameters fail loudly and are reported). `brew install form` and `git clone https://github.com/adamkardos/HyperFORM ~/Projects/HyperFORM` |
 | [SOFIA](https://github.com/StrangeQuark007/SOFIA) | Optional | Landau-singularity / symbol-alphabet cross-checks (`stEnsureSOFIALoaded[]`; SOFIA.m is a loader that fetches its core from GitHub at load time) |
 | [Effortless](https://github.com/antonela-matijasic/Effortless) | Optional | Odd-letter construction from square roots + even alphabets (`stEnsureEffortlessLoaded[]`); cross-check for the SubTropica odd-letter tooling |
 | GNU `make` ≥ 4, `curl` | System | pySecDec builds (`make`); library sync / submission (`curl`) |

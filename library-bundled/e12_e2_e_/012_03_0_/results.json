@@ -1,0 +1,24 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "e12|e2|e|:012|03|0|",
+	"Results": {
+		"67032de4fc34f010": {
+			"resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwQpYAESPpnFJWksMF5ATmlxGjuIxwokQjJzU4sz/wMBRD3IBJ/89DQmFAUQOZBYbm4miI2QD8gvTy1CkQdRSCbi0cWE4ibcqtEdidciJupbxAy3iGhzmUgzlw1LcFMhKhAW0C0qhlrIo4vSKipoFULDKBNgRAUtSykyvDPS4wNcrYAdByYApZZ2LA==",
+			"resultTeX": "\\left(\\frac{m_3^2 m_2^2 \\log \\left(m_1^2 m_2^{-2}\\right)}{\\left(m_1^2-m_2^2\\right) \\left(m_1^2-m_3^2\\right) \\left(m_2^2-m_3^2\\right)}-\\frac{m_3^2 m_2^2 \\log \\left(m_1^2 m_3^{-2}\\right)}{\\left(m_1^2-m_2^2\\right) \\left(m_1^2-m_3^2\\right) \\left(m_2^2-m_3^2\\right)}-\\frac{m_1^2 m_2^2 \\log \\left(m_1^2 m_2^{-2}\\right)}{\\left(m_1^2-m_2^2\\right) \\left(m_1^2-m_3^2\\right) \\left(m_2^2-m_3^2\\right)}+\\frac{m_1^2 m_3^2 \\log \\left(m_1^2 m_3^{-2}\\right)}{\\left(m_1^2-m_2^2\\right) \\left(m_1^2-m_3^2\\right) \\left(m_2^2-m_3^2\\right)}\\right)+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": "\\varepsilon^{0}\\colon\\;-\\frac{m_1^2}{\\left(m_1^2-m_2^2\\right) \\left(m_1^2-m_3^2\\right)}\\,(m_1^2) + \\frac{m_2^2}{\\left(m_1^2-m_2^2\\right) \\left(m_2^2-m_3^2\\right)}\\,(m_2^2) + \\frac{m_3^2}{\\left(m_1^2-m_3^2\\right) \\left(m_3^2-m_2^2\\right)}\\,(m_3^2)",
+			"normalizedSymbolTeX": "\\varepsilon^{0}&\\colon\\;\\frac{1}{\\left(m_1^2-m_2^2\\right) \\left(m_1^2-m_3^2\\right) \\left(m_2^2-m_3^2\\right)}\\!\\left[m_2^2 \\left(m_1^2-m_3^2\\right)\\,(W_1) - \\left(\\left(m_1^2-m_2^2\\right) m_3^2\\right)\\,(W_2)\\right]",
+			"wDefinitions": [
+				{
+					"label": "W_1",
+					"definition": "\\frac{m_2^2}{m_1^2}",
+					"originalLetter": "m_2^2"
+				},
+				{
+					"label": "W_2",
+					"definition": "\\frac{m_3^2}{m_1^2}",
+					"originalLetter": "m_3^2"
+				}
+			]
+		}
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "112|e2|e|:000|10|1|",
+	"Results": {
+		"d1ec691f6a0537c7": {
+			"resultCompressed": "1:eJyVUdEKwjAMrJs68dUv8Fv0cYMx/YEKrQQ2O5ZNxV8X1CSWwaQy7cOVS66Xa7s+uMLOlVK4JNiZBgxudasxJmpqBNqUZYJTghSwtRGzBUGhW3AnXcKECEQDZV52GFDOeqX0mO6hMl6aEGxcVZfmKoPhSQu5lcPHAWlZHixRU3cUXZbZZCTC6r8I95EIfS13F9N4ZchfnIKJ419ySNXnCJkMc4Qk3y89eB++1Vvae1S3s1TgwT35bYYXd5N+DA==",
+			"resultTeX": "\\frac{1}{2 \\varepsilon^2}+\\frac{-\\log \\left(M^2\\right)-i \\pi +\\frac{5}{2}}{\\varepsilon}+\\left(\\log ^2\\left(M^2\\right)+2 i \\pi  \\log \\left(M^2\\right)-5 \\log \\left(M^2\\right)-\\frac{\\zeta(2)}{2}-\\pi ^2-5 i \\pi +\\frac{19}{2}\\right)+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

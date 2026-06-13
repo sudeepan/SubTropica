@@ -32,8 +32,6 @@
   ],
   "Results": [
     {
-      "resultCompressed": "1:eJylkc8OgjAMxhEVjTfjQa++ge+gR0gI+gBispkm4AjFP/GhPXny4GyHoiCJJF6+pVu/9tduulGBdCzLwgHJUqQgcBFmIbYpFAkCHZbkADskLmAmbY66JCuIBeZhnyQIM1C7MIIWBTDha37zvNz/0zGrOrijH+0RRgxR17ZHMldxEomTIYWb1trU8KFiME+SG5nZXLVtTEdGDesPOqdEN+bCjejSV41vumFpRF8dRfrMBLv4gne6U6T/uaS6hVTQLqX5DFqdLeeseK+lpcfng8mCO2/UfDrLA5xsjXw=",
-      "resultTeX": "\\frac{M^2}{24 \\varepsilon^2}+\\frac{M^2 \\left(-6 \\log \\left(M^2\\right)-6 i \\pi +19\\right)}{48 \\varepsilon}-\\frac{1}{96} M^2 \\left(-18 \\log ^2\\left(M^2\\right)+6 (19-6 i \\pi ) \\log \\left(M^2\\right)-12 \\zeta(2)+17 \\pi ^2+114 i \\pi -233\\right)+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": 0,
       "propExponents": [
@@ -69,12 +67,13 @@
         "verifiedAt": "2026-04-18T11:45:29"
       },
       "legOrder": [],
-      "symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;-\\frac{M^2}{8}\\,(M^2) \\\\ \\varepsilon^{0}&\\colon\\;-\\frac{19 M^2}{16}\\,(M^2) + \\frac{3 M^2}{8}\\,(M^2 \\otimes M^2)\\end{aligned}",
       "alphabet": [
         "M^2"
       ],
       "symbolWeight": 2,
-      "symbolTerms": 3
+      "symbolTerms": 3,
+      "resultDataId": "4ca328fcfbc07b5e",
+      "resultTeXPreview": "\\frac{M^2}{24 \\varepsilon^2}+\\frac{M^2 \\left(-6 \\log \\left(M^2\\right)-6 i \\pi +19\\right)}{48 \\varepsilon}-\\frac{1}{96} M^2 \\left(-18 \\log ^2\\left(M^2\\right)+6 (19-6 i \\pi ) \\log \\left(M^2\\right)-12 \\zeta(2)+17 \\pi ^2+114 i \\pi -233\\right)+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "Names": [

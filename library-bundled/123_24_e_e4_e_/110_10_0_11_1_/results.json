@@ -1,0 +1,11 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "123|24|e|e4|e|:110|10|0|11|1|",
+	"Results": {
+		"0a37e45ae9cda87a": {
+			"resultCompressed": "1:eJyFj0EKwjAQRWNTi/QW3sVlF6V6gQgT+dAY6US8vXEmoQVX3bzw4M/n53yPk++MMdwLrrSA+OKSYytKL4Y8xjcaaAUDOFU7Cm4IxFVPgsklxKebcRBBux1qdIwfWlg1BHxzzt7utUgo77Zsy8b5zbB/6VIMVa+LypeG+FjvS3+ZqvgBQQM+YA==",
+			"resultTeX": "\\frac{1}{4 \\varepsilon m^2^2}-\\frac{2 \\log (m^2)+3}{4 m^2^2}+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": "\\varepsilon^{0}\\colon\\;-\\frac{m^{-4}}{2}\\,(m^2)"
+		}
+	}
+}

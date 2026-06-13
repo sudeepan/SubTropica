@@ -13,6 +13,7 @@
                                              // required since we dedupe
                                              // while accumulating, but
                                              // pulled in for safety).
+#include "hyperflint/core/factored_rat.hpp"           // Phase-4 Stage 1: FR pole arith + bump
 #include "hyperflint/core/poly.hpp"
 #include "hyperflint/core/zw_table.hpp"               // ZWTable (B5)
 #include "hyperflint/runtime/scalar_rep.hpp"          // runtime::scalar_rep_enabled (B5 dispatch)
@@ -25,6 +26,7 @@
 #include <chrono>
 #include <cstdlib>      // std::abort (iter-65 require_persistent assertion)
 #include <iostream>     // std::cerr (iter-65 require_persistent assertion)
+#include <optional>     // Cell::fr (Phase-4 Stage 1)
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -102,6 +104,29 @@ inline bool pregating_full_accounting_enabled() {
         cached = (s && s[0] && s[0] != '0') ? 1 : 0;
     }
     return cached == 1;
+}
+
+// Phase-4 Stage 1 (2026-06-10): FR-space pole arithmetic + bump
+// accumulator. Stage-0 attribution (1m-tbox, HF_REDUCE_NTERM_LOG +
+// HF_ADDPF_PROBE): every bump add on steps 0-2 is unlike-denominator
+// (same_den = 0), each paying TWO Brown GCDs inside FLINT
+// _fmpz_mpoly_q_add (add.c:294,329); step 1's 53s bump_rat_add is a
+// SINGLE such add. The pole-term division cn/((1-n)(x-a)^(n-1))
+// cross-multiplies and then reduces a ~10M-term intermediate
+// (reduce_nterm_pre_max 9.9e6, 10x shrink — structure the division
+// itself created). In FR space the division is a factor append (no
+// GCD), the bump add is a lift-add (no GCD), and one PEEL-assisted
+// reduce fires per row at Wordlist emit. Default OFF pending the
+// OMP=1 byte gate + paired A/B (kill: step-1 bump_rat_add must drop
+// >=2x; abort on >3x downstream term swell).
+// Disabled under SCALAR_REP (B5 roundtrip contract holds Rats).
+inline bool ii_fr_pole_enabled() {
+    static int cached = -1;
+    if (cached < 0) {
+        const char* s = std::getenv("HF_II_FR_POLE");
+        cached = (s && s[0] && s[0] != '0') ? 1 : 0;
+    }
+    return cached == 1 && !runtime::scalar_rep_enabled();
 }
 }  // namespace (anon, file-scope)
 
@@ -238,7 +263,11 @@ Wordlist integrate_ii(const PolyCtx& ctx,
     std::vector<WordlistTerm> queue = wl.terms;
 
     // Accumulated result: one cell per unique output word.
-    struct Cell { Word word; Rat coef; };
+    // Phase-4 Stage 1: under HF_II_FR_POLE the live accumulator is
+    // `fr` (GCD-free lift-adds); `coef` is a zero placeholder until
+    // the per-row materialize at Wordlist emit. Letters/words stay
+    // canonical Rats throughout (row keys hash the letters).
+    struct Cell { Word word; Rat coef; std::optional<FactoredRat> fr; };
     std::vector<Cell> rows;
     std::unordered_map<std::string, size_t> row_index;
 
@@ -326,6 +355,65 @@ Wordlist integrate_ii(const PolyCtx& ctx,
             } else {
                 rows[it->second].coef += c;
             }
+            if (_tg) {
+                const auto _bk_t2 = std::chrono::steady_clock::now();
+                auto& _av = bump_addto_storage();
+                if (static_cast<size_t>(_ii_tid) < _av.size())
+                    _av[_ii_tid] += std::chrono::duration<double>(_bk_t2 - _bk_t1).count();
+                auto& _rv = bump_rat_add_storage();
+                if (static_cast<size_t>(_ii_tid) < _rv.size())
+                    _rv[_ii_tid] += std::chrono::duration<double>(_bk_t2 - _bk_t1).count();
+                auto& _cv = bump_rat_add_calls_storage();
+                if (static_cast<size_t>(_ii_tid) < _cv.size())
+                    _cv[_ii_tid] += 1;
+            }
+        }
+    };
+
+    // Phase-4 Stage 1: FactoredRat bump. Same row keying as `bump`
+    // (Word::content_key on the letters); the accumulation is
+    // FactoredRat::add — per-base max-exponent lift, Poly add, NO
+    // GCD. Charged to the same bump_addto / bump_rat_add timers so
+    // step traces stay comparable across the flag. The addpf probe's
+    // den-group bookkeeping is skipped here (diagnostic-only; its
+    // same_den predicate reads expanded Rat denominators).
+    auto bump_fr = [&](const Word& w, FactoredRat fp) {
+        if (fp.is_zero()) return;
+        {
+            auto& _cv = bump_calls_storage();
+            if (static_cast<size_t>(_ii_tid) < _cv.size()) _cv[_ii_tid] += 1;
+        }
+        const bool _tg = step_trace_enabled();
+        const auto _bk_t0 = _tg ? std::chrono::steady_clock::now()
+                                : std::chrono::steady_clock::time_point{};
+        std::string k = w.content_key();
+        auto it = row_index.find(k);
+        const auto _bk_t1 = _tg ? std::chrono::steady_clock::now()
+                                : std::chrono::steady_clock::time_point{};
+        if (_tg) {
+            auto& _lv = bump_lookup_storage();
+            if (static_cast<size_t>(_ii_tid) < _lv.size())
+                _lv[_ii_tid] += std::chrono::duration<double>(_bk_t1 - _bk_t0).count();
+        }
+        if (it == row_index.end()) {
+            row_index[k] = rows.size();
+            rows.push_back(Cell{w, Rat(Poly::zero_of(ctx)),
+                                std::move(fp)});
+            if (_tg) {
+                const auto _bk_t2 = std::chrono::steady_clock::now();
+                auto& _ev = bump_emplace_storage();
+                if (static_cast<size_t>(_ii_tid) < _ev.size())
+                    _ev[_ii_tid] += std::chrono::duration<double>(_bk_t2 - _bk_t1).count();
+            }
+        } else {
+            auto& cell = rows[it->second];
+            if (!cell.fr) {
+                // Row minted by the Rat path (e.g. legacy arm before
+                // the flag check, or zero placeholder): absorb it.
+                cell.fr = FactoredRat::from_rat(cell.coef);
+                cell.coef = Rat(Poly::zero_of(ctx));
+            }
+            *cell.fr = cell.fr->add(fp);
             if (_tg) {
                 const auto _bk_t2 = std::chrono::steady_clock::now();
                 auto& _av = bump_addto_storage();
@@ -540,7 +628,11 @@ Wordlist integrate_ii(const PolyCtx& ctx,
                     _v[_ii_tid] += std::chrono::duration<double>(
                         std::chrono::steady_clock::now() - _ad_t0).count();
             }
-            bump(w.word, p);
+            if (ii_fr_pole_enabled()) {
+                bump_fr(w.word, FactoredRat::from_rat(p));
+            } else {
+                bump(w.word, p);
+            }
             push_ibp(p, w.word);
         }
 
@@ -552,6 +644,47 @@ Wordlist integrate_ii(const PolyCtx& ctx,
                 if (n >= 2) {
                     // integral  c/(var - a)^n dvar
                     //     = c / ((1 - n) * (var - a)^(n-1))
+                    if (ii_fr_pole_enabled()) {
+                        // FR arm (Phase-4 Stage 1): with a = pn/pd
+                        // canonical, (var - a) = lin/pd where
+                        // lin = pd*var - pn, so
+                        //   p = cn * pd^(n-1) / ((1-n) * lin^(n-1)).
+                        // Numerator multiply by the SMALL pd^(n-1) is
+                        // exact; the denominator stays factored
+                        // {cn.den, lin^(n-1), (1-n)}. No cross-multiply,
+                        // no reduce — the Stage-0 9.9M-term pre_max
+                        // reduce never happens on this arm.
+                        const bool _pa_tg = step_trace_enabled();
+                        const auto _pa_t0 = _pa_tg
+                            ? std::chrono::steady_clock::now()
+                            : std::chrono::steady_clock::time_point{};
+                        const Poly& pd = pole.pole.den();
+                        const Poly& pn = pole.pole.num();
+                        Poly lin = pd.mul(Poly::gen(ctx, var_idx)).sub(pn);
+                        FactoredRat fp = FactoredRat::from_rat(cn);
+                        fp = fp.mul(FactoredRat::from_poly(
+                            pd.pow(static_cast<unsigned long>(n - 1))));
+                        fp.push_factor(lin, n - 1);
+                        fp.push_factor(Poly::from_int(ctx, 1 - n), 1);
+                        if (_pa_tg) {
+                            auto& _v = ii_pole_arith_storage();
+                            if (static_cast<size_t>(_ii_tid) < _v.size())
+                                _v[_ii_tid] += std::chrono::duration<double>(
+                                    std::chrono::steady_clock::now() - _pa_t0).count();
+                        }
+                        if (!w.word.empty()) {
+                            // push_ibp needs a materialized Rat; reuse
+                            // it for the bump so the reduce is paid
+                            // once (matches the legacy arm's single
+                            // construction of p).
+                            Rat pmat = fp.materialize_to_rat();
+                            bump_fr(w.word, FactoredRat::from_rat(pmat));
+                            push_ibp(pmat, w.word);
+                        } else {
+                            bump_fr(w.word, std::move(fp));
+                        }
+                        continue;
+                    }
                     // Probe 3: time the three Rat ops (subtract, pow, divide).
                     const bool _pa_tg = step_trace_enabled();
                     const auto _pa_t0 = _pa_tg ? std::chrono::steady_clock::now()
@@ -565,6 +698,47 @@ Wordlist integrate_ii(const PolyCtx& ctx,
                         if (static_cast<size_t>(_ii_tid) < _v.size())
                             _v[_ii_tid] += std::chrono::duration<double>(
                                 std::chrono::steady_clock::now() - _pa_t0).count();
+                    }
+                    // HF_POLE_Q_PROBE (Stage-1b gate probe, 2026-06-10,
+                    // physics-review item (e)): per pole term, the
+                    // Q-multiplicity of pole.pole.den() in the REDUCED
+                    // p (den and num sides) plus operand term counts.
+                    // Decides whether the legacy division reduce's
+                    // shrink is Q-power (Stage 1b can cancel it by
+                    // exponent) or h0-content (it cannot). DIAGNOSTIC
+                    // ONLY, default OFF; one stderr line per term.
+                    {
+                        static const bool _qp_on = []{
+                            const char* s =
+                                std::getenv("HF_POLE_Q_PROBE");
+                            return s && s[0] && s[0] != '0';
+                        }();
+                        if (_qp_on) {
+                            const Poly& _qd = pole.pole.den();
+                            auto _qmult = [&](Poly t) {
+                                long k = 0;
+                                if (_qd.degree_in_var(var_idx) > 0 ||
+                                    !_qd.is_one()) {
+                                    while (_qd.divides(t)) {
+                                        t = t.divexact(_qd);
+                                        ++k;
+                                        if (k > 64) break;
+                                    }
+                                }
+                                return k;
+                            };
+                            std::cerr << "[pole-q]"
+                                << " n=" << n
+                                << " q_in_pden=" << _qmult(p.den())
+                                << " q_in_pnum=" << _qmult(p.num())
+                                << " q_in_cnden=" << _qmult(cn.den())
+                                << " cn_num_t=" << cn.num().n_terms()
+                                << " cn_den_t=" << cn.den().n_terms()
+                                << " p_num_t=" << p.num().n_terms()
+                                << " p_den_t=" << p.den().n_terms()
+                                << " q_t=" << _qd.n_terms()
+                                << std::endl;
+                        }
                     }
                     bump(w.word, p);
                     push_ibp(p, w.word);
@@ -586,7 +760,11 @@ Wordlist integrate_ii(const PolyCtx& ctx,
                             _v[_ii_tid] += std::chrono::duration<double>(
                                 std::chrono::steady_clock::now() - _wc_t0).count();
                     }
-                    bump(new_word, cn);
+                    if (ii_fr_pole_enabled()) {
+                        bump_fr(new_word, FactoredRat::from_rat(cn));
+                    } else {
+                        bump(new_word, cn);
+                    }
                 }
             }
         }
@@ -622,9 +800,18 @@ Wordlist integrate_ii(const PolyCtx& ctx,
     }
 
     // Emit a Wordlist, dropping zero-coef rows.
+    // Phase-4 Stage 1: FR rows materialize HERE — exactly one
+    // PEEL-assisted reducing Rat ctor per row (counted by the
+    // existing reduce_wide / gcd_cofactors step-trace fields).
     Wordlist out;
     for (auto& row : rows) {
-        if (!row.coef.is_zero()) {
+        if (row.fr) {
+            Rat m = row.fr->materialize_to_rat();
+            if (!m.is_zero()) {
+                out.terms.push_back(
+                    WordlistTerm{std::move(m), std::move(row.word)});
+            }
+        } else if (!row.coef.is_zero()) {
             out.terms.push_back(
                 WordlistTerm{std::move(row.coef), std::move(row.word)});
         }

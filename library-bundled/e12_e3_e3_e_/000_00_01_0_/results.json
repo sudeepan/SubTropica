@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "e12|e3|e3|e|:000|00|01|0|",
+	"Results": {
+		"e51c1cc306105e0b": {
+			"resultCompressed": "1:eJzFVUtOwzAQDVBQhXIJJC5AuQILFl1EhQsEyalGSjDqpCBxYg7AigUw4yENdiYmSglk4Whsz+c9v7HP7uyqOEmSBE9puDEbMHiV1zkekWkeEOiXFGzgjIYlYF0csnVMwy1UBuGDvnYus09mIyY7ZOUWAwdks6pcBrxYSHA/XLMm/8Wl5PA3Bikbl5/L+cqvwfDz+SAO2OL1pV33+xKeYI3NmHOIQ6pTKhhQdzFTQs9pWOU12Pu8BC4EUi5pcvrSiAa0NC5wBkJYsP18N8cBr0u7dkjaKRamaFUVm4rWO+c2Vzo2l8pTVxYap6reg7pePUX01LU3/IlBvCnyGtpZoozgunCseBGU+yTSYztow1s0StHIxt2PpukLVLl/6XAfuxe7G5v8ouMx50bMBW6ue//3LP8GaFf48XelH5MK5jsT02HqveJisv+NzOor42unen50u+Cd/OTh5OETLg5AlA==",
+			"resultTeX": "-\\frac{1}{\\varepsilon^2 (m^2 s_{12}-s_{12} s_{23})}+\\frac{2 \\log \\left(\\frac{m^2-s_{23}}{m^2}\\right)+\\log (-s_{12})}{\\varepsilon s_{12} (m^2-s_{23})}+\\frac{12 H\\left(0,\\frac{m^2+s_{12}}{s_{12}+s_{23}}\\,;1\\right)-12 H\\left(\\frac{m^2}{s_{23}},\\frac{m^2+s_{12}}{s_{12}+s_{23}}\\,;1\\right)+36 H\\left(0,\\frac{m^2}{s_{23}}\\,;1\\right)-6 \\log ^2\\left(\\frac{m^2-s_{23}}{m^2+s_{12}}\\right)-24 \\log (-s_{12}) \\log \\left(1-\\frac{s_{23}}{m^2}\\right)-12 \\log \\left(-\\frac{s_{12}}{m^2}\\right) \\log \\left(\\frac{m^2-s_{23}}{m^2+s_{12}}\\right)+12 \\log \\left(1-\\frac{s_{23}}{m^2}\\right) \\log \\left(\\frac{m^2-s_{23}}{m^2+s_{12}}\\right)-12 \\log \\left(1-\\frac{s_{23}}{m^2}\\right) \\log \\left(\\frac{s_{23}-m^2}{s_{12}}\\right)-12 \\log ^2\\left(1-\\frac{s_{23}}{m^2}\\right)+12 \\zeta(2)-6 \\log ^2(-s_{12})-\\pi ^2}{12 s_{12} (m^2-s_{23})}+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

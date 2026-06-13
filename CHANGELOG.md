@@ -15,7 +15,61 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
----
+
+## [1.2.4] — 2026-06-13
+
+HyperFORM integrator backend; Espresso retired (Lungo is now the sole
+Fubini method); larger result submissions and faster website library
+browsing; factor-prediction lookups for the Fubini reduction.
+
+### Added
+
+- **HyperFORM integrator backend.**  `"Integrator" -> "HyperFORM"` and
+  the standalone `STHyperForm[integrand, vars]` evaluate Euler
+  integrals with Adam Kardos' HyperFORM package (hyperlogarithms in
+  FORM, github.com/adamkardos/HyperFORM).  FORM (>= 5.0) and HyperFORM
+  are new optional dependencies: configure with
+  `ConfigureSubTropica[FormPath -> ..., HyperFormPath -> ...]` (both
+  auto-discovered), check via the `HyperFORM` badge in the welcome
+  banner or `STCheckDependencies[]`.  It handles individually
+  convergent rational faces with multiple-zeta-value boundary
+  constants; faces outside that scope fail loudly rather than
+  returning a partial result.
+- **`STBuildFactorTable` and `STFactorPredictor`.**  Tabulate and look
+  up the polynomial factorizations that arise along a known
+  linearly reducible order, so the Fubini reduction can reuse
+  factor information instead of recomputing it at each variable.
+- **New `STIntegrate` option `"Carry" -> False`.**  Exposes the
+  carry-discharge keep rule of the linearly reducible order search as
+  a user-visible toggle (default off).
+
+### Changed
+
+- **Espresso retired.**  `MethodLR -> "Espresso"` is no longer a valid
+  setting; the accepted values are now `{"Lungo", "Doppio"}`, and
+  Lungo is the sole Fubini method (it carries the `FindRoots` and
+  `Carry` modifiers).  Selecting the removed method aborts with
+  `STIntegrate::badmlr`.
+- **Larger result submissions and faster library browsing.**  Result
+  submissions now accept payloads up to 16 MB (previously 1 MB), so
+  high-weight results with large symbols can be contributed.  The
+  online library loads each result's heavy data (series, symbol,
+  alphabet) on demand when you open it, so browsing the catalogue is
+  faster.  Stored results are unchanged for kernel users:
+  `STVerify`, library lookups, and notebook export all work as
+  before.  Note: builds older than 1.2.4 cannot `STVerify` against
+  the updated online library; upgrade to this release.
+
+### Fixed
+
+- **Carry-discharge default.**  A carry-discharge rule for the
+  FindRoots linearly reducible order search shipped enabled by default
+  in v1.2.3; it is now off by default, restoring the 1.2.2 linearly
+  reducible order semantics.  Set `"Carry" -> True` to opt in.
+- **Result rendering on the website.**  Fixed several library results
+  that rendered as errors in the browser (oversized expansions and a
+  notation-cleanup bug affecting square-root letters).
+
 
 ## [1.2.3] — 2026-06-10
 
@@ -50,7 +104,9 @@ and a major library refresh; SubTropicaII preview.
   Doppio now uses an inlined `dpEulerConic` (parity-gated, t25).
   `MethodLR` values are validated at option ingest: anything outside
   `{"Lungo", "Espresso", "Doppio"}` aborts with `STIntegrate::badmlr`
-  instead of silently falling through to Espresso.
+  instead of silently falling through to Espresso.  (List as of
+  dev 1.2.3.4: `{"Lungo", "Doppio"}` — Espresso has since been
+  retired, see above.)
 
 ### Fixed
 

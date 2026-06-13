@@ -1,0 +1,11 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "123|24|e|e4|e|:001|10|0|00|0|",
+	"Results": {
+		"2bcfb461c950beeb": {
+			"resultCompressed": "1:eJylj1EKwjAQRGNtRbyFd/GzH6F6gQiJLDRGurGCZxfjbqKVloiCPxMmmdm8Xe9dYxZCCFyRbHUHGjfKK5yT1ScEOoRhgyVJDehNwa4i2YHVmOySpFEe3FG1MCMDfP2OSnfRHbK1Fu4hhDTz7ynFi0y2Z4yVCV6K8UNcqXaHZ/9HgPILQDUCKDIAYeAcT5CQjd8+8U5yGbBcLftH7A5he+1jKi6UtmZ5AGbMeAg=",
+			"resultTeX": "\\frac{1}{2 \\varepsilon^2 m^2^2}+\\frac{1-2 \\log (m^2)}{2 \\varepsilon m^2^2}+\\frac{4 \\log ^2(m^2)-4 \\log (m^2)+4 \\zeta(2)-\\pi ^2+2}{4 m^2^2}+O\\left(\\varepsilon^1\\right)",
+			"symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;-m^{-4}\\,(m^2) \\\\ \\varepsilon^{0}&\\colon\\;-m^{-4}\\,(m^2) + 2 m^{-4}\\,(m^2 \\otimes m^2)\\end{aligned}"
+		}
+	}
+}

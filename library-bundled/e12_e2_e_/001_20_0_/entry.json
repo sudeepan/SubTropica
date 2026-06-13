@@ -13,8 +13,6 @@
   ],
   "Results": [
     {
-      "resultCompressed": "1:eJx9UNEOwiAMRKbG+Bf+iw8+bMky/QFMYGkCYtZNE39eW9jcWKY8HLnS3h09XH1ltkII3BOcdQMaj6pVmBHVdwS6hFlxw5ogB2xNNrDSdhjZhuACTiO86Rg51Er/1A0yLYrJEw+frK+BhccSq0dDmYj2AjPZcY5zhB7nEq80WuzfEVSqBX9TNtiDTAx/JB5dwy5YOff10uf7IH8UZ46TcMsBvo7u9QizYUcxPMMHoSZoZg==",
-      "resultTeX": "\\left(-M^{-2} H\\left(0,\\frac{M^2}{M^2+m^2}\\,;1\\right)+\\frac{1}{2} M^{-2} \\log ^2\\left(-m^2 M^{-2}\\right)+\\zeta(2) M^{-2}\\right)+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -41,7 +39,9 @@
       ],
       "methodLR": "Lungo",
       "findRoots": false,
-      "byteCount": 1400
+      "byteCount": 1400,
+      "resultDataId": "994946b7074918b4",
+      "resultTeXPreview": "\\left(-M^{-2} H\\left(0,\\frac{M^2}{M^2+m^2}\\,;1\\right)+\\frac{1}{2} M^{-2} \\log ^2\\left(-m^2 M^{-2}\\right)+\\zeta(2) M^{-2}\\right)+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "Names": [

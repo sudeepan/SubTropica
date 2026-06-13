@@ -152,8 +152,6 @@
   ],
   "Results": [
     {
-      "resultCompressed": "1:eJztXEtO3EAQHWCGRBEHiLLLEfjdIIssQEIkF5hIA7I0ZCJMEim73JYDZMUiiT+06U+1/bpd/cEMi0Eej6te1+d1dbnt9182l1f7s9msfFN9fFrdFqvyw/JuWe5Vh6tvZVH9m13VB+W8+jgryrv254vq43NxsyqvdsXhxebn6ra5sDw8Kv5Vf/S5U/u5o2P7ueMT+7mTR5kd0Iv1dwlZA1RoENLI04enQiB5+vikO/0qXyuo59pDm1Hqw/Nzgbc1YHe2EaePvNXxThG6T1ymSjasv1P/rw/ONtcaKEltBQmVLbmOXbbkd1j2nIw+m1N3hdjROoQd5AhXg6T+GtehhkQffh59vLHUl5jCXoFcBanmje5hldWwwgQNpJoarcWpyHC7mOljyjDOhVQv1Ev8/dqFS582XjKDVC4IlUzxBOkPz02slvdL4laSMhfrkUVqwfyMaBtMWzeVvbkjCowwLAWpBtIWm3x6yUZoC5G2AyqtacvFiwP6Y6Utk+X9Kg0jkSrD9aWt29SHaHtNXFF/d7m8KzZfl+vm18WBzcxTXr78VoTaA4Ey80UhZQMRIwzSpImCQZoUUSqrDkoA+cBRKkjj/SwhSfUmEM22bwk/qOFnWN4eZ08XflxvroudDovoo7StFTKee1MAwEDS29PohFc7icakaBuW8/CIhOwfHACltza5B2qvoND1xhEOvXHQwMyfC/QFAd0lt3MZh8pcTfR4s0kuY0LDSm+FpuAqSyl2jzQGcgNNTR/Z0OYjZkslKhs8gwR2GAdK/87B7gddLpgcoR/Y8jRS9IyFnjLyWbF7U0147AsbdrBQz3Qcf3JiH5dxzM1xZFk+ZEFLKgLudb1uhT0H8dpZfcIAtJMFgRTWY2lxazuuCnCKtoszLbxgO7JOS9O3Y/xpcfo2pfhx5LQcoZh4cX5hWQptHRPDMR4FxdYx/LPsU6XHVK1snRTSSUyl0NZJ/HWW9U4+R521dRj/nPRgK+KoXeotanQbLXmD26qP2vYeUp/dK276NJbaFxc7TSXsyl0o0lf53FQ+LvV9gajPQdjXJe5b/9k3Vzv3RVIBbQ7ZeAFBQEb0g1dlxoxJiy9rO5prg7ybN1sk0uWVpaiMIKH67fSLBdnfyKps5mcGnJtyqYBak9hrskUQDCQx+7SEYxpMCbfNr3DsmwXc8O79JLMEBJQ3S8fyig9kqDuWI2Y+M1P0GyIwGK0cAjLazvYiSwQBuWDBu7dhcTwgBBkCR7wFFY6JNx+VJczoJ79QSvZ5gJj5qTTnFl40oFrQjWpjpbIub7WHIIjQccFhxCs6cUxpWiQ4vkwWXcbsXrmKuWxjxRa0pwkAIPNOav5xFA4wDObKj6fGG74DG2/l7gPUrL7CVYGPEGJ3lHFMaPXl82qXsQ/wJq2+3B4udr7LHQ1ontWXm+dHRiVPWyFqsKaAnEf3Jl3epcUf4xU9DPgj0Umy+OdjGaOoQyqZpCQTATE3x4SAHJFiosLnZ5gQ8BMRTARP8G4HQhDY17IDpBEBBv70FDMO6yosUA/cA5PfkynMmLT+Wh290fprCL5MdiYZxGG8PBbbmx4LW1BSAgCA/bVRN8RgGGgFGKg42SND32b35rDb0ape2ypRoZOZpW9ZTX1v+TmYgPnVbRmaIOAemUmZI0EJnYE5tOpk1POeEzMN74LcVE3cmc7cBGNX+NO0QYAXX+dmg4Btk2nZI/BrjnO1B7HGDTGLPEvbMG/zST+iMLsons24HFevuYxLS1HWB4SyHyNDqy2XMcbaGpfLeNF3mlGtwJtfP9yEUPv1bEKQd/5iSIZo00NKX03aSdHS5d6VEhwkutZFnUTOt/wa0ou/dZjVXzcf/wF+ei6g",
-      "resultTeX": "\\frac{s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}}{\\varepsilon^2 s_{12} s_{15} s_{23} s_{34} s_{45}}+\\frac{-s_{12} s_{23} s_{34} M^2 \\log \\left(\\frac{s_{15}}{s_{12}}\\right)-s_{12} s_{15} s_{45} M^2 \\log \\left(\\frac{s_{23}}{s_{12}}\\right)+s_{12} s_{15} s_{34} s_{45} \\log \\left(s_{34} M^{-2}\\right)-s_{12} s_{34} s_{45} M^2 \\log \\left(\\frac{s_{15}}{s_{34}}\\right)+s_{12} s_{15} s_{45} M^2 \\log \\left(\\frac{s_{15}}{s_{34}}\\right)-s_{12} s_{15} s_{45} M^2 \\log \\left(s_{34} M^{-2}\\right)-s_{12} s_{15} s_{45} M^2 \\log (-s_{12})+s_{12} s_{23} s_{34} s_{45} \\log \\left(s_{45} M^{-2}\\right)+s_{12} s_{23} s_{34} M^2 \\log \\left(\\frac{s_{23}}{s_{45}}\\right)-s_{12} s_{34} s_{45} M^2 \\log \\left(\\frac{s_{23}}{s_{45}}\\right)-s_{12} s_{23} s_{34} M^2 \\log \\left(s_{45} M^{-2}\\right)-s_{12} s_{23} s_{34} M^2 \\log (-s_{12})-s_{12} s_{34} s_{45} M^2 \\log (-s_{12})+s_{23} s_{34}^2 s_{45} \\log \\left(\\frac{s_{15}}{s_{12}}\\right)+s_{15} s_{34} s_{45}^2 \\log \\left(\\frac{s_{23}}{s_{12}}\\right)+s_{15} s_{34} s_{45}^2 \\log (-s_{12})+s_{15} s_{34} s_{45}^2 \\log \\left(\\frac{s_{12}}{s_{45}}\\right)-s_{12} s_{15} s_{34} s_{45} \\log \\left(\\frac{s_{12}}{s_{45}}\\right)+s_{23} s_{34}^2 s_{45} \\log (-s_{12})+s_{23} s_{34}^2 s_{45} \\log \\left(\\frac{s_{12}}{s_{34}}\\right)-s_{12} s_{23} s_{34} s_{45} \\log \\left(\\frac{s_{12}}{s_{34}}\\right)+s_{34}^2 s_{45}^2 \\log (-s_{12})+s_{34}^2 s_{45}^2 \\log \\left(\\frac{s_{15}}{s_{34}}\\right)-s_{15} s_{34} s_{45}^2 \\log \\left(\\frac{s_{15}}{s_{34}}\\right)+s_{34}^2 s_{45}^2 \\log \\left(\\frac{s_{23}}{s_{45}}\\right)-s_{23} s_{34}^2 s_{45} \\log \\left(\\frac{s_{23}}{s_{45}}\\right)}{\\varepsilon s_{12} s_{15} s_{23} s_{34} s_{45} \\left(s_{12} M^2-s_{34} s_{45}\\right)} + \\cdots",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -182,7 +180,6 @@
       ],
       "methodLR": "Lungo",
       "byteCount": 76656,
-      "symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;\\frac{-s_{12} M^2-s_{12} s_{15}-s_{12} s_{23}+s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}}{s_{12} s_{15} s_{23} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{12}) + \\frac{s_{15} s_{45}-s_{23} s_{34}-s_{34} s_{45}}{s_{12} s_{15} s_{23} s_{34} s_{45}}\\,(s_{15}) + \\frac{-s_{15} s_{45}+s_{23} s_{34}-s_{34} s_{45}}{s_{12} s_{15} s_{23} s_{34} s_{45}}\\,(s_{23}) + \\frac{-2 s_{12} s_{15} M^2+s_{12} s_{34} M^2+s_{12} s_{15} s_{34}+s_{12} s_{23} s_{34}+s_{15} s_{34} s_{45}-s_{23} s_{34}^2-s_{34}^2 s_{45}}{s_{12} s_{15} s_{23} s_{34} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{34}) - \\frac{s_{15} s_{45} M^2+s_{23} s_{34} M^2-s_{15} s_{34} s_{45}-s_{23} s_{34} s_{45}}{s_{15} s_{23} s_{34} s_{45} \\left(s_{34} s_{45}-s_{12} M^2\\right)}\\,(M^2) + \\frac{-2 s_{12} s_{23} M^2+s_{12} s_{45} M^2+s_{12} s_{15} s_{45}+s_{12} s_{23} s_{45}-s_{15} s_{45}^2+s_{23} s_{34} s_{45}-s_{34} s_{45}^2}{s_{12} s_{15} s_{23} s_{45} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{45}) \\\\ \\varepsilon^{0}&\\colon\\;-\\frac{-s_{15} s_{45} M^2-s_{23} s_{34} M^2+s_{15} s_{34} s_{45}+s_{23} s_{34} s_{45}}{s_{15} s_{23} s_{34} s_{45} \\left(s_{34} s_{45}-s_{12} M^2\\right)}\\,(M^2 \\otimes M^2) + 0\\,(M^2 \\otimes s_{34}) + \\frac{2 \\left(M^2-s_{34}\\right)}{s_{23} s_{34} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(M^2-s_{34} \\otimes M^2) - \\frac{2 \\left(M^2-s_{34}\\right)}{s_{23} s_{34} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(M^2-s_{34} \\otimes s_{34}) - \\frac{2 (s_{12}-s_{34})}{s_{12} s_{15} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{12}-s_{34} \\otimes s_{12}) + \\frac{2 (s_{12}-s_{34})}{s_{12} s_{15} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{12}-s_{34} \\otimes s_{34}) + 0\\,(s_{34} \\otimes s_{12}) + \\frac{2 \\left(2 s_{12} s_{15} M^2-s_{12} s_{34} M^2-s_{12} s_{15} s_{34}-s_{15} s_{34} s_{45}+s_{34}^2 s_{45}\\right)}{s_{12} s_{15} s_{23} s_{34} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{34} \\otimes s_{34}) + \\frac{2 (s_{15}-s_{34})}{s_{12} s_{15} s_{23} s_{34}}\\,(s_{15}-s_{34} \\otimes s_{15}) - \\frac{2 (s_{15}-s_{34})}{s_{12} s_{15} s_{23} s_{34}}\\,(s_{15}-s_{34} \\otimes s_{34}) + \\frac{-2 s_{12} s_{15} M^2+s_{12} s_{34} M^2+s_{12} s_{15} s_{34}-s_{12} s_{23} s_{34}+s_{15} s_{34} s_{45}+s_{23} s_{34}^2-s_{34}^2 s_{45}}{s_{12} s_{15} s_{23} s_{34} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{34} \\otimes s_{15}) + 0\\,(M^2 \\otimes s_{45}) + \\frac{2 \\left(M^2-s_{45}\\right)}{s_{15} s_{45} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(M^2-s_{45} \\otimes M^2) - \\frac{2 \\left(M^2-s_{45}\\right)}{s_{15} s_{45} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(M^2-s_{45} \\otimes s_{45}) - \\frac{2 (s_{12}-s_{45})}{s_{12} s_{23} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{12}-s_{45} \\otimes s_{12}) + \\frac{2 (s_{12}-s_{45})}{s_{12} s_{23} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{12}-s_{45} \\otimes s_{45}) + 0\\,(s_{45} \\otimes s_{12}) + \\frac{2 \\left(2 s_{12} s_{23} M^2-s_{12} s_{45} M^2-s_{12} s_{23} s_{45}-s_{23} s_{34} s_{45}+s_{34} s_{45}^2\\right)}{s_{12} s_{15} s_{23} s_{45} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{45} \\otimes s_{45}) + \\frac{2 (s_{23}-s_{45})}{s_{12} s_{15} s_{23} s_{45}}\\,(s_{23}-s_{45} \\otimes s_{23}) - \\frac{2 (s_{23}-s_{45})}{s_{12} s_{15} s_{23} s_{45}}\\,(s_{23}-s_{45} \\otimes s_{45}) + \\frac{-2 s_{12} s_{23} M^2+s_{12} s_{45} M^2-s_{12} s_{15} s_{45}+s_{12} s_{23} s_{45}+s_{15} s_{45}^2+s_{23} s_{34} s_{45}-s_{34} s_{45}^2}{s_{12} s_{15} s_{23} s_{45} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{45} \\otimes s_{23}) + 0\\,(s_{12} M^2-s_{34} s_{45} \\otimes s_{23}) + \\frac{s_{12} M^2-s_{12} s_{15}-s_{12} s_{23}+s_{15} s_{45}+s_{23} s_{34}-s_{34} s_{45}}{s_{12} s_{15} s_{23} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{12} M^2-s_{34} s_{45} \\otimes s_{34}) + \\frac{-s_{12} M^2+s_{12} s_{15}+s_{12} s_{23}-s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}}{s_{12} s_{15} s_{23} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{12} M^2-s_{34} s_{45} \\otimes s_{34} s_{45}-s_{12} M^2) + 0\\,(s_{12} M^2+s_{23} s_{34}-s_{34} s_{45} \\otimes s_{23}) + 0\\,(s_{12} M^2+s_{23} s_{34}-s_{34} s_{45} \\otimes s_{34}) + 0\\,(s_{12} M^2+s_{23} s_{34}-s_{34} s_{45} \\otimes s_{34} s_{45}-s_{12} M^2) - \\frac{-s_{15} s_{45} M^2+s_{23} s_{34} M^2+s_{15} s_{34} s_{45}-s_{23} s_{34} s_{45}}{s_{15} s_{23} s_{34} s_{45} \\left(s_{34} s_{45}-s_{12} M^2\\right)}\\,(M^2 \\otimes s_{23}) + 0\\,(M^2 \\otimes s_{34} s_{45}-s_{12} M^2) + \\frac{s_{12} M^2+s_{12} s_{15}-s_{12} s_{23}-s_{15} s_{45}+s_{23} s_{34}-s_{34} s_{45}}{s_{12} s_{15} s_{23} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{12} \\otimes s_{23}) + \\frac{-s_{12} M^2+s_{12} s_{15}-s_{12} s_{23}-s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}}{s_{12} s_{15} s_{23} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{12} \\otimes s_{34}) + \\frac{-s_{12} M^2-s_{12} s_{15}+s_{12} s_{23}+s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}}{s_{12} s_{15} s_{23} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\,(s_{12} \\otimes s_{45}) + \\frac{s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}}{s_{12} s_{15} s_{23} s_{34} s_{45}}\\,(s_{23} \\otimes s_{23})  + \\cdots",
       "alphabet": [
         "s_{12}",
         "s_{15}",
@@ -202,74 +199,6 @@
       ],
       "symbolWeight": 2,
       "symbolTerms": 63,
-      "normalizedSymbolTeX": "\\begin{aligned}\\varepsilon^{-2}&\\colon\\;\\frac{s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}}{s_{12} s_{15} s_{23} s_{34} s_{45}} \\\\ \\varepsilon^{-1}&\\colon\\;\\frac{1}{s_{12} s_{15} s_{23} s_{34} s_{45} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\!\\left[s_{34} s_{45} \\left(-s_{12} M^2-s_{12} s_{15}-s_{12} s_{23}+s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_1) - \\left((-s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}) \\left(s_{12} M^2-s_{34} s_{45}\\right)\\right)\\,(W_2) - \\left((s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}) \\left(s_{12} M^2-s_{34} s_{45}\\right)\\right)\\,(W_3) + s_{45} \\left(-2 s_{12} s_{15} M^2+s_{12} s_{34} M^2+s_{12} s_{15} s_{34}+s_{12} s_{23} s_{34}+s_{15} s_{34} s_{45}-s_{23} s_{34}^2-s_{34}^2 s_{45}\\right)\\,(W_4) + s_{34} \\left(-2 s_{12} s_{23} M^2+s_{12} s_{45} M^2+s_{12} s_{15} s_{45}+s_{12} s_{23} s_{45}-s_{15} s_{45}^2+s_{23} s_{34} s_{45}-s_{34} s_{45}^2\\right)\\,(W_5)\\right] \\\\ \\varepsilon^{0}&\\colon\\;\\frac{1}{s_{12} s_{15} s_{23} s_{34} s_{45} \\left(s_{12} M^2-s_{34} s_{45}\\right)}\\!\\left[-2 s_{12} s_{15} s_{45} \\left(M^2-s_{34}\\right)\\,(W_6 \\otimes W_4) - 2 s_{23} s_{34} s_{45} (s_{12}-s_{34})\\,(W_7 \\otimes W_1) + 2 s_{23} s_{34} s_{45} (s_{12}-s_{34})\\,(W_7 \\otimes W_4) + 0\\,(W_4 \\otimes W_1) - 2 s_{45} \\left(-2 s_{12} s_{15} M^2+s_{12} s_{34} M^2+s_{12} s_{15} s_{34}+s_{15} s_{34} s_{45}+s_{34}^2 (-s_{45})\\right)\\,(W_4 \\otimes W_4) - 2 s_{45} (s_{15}-s_{34}) \\left(s_{34} s_{45}-s_{12} M^2\\right)\\,(W_8 \\otimes W_2) + 2 s_{45} (s_{15}-s_{34}) \\left(s_{34} s_{45}-s_{12} M^2\\right)\\,(W_8 \\otimes W_4) + s_{45} \\left(-2 s_{12} s_{15} M^2+s_{12} s_{34} M^2+s_{12} s_{15} s_{34}-s_{12} s_{23} s_{34}+s_{15} s_{34} s_{45}+s_{23} s_{34}^2-s_{34}^2 s_{45}\\right)\\,(W_4 \\otimes W_2) - 2 s_{12} s_{23} s_{34} \\left(M^2-s_{45}\\right)\\,(W_9 \\otimes W_5) - 2 s_{15} s_{34} s_{45} (s_{12}-s_{45})\\,(W_{10} \\otimes W_1) + 2 s_{15} s_{34} s_{45} (s_{12}-s_{45})\\,(W_{10} \\otimes W_5) + 0\\,(W_5 \\otimes W_1) - 2 s_{34} \\left(-2 s_{12} s_{23} M^2+s_{12} s_{45} M^2+s_{12} s_{23} s_{45}+s_{23} s_{34} s_{45}-s_{34} s_{45}^2\\right)\\,(W_5 \\otimes W_5) - 2 s_{34} (s_{23}-s_{45}) \\left(s_{34} s_{45}-s_{12} M^2\\right)\\,(W_{11} \\otimes W_3) + 2 s_{34} (s_{23}-s_{45}) \\left(s_{34} s_{45}-s_{12} M^2\\right)\\,(W_{11} \\otimes W_5) + s_{34} \\left(-2 s_{12} s_{23} M^2+s_{12} s_{45} M^2-s_{12} s_{15} s_{45}+s_{12} s_{23} s_{45}+s_{15} s_{45}^2+s_{23} s_{34} s_{45}-s_{34} s_{45}^2\\right)\\,(W_5 \\otimes W_3) + 0\\,(W_{12} \\otimes W_3) - s_{34} s_{45} \\left(-s_{12} M^2+s_{12} s_{15}+s_{12} s_{23}-s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_{12} \\otimes W_4) + s_{34} s_{45} \\left(-s_{12} M^2+s_{12} s_{15}+s_{12} s_{23}-s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_{12} \\otimes W_{12}) + 0\\,(W_{13} \\otimes W_3) + 0\\,(W_{13} \\otimes W_4) + 0\\,(W_{13} \\otimes W_{12}) - s_{34} s_{45} \\left(-s_{12} M^2-s_{12} s_{15}+s_{12} s_{23}+s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_1 \\otimes W_3) + s_{34} s_{45} \\left(-s_{12} M^2+s_{12} s_{15}-s_{12} s_{23}-s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_1 \\otimes W_4) + s_{34} s_{45} \\left(-s_{12} M^2-s_{12} s_{15}+s_{12} s_{23}+s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_1 \\otimes W_5) + (s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}) \\left(s_{12} M^2-s_{34} s_{45}\\right)\\,(W_3 \\otimes W_3) + s_{34} s_{45} \\left(-s_{12} M^2-s_{12} s_{15}+s_{12} s_{23}+s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_3 \\otimes W_5) - s_{34} s_{45} \\left(-s_{12} M^2+s_{12} s_{15}+s_{12} s_{23}-s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_{12} \\otimes W_5) - s_{34} s_{45} \\left(-s_{12} M^2-s_{12} s_{15}-s_{12} s_{23}+s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_1 \\otimes W_1) - s_{34} s_{45} \\left(-s_{12} M^2+s_{12} s_{15}-s_{12} s_{23}-s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_2 \\otimes W_1) + (-s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}) \\left(s_{12} M^2-s_{34} s_{45}\\right)\\,(W_2 \\otimes W_2) - s_{34} s_{45} \\left(-s_{12} M^2+s_{12} s_{15}-s_{12} s_{23}-s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_1 \\otimes W_2) + (-s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}) \\left(s_{12} M^2-s_{34} s_{45}\\right)\\,(W_2 \\otimes W_3) - s_{34} s_{45} \\left(-s_{12} M^2-s_{12} s_{15}+s_{12} s_{23}+s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_3 \\otimes W_1) + (-s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}) \\left(s_{12} M^2-s_{34} s_{45}\\right)\\,(W_3 \\otimes W_2) + s_{34} s_{45} \\left(-s_{12} M^2+s_{12} s_{15}-s_{12} s_{23}-s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_2 \\otimes W_4) - s_{45} \\left(-2 s_{12} s_{15} M^2+s_{12} s_{34} M^2+s_{12} s_{15} s_{34}-s_{12} s_{23} s_{34}+s_{15} s_{34} s_{45}+s_{23} s_{34}^2-s_{34}^2 s_{45}\\right)\\,(W_3 \\otimes W_4) - s_{45} \\left(-2 s_{12} s_{15} M^2+s_{12} s_{34} M^2+s_{12} s_{15} s_{34}-s_{12} s_{23} s_{34}+s_{15} s_{34} s_{45}+s_{23} s_{34}^2-s_{34}^2 s_{45}\\right)\\,(W_4 \\otimes W_3) - s_{34} \\left(-2 s_{12} s_{23} M^2+s_{12} s_{45} M^2-s_{12} s_{15} s_{45}+s_{12} s_{23} s_{45}+s_{15} s_{45}^2+s_{23} s_{34} s_{45}-s_{34} s_{45}^2\\right)\\,(W_2 \\otimes W_5) - s_{34} \\left(-2 s_{12} s_{23} M^2+s_{12} s_{45} M^2-s_{12} s_{15} s_{45}+s_{12} s_{23} s_{45}+s_{15} s_{45}^2+s_{23} s_{34} s_{45}-s_{34} s_{45}^2\\right)\\,(W_5 \\otimes W_2) + 0\\,(W_3 \\otimes W_{12}) + 0\\,(W_{12} \\otimes W_3) + s_{34} s_{45} \\left(-s_{12} M^2+s_{12} s_{15}+s_{12} s_{23}-s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_{12} \\otimes W_1) - s_{34} s_{45} \\left(-s_{12} M^2+s_{12} s_{15}+s_{12} s_{23}-s_{15} s_{45}-s_{23} s_{34}+s_{34} s_{45}\\right)\\,(W_{12} \\otimes W_{12})\\right]\\end{aligned}",
-      "wDefinitions": [
-        {
-          "label": "W_1",
-          "definition": "\\frac{s_{12}}{M^2}",
-          "originalLetter": "s_{12}"
-        },
-        {
-          "label": "W_2",
-          "definition": "\\frac{s_{15}}{M^2}",
-          "originalLetter": "s_{15}"
-        },
-        {
-          "label": "W_3",
-          "definition": "\\frac{s_{23}}{M^2}",
-          "originalLetter": "s_{23}"
-        },
-        {
-          "label": "W_4",
-          "definition": "\\frac{s_{34}}{M^2}",
-          "originalLetter": "s_{34}"
-        },
-        {
-          "label": "W_5",
-          "definition": "\\frac{s_{45}}{M^2}",
-          "originalLetter": "s_{45}"
-        },
-        {
-          "label": "W_6",
-          "definition": "\\frac{-s_{34}+M^2}{M^2}",
-          "originalLetter": "M^2-s_{34}"
-        },
-        {
-          "label": "W_7",
-          "definition": "\\frac{s_{12}-s_{34}}{M^2}",
-          "originalLetter": "s_{12}-s_{34}"
-        },
-        {
-          "label": "W_8",
-          "definition": "\\frac{s_{15}-s_{34}}{M^2}",
-          "originalLetter": "s_{15}-s_{34}"
-        },
-        {
-          "label": "W_9",
-          "definition": "\\frac{-s_{45}+M^2}{M^2}",
-          "originalLetter": "M^2-s_{45}"
-        },
-        {
-          "label": "W_{10}",
-          "definition": "\\frac{s_{12}-s_{45}}{M^2}",
-          "originalLetter": "s_{12}-s_{45}"
-        },
-        {
-          "label": "W_{11}",
-          "definition": "\\frac{s_{23}-s_{45}}{M^2}",
-          "originalLetter": "s_{23}-s_{45}"
-        },
-        {
-          "label": "W_{12}",
-          "definition": "\\frac{-s_{34} s_{45}+s_{12} M^2}{M^2}",
-          "originalLetter": "s_{12} M^2-s_{34} s_{45}"
-        },
-        {
-          "label": "W_{13}",
-          "definition": "\\frac{s_{23} s_{34}-s_{34} s_{45}+s_{12} M^2}{M^2}",
-          "originalLetter": "s_{12} M^2+s_{23} s_{34}-s_{34} s_{45}"
-        }
-      ],
       "normalizedAlphabet": [
         "W_1",
         "W_2",
@@ -287,7 +216,9 @@
       ],
       "symbolScale": "M^2",
       "normalizedSymbolTerms": 49,
-      "legOrder": []
+      "legOrder": [],
+      "resultDataId": "bd4f1e0a3f9430ad",
+      "resultTeXPreview": "\\frac{s_{15} s_{45}+s_{23} s_{34}+s_{34} s_{45}}{\\varepsilon^2 s_{12} s_{15} s_{23} s_{34} s_{45}}+\\frac{-s_{12} s_{23} s_{34} M^2 \\log \\left(\\frac{s_{15}}{s_{12}}\\right)-s_{12} s_{15} s_{45} M^2 \\log \\left(\\frac{s_{23}}{s_{12}}\\right)+s_{12} s_{15} s_{34} s_{45} \\log \\left(s_{34} M^{-2}\\right)-s_{12} s_{34} s_{45} M^2 \\log \\left(\\frac{s_{15}}{s_{34}}\\right)+s_{12} s_{15} s_{45} M^2 \\log \\left(\\frac{s_{15}}{s_{34}}\\right)-s_{12} s_{15} s_{45} M^2 \\log \\left(s_{34} M^{-2}\\right)-s_{12} s_{15} s_{45} M^2 \\log (-s_{12})+s_{12} s_{23} s_{34} s_{45} \\log \\left(s_{45} M^{-2}\\right)+s_{12} s_{23} s_{34} M^2 \\log \\left(\\frac{s_{23}}{s_{45}}\\right)-s_{12} s_{34} s_{45} M^2 \\log \\left(\\frac{s_{23}}{s_{45}}\\right)-s_{12} s_{23} s_{34} M^2 \\log \\left(s_{45} M^{-2}\\right)-s_{12} s_{23} s_{34} M^2 \\log (-s_{12})-s_{12} s_{34} s_{45} M^2 \\log (-s_{12})+s_{23} s_{34}^2 s_{45} \\log \\left(\\frac{s_{15}}{s_{12}}\\right)+s_{15} s_{34} s_{45}^2 \\log \\left(\\frac{s_{23}}{s_{12}}\\right)+s_{15} s_{34} s_{45}^2 \\log (-s_{12})+s_{15} s_{34} s_{45}^2 \\log \\left(\\frac{s_{12}}{s_{45}}\\right)-s_{12} s_{15} s_{34} s_{45} \\log \\left(\\frac{s_{12}}{s_{45}}\\right)+s_{23} s_{34}^2 s_{45} \\log (-s_{12})+s_{23} s_{34}^2 s_{45} \\log \\left(\\frac{s_{12}}{s_{34}}\\right)-s_{12} s_{23} s_{34} s_{45} \\log \\left(\\frac{s_{12}}{s_{34}}\\right)+s_{34}^2 s_{45}^2 \\log (-s_{12})+s_{34}^2 s_{45}^2 \\log \\left(\\frac{s_{15}}{s_{34}}\\right)-s_{15} s_{34} s_{45}^2 \\log \\left(\\frac{s_{15}}{s_{34}}\\right)+s_{34}^2 s_{45}^2 \\log \\left(\\frac{s_{23}}{s_{45}}\\right)-s_{23} s_{34}^2 s_{45} \\log \\left(\\frac{s_{23}}{s_{45}}\\right)}{\\varepsilon s_{12} s_{15} s_{23} s_{34} s_{45} \\left(s_{12} M^2-s_{34} s_{45}\\right)} + \\cdots"
     }
   ],
   "Names": [

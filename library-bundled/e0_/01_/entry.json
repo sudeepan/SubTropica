@@ -128,8 +128,6 @@
   "NumPropagators": 1,
   "Results": [
     {
-      "resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwIpYAESPpnFJcUgXm4uQjAgp7QYJgjSVswKJEIyc1OLM/8DAUyKESQFkvfJT4eKgeUzQRJgAgCEKyD0",
-      "resultTeX": "\\frac{m^2}{\\varepsilon}+(m^2-m^2 \\log (m^2))+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": 0,
       "propExponents": [
@@ -146,7 +144,6 @@
       "contributor": "Anonymous",
       "timestamp": "2026-04-22T17:54:21",
       "byteCount": 392,
-      "symbolTeX": "\\begin{aligned}\\varepsilon^{-1}&\\colon\\;m^2 \\\\ \\varepsilon^{0}&\\colon\\;-m^2\\,(m^2)\\end{aligned}",
       "alphabet": [
         "m^2"
       ],
@@ -154,7 +151,9 @@
       "symbolTerms": 2,
       "legOrder": [
         1
-      ]
+      ],
+      "resultDataId": "4b82e940bc969ab9",
+      "resultTeXPreview": "\\frac{m^2}{\\varepsilon}+(m^2-m^2 \\log (m^2))+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "edges": "{{{1, 1}, m}}",
@@ -176,7 +175,7 @@
   },
   "ValenceVerifiedLegit": true,
   "commonNames": [
-    "A\u2080(m)",
+    "A₀(m)",
     "A"
   ],
   "Subsectors": [],

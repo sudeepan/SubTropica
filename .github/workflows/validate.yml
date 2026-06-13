@@ -11,6 +11,15 @@ on:
     branches: [main]
     paths:
       - "library-bundled/**"
+      - "ui/tex-clean.mjs"
+      - "ui/app.js"
+      - "ui/index.html"
+      - "scripts/tests/test_tex_parseability.mjs"
+      - "scripts/tests/test_tex_clean_unit.mjs"
+      - "scripts/tests/tex_gate_lib.mjs"
+      - "scripts/library_audit/validate_results_split.py"
+      - "scripts/_results_split_common.py"
+      - "notes/ristretto/staged/**"
 
   # Also run on push to main for post-merge validation
   push:
@@ -18,6 +27,15 @@ on:
     paths:
       - "library-bundled/**"
       - "!library-bundled/manifest.json"
+      - "ui/tex-clean.mjs"
+      - "ui/app.js"
+      - "ui/index.html"
+      - "scripts/tests/test_tex_parseability.mjs"
+      - "scripts/tests/test_tex_clean_unit.mjs"
+      - "scripts/tests/tex_gate_lib.mjs"
+      - "scripts/library_audit/validate_results_split.py"
+      - "scripts/_results_split_common.py"
+      - "notes/ristretto/staged/**"
 
   workflow_dispatch:
 
@@ -47,10 +65,12 @@ jobs:
               for f in files:
                   path = os.path.join(root, f)
 
-                  # Size check
+                  # Size check: results.json siblings may be up to 20 MB
+                  # (jsdelivr per-file CDN cap, spec §10); everything else 5 MB.
                   size_mb = os.path.getsize(path) / (1024 * 1024)
-                  if size_mb > 5:
-                      errors.append(f"{path}: file too large ({size_mb:.1f} MB, max 5 MB)")
+                  limit_mb = 20 if f == "results.json" else 5
+                  if size_mb > limit_mb:
+                      errors.append(f"{path}: file too large ({size_mb:.1f} MB, max {limit_mb} MB)")
 
                   if f == "topology.json":
                       topo_count += 1
@@ -201,3 +221,22 @@ jobs:
               sys.exit(1)
           else:
               print("\nAll validation checks passed.")
+
+      # Results-split invariants (spec §8.1/§8.2). ARMED since the Task-10
+      # migration (2026-06-12): the library is split, so ANY monolithic heavy
+      # record anywhere fails CI here (de-migration guard against a re-run
+      # legacy writer), in addition to split-pair consistency.
+      - name: Results-split alignment + de-migration guard
+        run: python3 scripts/library_audit/validate_results_split.py --armed
+
+  tex-parseability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: TeX cleaner unit tests
+        run: node scripts/tests/test_tex_clean_unit.mjs
+      - name: KaTeX parseability gate (corpus + version pin)
+        run: node scripts/tests/test_tex_parseability.mjs

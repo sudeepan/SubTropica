@@ -1,0 +1,11 @@
+{
+ "SchemaVersion": 1,
+ "CNickelIndex": "e1111|e|:10000|1|",
+ "Results": {
+  "efdbe1cb2e0bfed7.1": {
+   "resultCompressed": "1:eJxTTMoPSmNjYGAo5gISwalFmanFLoklicXMQG5qQXEmkGJIYwIpYAESPpnFJRAeK5AIycxNLYZwOYBEUGJJZn5eYk4mI5CTqQLXCFIakF+eWlQM4vr6ZoKoNGaiTLlBjCkglwXklBZnuqOoRjKYHUg45+cW5KRWgH2U+e7///9ggwIy0TSApdJAloPDwCc/HWYhUPw/xFUgAgAki0Nc",
+   "resultTeX": "\\frac{M^4}{36 \\varepsilon}+\\frac{1}{216} M^4 \\left(-18 \\log \\left(M^2\\right)-18 i \\pi +71\\right)+O\\left(\\varepsilon^1\\right)",
+   "symbolTeX": "\\varepsilon^{0}\\colon\\;-\\frac{M^4}{12}\\,(M^2)"
+  }
+ }
+}

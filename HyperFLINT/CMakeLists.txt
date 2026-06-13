@@ -154,6 +154,7 @@ set(HF_SOURCES
     src/algebra/euler_chi.cpp     # Doppio port phase 1 (2026-06-05): DK chi counter
     src/algebra/euler_filter.cpp  # Doppio port phase 2: chi-drop letter filter
     src/integrator/lr_scan.cpp    # Doppio port phase 3: projective gauge scan + conic/carry keep-rules
+    src/integrator/factor_table.cpp  # factor-prediction table (spec 2026-06-11)
     src/integrator/ctx_probe.cpp
     src/integrator/sharded_flat_map.cpp
     src/integrator/step_strategy.cpp  # Track 6.3 iter-35
@@ -807,6 +808,14 @@ add_executable(hyperflint-test-gcd-dispatch
 target_link_libraries(hyperflint-test-gcd-dispatch
                       PRIVATE hyperflint)
 
+# Factor-prediction table (spec docs/superpowers/specs/
+# 2026-06-11-stfactorpredictor-design.md): lr_letter_admissible parity
+# + builder fixtures (exactness contracts, Res identity, guards).
+add_executable(hyperflint-test-factor-table
+               test/unit/test_factor_table.cpp)
+target_link_libraries(hyperflint-test-factor-table
+                      PRIVATE hyperflint)
+
 # HF FF Phase 5 §A.1 iter-49: Probe A1 REQ-1 init unit test. Exercises the
 # GMP-allocator wrap layer added in src/instrumentation/dag_hashcons_probe.cpp.
 # See test/unit/test_dag_hashcons_probe_init.cpp.
@@ -1041,13 +1050,14 @@ endif()
 
 # Carry-discharge (FindRoots) keep rule in find_lr_orders (2026-06-07):
 # JSON-boundary battery for the "carry_discharge" request option (default
-# ON).  Posts request bodies to hyperflint::handlers::find_lr_orders and
+# OFF).  Posts request bodies to hyperflint::handlers::find_lr_orders and
 # asserts the three gates: (1) NOLR->LR flip on the real gauged-uq5
 # system (lr_scan FindRoots @ gauge x3 is the oracle, 24 admissible
 # orders; terminal-only find_lr_orders says NOLR) + a small synthetic;
-# (2) Strict (carry:false) NOLR-envelope byte-stability; (3) default-ON
-# (absent option == :true).  Same mimalloc weak-extern handling as the
-# strategy-roundtrip ctest (handlers.cpp TU pulls hyperflint_sym).
+# (2) Strict (carry:false) NOLR-envelope byte-stability; (3) default-OFF
+# (absent option == :false; production fix).  Same mimalloc weak-extern
+# handling as the strategy-roundtrip ctest (handlers.cpp TU pulls
+# hyperflint_sym).
 add_executable(hyperflint-test-find-lr-orders-carry-discharge
                test/unit/test_find_lr_orders_carry_discharge.cpp)
 target_link_libraries(hyperflint-test-find-lr-orders-carry-discharge
@@ -1721,6 +1731,8 @@ add_test(NAME integration-node-rss
          COMMAND hyperflint-test-integration-node-rss)
 add_test(NAME gcd-dispatch
          COMMAND hyperflint-test-gcd-dispatch)
+add_test(NAME hf-factor-table
+         COMMAND hyperflint-test-factor-table)
 # HF FF Phase 5 §A.1 iter-49: Probe A1 REQ-1 init unit test. Verifies the
 # GMP-allocator wrap registers the probe wrappers AFTER hf_init_mimalloc_for_gmp_flint,
 # that g_prev_gmp_alloc != nullptr (Phase 0.5 retrofit was captured), and that

@@ -23,8 +23,6 @@
   ],
   "Results": [
     {
-      "resultCompressed": "1:eJytVEtOwzAQTZrSAoI9W6SeAcQaJFi0UlRYITZGcipLDq7q8N1wAY7CReAkHIAdn9QzaZI6HRdHYjORPZ43b56fs3+txkkvCAK9bcI5nwmuT1jGdGSWfKqF+QRJFw5AGAqdJR1YbZowZplQN0yK0CwEbBe5DRMuRMr12qNRCRrLWy36rmpIHKt0KvkDkhE/eZ5rSMWiUYCpBDog/aGa4LnRyJPWHnDoW7ReQl9aXTetN6BV7cXqns8WJynREImcIvLhIWF3weNvKcSBRQC5UWUk0U+LaPp018YDKPauJfag5yv21ZdT7OffNmI78I9WVSlBIpcQnXKWM6kmOGNtcXg3BXJYhsZtLl3Ef72Jdpf5vmpSspaa/5U2gpdfB5RfHRBFc8rV1R8KhcssD6zr/r3UvTHUodsDlH47FjXHYyCeDKVn7YUtbC0fT1maMkQszNMo+KhgQYNLnjHERV/UlpsD3nw7pA==",
-      "resultTeX": "\\frac{1}{2 \\varepsilon^3}+\\frac{-3 \\log \\left(M^2\\right)-3 i \\pi +7}{2 \\varepsilon^2}+\\frac{54 \\log ^2\\left(M^2\\right)+108 i \\pi  \\log \\left(M^2\\right)-252 \\log \\left(M^2\\right)-12 \\zeta(2)-55 \\pi ^2-252 i \\pi +396}{24 \\varepsilon}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": 0,
       "propExponents": [
@@ -61,12 +59,13 @@
         "verifiedAt": "2026-04-18T11:51:48"
       },
       "legOrder": [],
-      "symbolTeX": "\\begin{aligned}\\varepsilon^{-2}&\\colon\\;-\\frac{3}{2}\\,(M^2) \\\\ \\varepsilon^{-1}&\\colon\\;-\\frac{21}{2}\\,(M^2) + \\frac{9}{2}\\,(M^2 \\otimes M^2) \\\\ \\varepsilon^{0}&\\colon\\;\\frac{63}{2}\\,(M^2 \\otimes M^2) - \\frac{27}{2}\\,(M^2 \\otimes M^2 \\otimes M^2) - \\frac{99}{2}\\,(M^2)\\end{aligned}",
       "alphabet": [
         "M^2"
       ],
       "symbolWeight": 3,
-      "symbolTerms": 6
+      "symbolTerms": 6,
+      "resultDataId": "6a536a1c3ee9ccaf",
+      "resultTeXPreview": "\\frac{1}{2 \\varepsilon^3}+\\frac{-3 \\log \\left(M^2\\right)-3 i \\pi +7}{2 \\varepsilon^2}+\\frac{54 \\log ^2\\left(M^2\\right)+108 i \\pi  \\log \\left(M^2\\right)-252 \\log \\left(M^2\\right)-12 \\zeta(2)-55 \\pi ^2-252 i \\pi +396}{24 \\varepsilon}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "Names": [

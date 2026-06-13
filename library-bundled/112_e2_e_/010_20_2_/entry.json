@@ -33,8 +33,6 @@
   ],
   "Results": [
     {
-      "resultCompressed": "1:eJzFVM0KwjAMnjpFvHjwCXwXDx4miPoCE9oRWK0sU8FnF7VZcaP77ebfDhlJ8+VL0qTzvdzwkeM4OFFiyyJguPBjHwdKZUcE9XM4Kegq4QHGvE/aWImNH4M8+CH0lAJk1mfkuQ5PWOI5ND1J3YFgCA/1cYqTMHsyKHNAsq1WfNrAMqtlSXNchjJIcs9MVKCu2UQmzEJk1rW8sMgst+BTSFzzuxXnhfAG6t9Z292XfdT80a3NAOQKsoTpkTCcB1XzYV6CEAZ9GeoDYWvKsECXAeq21Kp9zbxttvk1HXp8uzUptz0JoHl7vpNLrlfv3d8v2tWpU/8vosVopwmI61lbuj23hThwV2ZNROIJakTJWQ==",
-      "resultTeX": "\\frac{1}{2 \\varepsilon^2}+\\frac{\\frac{5}{2}-\\log \\left(-M^2\\right)}{\\varepsilon}+\\left(-H\\left(0,\\frac{m^2}{m^2-M^2}\\,;1\\right)-m^2 M^{-2} H\\left(0,\\frac{m^2}{m^2-M^2}\\,;1\\right)-m^2 \\zeta(2) M^{-2}+\\frac{1}{2} \\log ^2\\left(\\frac{M^2}{m^2}\\right)-\\log \\left(m^2-M^2\\right)+\\log \\left(-\\frac{M^2}{m^2}\\right)-\\log \\left(-\\frac{M^2}{m^2}\\right) \\log \\left(\\frac{M^2}{m^2}\\right)+\\log \\left(\\frac{M^2}{m^2}\\right) \\log \\left(1-\\frac{M^2}{m^2}\\right)-\\log \\left(1-\\frac{M^2}{m^2}\\right)+2 m^2 M^{-2} \\log \\left(1-\\frac{M^2}{m^2}\\right)+m^2 M^{-2} \\log \\left(\\frac{M^2}{m^2}\\right) \\log \\left(1-\\frac{M^2}{m^2}\\right)+\\log ^2\\left(-M^2\\right)-4 \\log \\left(-M^2\\right)+\\frac{\\zeta(2)}{2}+\\frac{19}{2}\\right)+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -62,7 +60,9 @@
       ],
       "methodLR": "Lungo",
       "findRoots": false,
-      "byteCount": 5744
+      "byteCount": 5744,
+      "resultDataId": "4931d2876638a843",
+      "resultTeXPreview": "\\frac{1}{2 \\varepsilon^2}+\\frac{\\frac{5}{2}-\\log \\left(-M^2\\right)}{\\varepsilon}+\\left(-H\\left(0,\\frac{m^2}{m^2-M^2}\\,;1\\right)-m^2 M^{-2} H\\left(0,\\frac{m^2}{m^2-M^2}\\,;1\\right)-m^2 \\zeta(2) M^{-2}+\\frac{1}{2} \\log ^2\\left(\\frac{M^2}{m^2}\\right)-\\log \\left(m^2-M^2\\right)+\\log \\left(-\\frac{M^2}{m^2}\\right)-\\log \\left(-\\frac{M^2}{m^2}\\right) \\log \\left(\\frac{M^2}{m^2}\\right)+\\log \\left(\\frac{M^2}{m^2}\\right) \\log \\left(1-\\frac{M^2}{m^2}\\right)-\\log \\left(1-\\frac{M^2}{m^2}\\right)+2 m^2 M^{-2} \\log \\left(1-\\frac{M^2}{m^2}\\right)+m^2 M^{-2} \\log \\left(\\frac{M^2}{m^2}\\right) \\log \\left(1-\\frac{M^2}{m^2}\\right)+\\log ^2\\left(-M^2\\right)-4 \\log \\left(-M^2\\right)+\\frac{\\zeta(2)}{2}+\\frac{19}{2}\\right)+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "Names": [

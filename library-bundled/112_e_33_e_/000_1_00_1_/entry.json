@@ -54,8 +54,6 @@
 	"NumPropagators": 5,
 	"Results": [
 		{
-			"resultCompressed": "1:eJyNUFsKwjAQjFotiJfwCHoF/exHUS9QIZGFhpRufeDJ+6XubhFrSTT5mLDJ7OzsLI9uZ2ZKKZwT7HUNGrdFU+CESl0h0KUMF5gQZICNGXM1JcjdVdfCxNUannQ6Jv8dwGrsqCnBxtmq1DeRgwcz/6rwvLw8h0TklSGHj9avqaI84i+Wz9zpPdPbHnCW9p3BgsOJGt5Ss9+tN42OKTsO6W1wjajsk15sEWEMLIg7b5/X63fk9n4RlmwM/CzwAhRSlLY=",
-			"resultTeX": "\\frac{1}{\\varepsilon^2 s_{12}}-\\frac{2 i (-i \\log (s_{12})+\\pi +2 i)}{\\varepsilon s_{12}}+\\frac{-\\zeta(2)+2 \\log ^2(s_{12})+4 i \\pi  \\log (s_{12})-8 \\log (s_{12})-2 \\pi ^2-8 i \\pi +12}{s_{12}}+O\\left(\\varepsilon^1\\right)",
 			"dimension": "4 - 2*eps",
 			"epsOrder": "0",
 			"epsOrders": "0",
@@ -84,7 +82,9 @@
 			],
 			"methodLR": "Lungo",
 			"findRoots": false,
-			"byteCount": 1872
+			"byteCount": 1872,
+			"resultDataId": "b5cf349a7011c068",
+			"resultTeXPreview": "\\frac{1}{\\varepsilon^2 s_{12}}-\\frac{2 i (-i \\log (s_{12})+\\pi +2 i)}{\\varepsilon s_{12}}+\\frac{-\\zeta(2)+2 \\log ^2(s_{12})+4 i \\pi  \\log (s_{12})-8 \\log (s_{12})-2 \\pi ^2-8 i \\pi +12}{s_{12}}+O\\left(\\varepsilon^1\\right)"
 		}
 	],
 	"edges": "{{{1, 2}, 0}, {{1, 2}, 0}, {{1, 3}, 0}, {{3, 4}, 0}, {{3, 4}, 0}}",

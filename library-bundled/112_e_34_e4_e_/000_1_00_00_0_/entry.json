@@ -54,8 +54,6 @@
   "NumPropagators": 6,
   "Results": [
     {
-      "resultCompressed": "1:eJy9Uk1PwkAQLRQKGkk8cvUn4F+AhAuHBj15W5OtmaTrErbgxy/mrJ6MWndm5aPstMVEuUyzu2/ee/OmF7d6mkRBEJhTW67kHKQZiUyY0B7lzID9BEkLAVgmYLKkiae2LbF+kHNCmsElfOV5noTrt2tQ0jhox5ahVrNUPhKdQ9ayoF6cLspIGniLTzFsuapUc2SmLqSf6Lu1Jmu6a8tUZKDvRUpagClVuo52XUO/AK8ytrLN/CTwyiTlkND0+Ynp8BE9I/2dSFmWPbkzPxG2z3k9LOWwLuVeIeXzv0j55Vcpl/C3GeM/JKFP8u+rKrJAr9wdjXicdXtjvHFLqWPes/Xhb49v5tYQFYZXz0tWorW5OyGJ9GkslBKEZRveN9vF1huZCVKHT3vv/nMs38Q5LN0=",
-      "resultTeX": "\\frac{1}{\\varepsilon^3 s_{12}^2}-\\frac{2 i (-i \\log (s_{12})+\\pi +i)}{\\varepsilon^2 s_{12}^2}+\\frac{12 \\log ^2(s_{12})+24 i \\pi  \\log (s_{12})-24 \\log (s_{12})-13 \\pi ^2-24 i \\pi +24}{6 \\varepsilon s_{12}^2}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)",
       "dimension": "4 - 2*eps",
       "epsOrder": "0",
       "epsOrders": "0",
@@ -85,13 +83,14 @@
       ],
       "methodLR": "Lungo",
       "byteCount": 4136,
-      "symbolTeX": "\\begin{aligned}\\varepsilon^{-2}&\\colon\\;-\\frac{2}{s_{12}^2}\\,(s_{12}) \\\\ \\varepsilon^{-1}&\\colon\\;-\\frac{4}{s_{12}^2}\\,(s_{12}) + \\frac{4}{s_{12}^2}\\,(s_{12} \\otimes s_{12}) \\\\ \\varepsilon^{0}&\\colon\\;-\\frac{8}{s_{12}^2}\\,(s_{12}) + \\frac{8}{s_{12}^2}\\,(s_{12} \\otimes s_{12}) - \\frac{8}{s_{12}^2}\\,(s_{12} \\otimes s_{12} \\otimes s_{12})\\end{aligned}",
       "alphabet": [
         "s_{12}"
       ],
       "symbolWeight": 3,
       "symbolTerms": 6,
-      "legOrder": []
+      "legOrder": [],
+      "resultDataId": "a2aa8cc05287bc91",
+      "resultTeXPreview": "\\frac{1}{\\varepsilon^3 s_{12}^2}-\\frac{2 i (-i \\log (s_{12})+\\pi +i)}{\\varepsilon^2 s_{12}^2}+\\frac{12 \\log ^2(s_{12})+24 i \\pi  \\log (s_{12})-24 \\log (s_{12})-13 \\pi ^2-24 i \\pi +24}{6 \\varepsilon s_{12}^2}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)"
     }
   ],
   "edges": "{{{1, 2}, 0}, {{1, 2}, 0}, {{1, 3}, 0}, {{3, 4}, 0}, {{3, 5}, 0}, {{4, 5}, 0}}",

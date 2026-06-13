@@ -30,9 +30,9 @@
 //
 // Track 8.1 (iter-43) extension — versioned eval-json envelope check.
 // Five additional rows assert the schema_version + hf_version envelope:
-//   row7: success path response contains "schema_version":1
+//   row7: success path response contains "schema_version":2
 //   row8: success path response contains a non-empty "hf_version"
-//   row9: schema_version_min=2 fast-fails with error mentioning "exceeds"
+//   row9: schema_version_min=3 fast-fails with error mentioning "exceeds"
 //   row10: schema_version_min=1 still succeeds (lower-bound roundtrip)
 //   row11 (iter-43 reviewer Q2 fold): contiguous-prefix substring
 //     check on the documented op -> schema_version -> hf_version
@@ -106,7 +106,7 @@ struct EnvelopeRow {
 
 // Pre-built predicates ---------------------------------------------------
 
-bool resp_has_schema_version_1(const std::string& resp, std::string& diag) {
+bool resp_has_schema_version_2(const std::string& resp, std::string& diag) {
     std::regex rx(R"~("schema_version"\s*:\s*([0-9]+))~");
     std::smatch m;
     if (!std::regex_search(resp, m, rx)) {
@@ -114,11 +114,11 @@ bool resp_has_schema_version_1(const std::string& resp, std::string& diag) {
         return false;
     }
     const std::string got = m[1].str();
-    if (got != "1") {
-        diag = "schema_version=" + got + " (expected 1)";
+    if (got != "2") {
+        diag = "schema_version=" + got + " (expected 2)";
         return false;
     }
-    diag = "schema_version=1 present";
+    diag = "schema_version=2 present";
     return true;
 }
 
@@ -175,7 +175,7 @@ bool resp_is_schema_too_low_error(const std::string& resp, std::string& diag) {
 bool resp_has_envelope_prefix(const std::string& resp, std::string& diag) {
     const std::string expected_prefix =
         "{\"op\":\"find_lr_orders\","
-        "\"schema_version\":1,"
+        "\"schema_version\":2,"
         "\"hf_version\":\"";
     if (resp.compare(0, expected_prefix.size(), expected_prefix) != 0) {
         // Show the first ~120 chars for diagnosis; the response
@@ -274,10 +274,10 @@ int main() {
     // schema_version_min rows use a minimal valid body so the gate
     // fires before any algebraic work — keeps each row at sub-ms wall.
     const std::vector<EnvelopeRow> envelope_rows = {
-        // Row 7: success path must carry "schema_version":1.
-        {"row7_envelope_schema_version_1",
+        // Row 7: success path must carry "schema_version":2.
+        {"row7_envelope_schema_version_2",
          "{\"op\":\"find_lr_orders\"," + lr_polys + "}",
-         resp_has_schema_version_1},
+         resp_has_schema_version_2},
 
         // Row 8: success path must carry a non-empty, non-"unknown"
         // "hf_version" string.  Negative-control for the
@@ -286,11 +286,12 @@ int main() {
          "{\"op\":\"find_lr_orders\"," + lr_polys + "}",
          resp_has_nonempty_hf_version},
 
-        // Row 9: schema_version_min=2 must fast-fail with an error
+        // Row 9: schema_version_min=3 must fast-fail with an error
         // whose message contains "exceeds supported".  Asserts the
         // C++-side request gate at handlers.cpp::find_lr_orders.
-        {"row9_envelope_schema_version_min_2_rejects",
-         "{\"op\":\"find_lr_orders\",\"schema_version_min\":2," +
+        // (Updated from min=2 when HF_SCHEMA_VERSION was bumped to 2.)
+        {"row9_envelope_schema_version_min_3_rejects",
+         "{\"op\":\"find_lr_orders\",\"schema_version_min\":3," +
              lr_polys + "}",
          resp_is_schema_too_low_error},
 

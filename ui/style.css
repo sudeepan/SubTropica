@@ -3321,7 +3321,7 @@ body:not(.mode-full) .config-footer { display: none; }
 body.dark .badge-purple { background: #271230; color: #bc8cff; }
 /* hook for future styling; visual style inherits badge-purple */
 .badge-period { letter-spacing: .02em; }
-/* Ristretto proposal records (singularities / proposed-alphabet): a
+/* Odd-letter engine proposal records (singularities / proposed-alphabet): a
    dashed amber pill marks an Euler-discriminant / FindLetters proposal as
    NOT a numerically verified result. The dashed border echoes the
    algebraic-letter pills, signalling "candidate, re-verify before use". */

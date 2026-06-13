@@ -1,0 +1,10 @@
+{
+	"SchemaVersion": 1,
+	"CNickelIndex": "e111112|e2|e|:0000000|10|0|",
+	"Results": {
+		"c1d8f7c4de9161ab": {
+			"resultCompressed": "1:eJylUssKgkAUHbUs6hNatW/fVqilgmg/YDDGBW3Eaw/6qv6on2jhIrI7U4mZpNDmDEfPPffMYaZr4YUmYwxHBD5PgeMyyAI0iPIEgQ4WSoI9AhswC3XJ+gQriDk+6ZDACzIQ2yACjQhYYxospa448BQldRwwSs9WFzbp4CKTudEOYc6q6orxgGAh4iTiR3UjuBZFoYxcqA2oX6Fcrjqwxea1sD0xDRbAVubPxOZH4otPyzolziz62pz4ZjaX5ALo31XDTHvL/yyuqaRatDyv3k9Faxp75qzNnmXOUhyf9koFd9myehwSHnq1lg4=",
+			"resultTeX": "\\frac{M^6}{2880 \\varepsilon^2}+\\frac{M^6 \\left(-12 \\log \\left(M^2\\right)-12 i \\pi +55\\right)}{6912 \\varepsilon}-\\frac{M^6 \\left(-1800 \\log ^2\\left(M^2\\right)+300 (55-12 i \\pi ) \\log \\left(M^2\\right)+432 \\zeta(2)+1788 \\pi ^2+16500 i \\pi -44065\\right)}{414720}+O\\left(\\varepsilon^1\\right)"
+		}
+	}
+}

@@ -84,7 +84,7 @@
 // non-breaking additions keep the version; renames/removals bump it and
 // require lockstep update of SubTropica.wl's
 // $SubTropicaHFSchemaVersionExpected.
-#define HF_SCHEMA_VERSION 1
+#define HF_SCHEMA_VERSION 2  /* 2 = carry-aware find_lr_orders (carry_discharge + profile fields), spec 2026-06-10 4a.4 */
 
 #ifdef __cplusplus
 extern "C" {
@@ -131,6 +131,13 @@ char* hf_linear_factors(const char* request_json);
 // wraps the return in HyperFLINT's caller-owned allocation contract,
 // so external consumers do not need to link Mma headers.
 char* hf_find_lr_orders(const char* request_json);
+
+// Factor-prediction table (spec docs/superpowers/specs/
+// 2026-06-11-stfactorpredictor-design.md): typed entry for the
+// "factor_table" op.  Request/response schema documented at
+// hyperflint::handlers::factor_table (bridge/handlers.hpp).
+// Same allocation contract as hf_find_lr_orders.
+char* hf_factor_table(const char* request_json);
 
 // Doppio-port phase 3 bridge (2026-06-06): find_lr_orders_scan typed
 // entry — the projective Cheng-Wu gauge scan with the Doppio keep

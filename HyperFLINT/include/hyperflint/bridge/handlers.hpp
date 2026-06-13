@@ -44,6 +44,21 @@ std::string find_lr_orders(const std::string& body);
 // Never throws; errors as {"op":"find_lr_orders_scan","error":...}.
 std::string find_lr_orders_scan(const std::string& body);
 
+// Factor-prediction table (spec docs/superpowers/specs/
+// 2026-06-11-stfactorpredictor-design.md): single-chain replay along
+// the supplied LR order, tabulating monic pair differences (deg-1) and
+// per-letter coefficient/disc factor lists.  Request shape:
+//   {"op":"factor_table", "groups":[[...]] | "polys":[...],
+//    "xvars":[...], "coeff_vars":[...], "order":[...],
+//    "algebraic_letters":<bool>?, "max_pairs":N?, "max_singletons":N?,
+//    "max_response_mb":N?}
+// Response: spec section 4.4 (envelope + interned polys + stages +
+// pairs + singletons + stats).  Never throws; errors as
+// {"op":"factor_table","error":"<msg>"} with the envelope stamped.
+// Guards (max_pairs / max_singletons / max_response_mb) are loud
+// errors naming the count reached, never truncation.
+std::string factor_table(const std::string& body);
+
 // Track 8.1b chunk-2b (iter-48): transport-neutral partial_fractions
 // handler.  Request shape:
 //   {"op":"partial_fractions", "f":<str>, "var":<str>,

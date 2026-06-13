@@ -359,8 +359,16 @@
               <option value="Lungo" selected>Lungo</option>
             </select>
           </div>
-          <div class="cfg-row"><label class="cfg-check-inline"
-                 data-tip-html="<strong>Fibered rationalization</strong>. Tries nested square-root substitutions so integrands with algebraic letters (W<sub>i</sub>) become rational in the remaining variables. Needed whenever vanilla linear-reducibility analysis gives &ldquo;No linearly reducible order&rdquo;."><input type="checkbox" id="cfg-find-roots" checked/> Find roots</label></div>
+          <div class="cfg-row">
+            <label class="cfg-label"
+                   data-tip-html="<strong>Fibered rationalization</strong>. Tries nested square-root substitutions so integrands with algebraic letters (W<sub>i</sub>) become rational in the remaining variables. Needed whenever vanilla linear-reducibility analysis gives &ldquo;No linearly reducible order&rdquo;. <code>Automatic</code> (the package default) first searches without roots, then retries with them only if no linearly reducible order is found.">Find roots</label>
+            <select class="cfg-select" id="cfg-find-roots"
+                    data-tip-html="<strong>Fibered rationalization</strong>. Tries nested square-root substitutions so integrands with algebraic letters (W<sub>i</sub>) become rational in the remaining variables. <code>Automatic</code> (the package default) first searches without roots, then retries with them only if no linearly reducible order is found. <code>On</code> forces root-finding from the start; <code>Off</code> never uses it.">
+              <option value="Automatic" selected>Automatic</option>
+              <option value="True">On</option>
+              <option value="False">Off</option>
+            </select>
+          </div>
         </details>
 
         <!-- Scoring -->

@@ -10,6 +10,7 @@
 import { Nickel, canonicalize, LEG, isConnected } from './nickel.js';
 import { renderNotebook } from './notebook/render.mjs';
 import { wlToNb } from './notebook/wl-to-nb.mjs';
+import { cleanTeX, cleanSymbolTeX, buildPmTeX } from './tex-clean.mjs';
 
 // Starter-notebook template: fetched lazily on the first download. Cached so
 // subsequent downloads within the same session are instant.
@@ -1105,6 +1106,11 @@ async function loadWaitlist() {
 }
 
 async function loadLibrary() {
+  // Reloads (Sync button, review flows) must not reuse result-data promises
+  // memoized against the PREVIOUS library object: those merges targeted the
+  // old in-memory records, so a stale hit would leave fresh stubs unmerged
+  // forever (review A3).
+  _resultDataCache.clear();
   // Resolution order:
   //   1. /api/library — kernel-backed Python server (full / dev mode).
   //   2. Same-origin library.json — the local static bundle (always at
@@ -1151,10 +1157,102 @@ async function loadLibrary() {
     }
   }
   await loadWaitlist();
+  // Prebuild the canonicalization index off the critical path: the
+  // synchronous build (~1000 canonicalize() calls) used to run inside
+  // the first doLiveMatch() — at boot, for a canvas restored from
+  // localStorage — and visibly stalled first paint once the library
+  // crossed ~1000 configs after the collections/families intake.
+  // Live match now calls the extracted ensureCanonIndex() which is a
+  // no-op when the idle prebuild already ran.
+  const _idleSchedule = window.requestIdleCallback || (fn => setTimeout(fn, 1500));
+  _idleSchedule(() => { try { ensureCanonIndex(); } catch (_) { /* index builds on first match instead */ } });
   // Initial render once library is ready
   render();
   onGraphChanged();
 }
+
+// ── Results-split lazy loading (spec §4.2) ─────────────────────────────────
+// HEAVY_RESULT_FIELDS is defined in THREE languages; keep in sync:
+//   scripts/_results_split_common.py (HEAVY_RESULT_FIELDS)
+//   SubTropica.wl ($STHeavyResultFields)
+const HEAVY_RESULT_FIELDS = ['resultCompressed', 'resultTeX', 'symbolTeX',
+  'normalizedSymbolTeX', 'wDefinitions', 'algebraicLetters', 'resultInputForm'];
+const _resultDataCache = new Map();   // "topo:cfg" -> Promise<bool merged>
+
+function _configNeedsResultData(cfg) {
+  // Both Results (kernel-served / repo builder) and results (legacy public
+  // builder) spellings exist in the wild; accept either.
+  return (cfg?.Results || cfg?.results || []).some(r => r.resultDataId && !r.resultCompressed);
+}
+
+// Fetch the sibling results.json for one config and merge heavy fields into
+// the in-memory records by resultDataId. After resolution, downstream code
+// sees the same monolithic record shape as before the split. Chain mirrors
+// loadLibrary(): kernel server -> same-origin static -> jsdelivr @main
+// (404s degrade to the inline resultTeXPreview; spec §4.2/§10).
+function ensureResultData(topoKey, configKey) {
+  // ':' separator (review A1): '|' occurs inside both key alphabets, so a
+  // '|' join is aliasable — ('11|','2||3|') and ('11||2|','3|') collide.
+  // ':' is exactly the CNI bare/color divider, hence absent from each half.
+  const cacheKey = topoKey + ':' + configKey;
+  if (_resultDataCache.has(cacheKey)) return _resultDataCache.get(cacheKey);
+  const topo = library?.topologies?.[topoKey];
+  const cfg = topo?.configs?.[configKey];
+  if (!cfg || !_configNeedsResultData(cfg)) {
+    const p = Promise.resolve(true);
+    _resultDataCache.set(cacheKey, p);
+    return p;
+  }
+  const t = String(topoKey).replace(/\|/g, '_');
+  const c = String(configKey).replace(/\|/g, '_');
+  const candidates = [
+    `/api/results/${encodeURIComponent(t)}/${encodeURIComponent(c)}`,
+    `results/${t}/${c}.json`,                                  // Firebase deploy copy
+    `../library-bundled/${t}/${c}/results.json`,               // local static dev
+    `https://cdn.jsdelivr.net/gh/SubTropica/SubTropica@main/library-bundled/${t}/${c}/results.json`,
+  ];
+  const p = (async () => {
+    for (const url of candidates) {
+      try {
+        const resp = await fetch(url);
+        if (!resp.ok) continue;
+        const sib = await resp.json();
+        const map = sib?.Results || {};
+        // Resolve true only when at least one record ACTUALLY merged
+        // (review A2): a reachable but stale sibling (e.g. CDN lagging a
+        // fresh migration) may lack the stub's resultDataId entirely; fall
+        // through to the next candidate in that case.
+        let merged = false;
+        for (const r of (cfg.Results || cfg.results || [])) {
+          if (r.resultDataId && map[r.resultDataId]) {
+            Object.assign(r, map[r.resultDataId]);
+            merged = true;
+          }
+        }
+        if (merged) return true;
+      } catch { /* next candidate */ }
+    }
+    return false;  // preview-only state; popup shows the inline preview
+  })();
+  _resultDataCache.set(cacheKey, p);
+  return p;
+}
+
+// Preview-only fallback (review A5, spec §10): when ensureResultData
+// resolves false (no candidate produced a merge — every URL 404'd, or the
+// reachable siblings are stale and lack the stub's resultDataId), the card
+// must not say "Loading full result…" forever. If an inline
+// resultTeXPreview is rendered, keep it and append a muted note after the
+// TeX container; otherwise the note replaces the loading line inside it.
+function markResultDataUnavailable(texEl, keepPreview) {
+  if (!texEl) return;
+  const note = document.createElement('div');
+  note.style.cssText = 'font-size:11px;color:var(--text-muted);font-style:italic;margin-top:4px';
+  note.textContent = 'full result data not yet available (CDN may lag ~12 h)';
+  if (keepPreview) texEl.insertAdjacentElement('afterend', note);
+  else texEl.replaceChildren(note);
+}
+// ── end results-split lazy loading ─────────────────────────────────────────
 
 // ─── Families catalog (all-loop family pages) ───────────────────────
 //
@@ -1391,19 +1489,21 @@ const COMPUTE_CONFIG_DEFAULTS = {
   stopAt: 'Automatic',
   startAt: 'None',
   setupInParallel: 'Automatic',
-  // B13: default ON.  Without FindRoots, integrals whose F polynomial
-  // has degree-2 factors in some variable (e.g. the 1L equal-mass
-  // bubble) are not linearly reducible at any gauge and STEvaluate
-  // returns nolr.  Default ON matches the kernel-side JSON fallback
-  // (SubTropica.wl: toBool["findRoots", True]) and avoids surprising
-  // "not linearly reducible" failures on cases that look like they
-  // ought to work.  Users who want the cheaper non-FindRoots path can
-  // uncheck.
-  findRoots: true,
-  // B13: same kind of mismatch.  STIntegrate's MethodLR default is
-  // "Lungo" (and the kernel JSON parser falls back to "Lungo" when
-  // missing); the UI was hardcoding "Espresso", which is the cheaper
-  // path that doesn't handle as many topologies.
+  // Defaults-contract (2026-06-11, supersedes B13): every value here must
+  // MIRROR the package default in Options[STEvaluateGraph] so a UI run with
+  // untouched controls is indistinguishable from a bare STIntegrate[...]
+  // call.  FindRoots' package default is Automatic: search without roots
+  // first, escalate to FindRoots -> True only when every gauge is NOLR
+  // (B17 per-face cascade).  Tri-state select: 'Automatic' | 'True' |
+  // 'False' (legacy saved diagrams may still carry booleans; loaders
+  // normalize).
+  findRoots: 'Automatic',
+  // STIntegrate's MethodLR default is "Lungo" (the thorough
+  // discriminant/resultant LR search; "Espresso" is the cheaper heuristic).
+  // NB: MethodLR selects the LR-ORDER SEARCH algorithm, not the integrator
+  // backend -- the symbolic integrator defaults to HyperFLINT when
+  // available (Options[STEvaluateGraph], "Integrator") and is logged by
+  // the kernel in the computation log / Setup panel.
   methodLR: 'Lungo',
 };
 
@@ -5716,6 +5816,40 @@ function onGraphChanged() {
   syncNotebookBtn();
 }
 
+// Build (once) and cache the canonical Nickel index and per-config JS label
+// arrays on the live library object.  Extracted from doLiveMatch() so that
+// (a) the single-source-of-truth rule holds and (b) the index can be prebuilt
+// via requestIdleCallback after library load, keeping the synchronous build
+// (~1000 canonicalize() calls) off the critical first-paint path.
+function ensureCanonIndex() {
+  if (!library || !library.topologies || library._canonIndex) return;
+  // Build canonical Nickel index: re-canonicalize each library topology's
+  // Nickel using the same canonicalize() function the canvas uses, so both
+  // forms match.  Also precompute JS-canonical-ordered labels for each config,
+  // so matching can compare labels 1:1 with canvasMasses even when Python and
+  // JS canonicalizers pick different representatives for the same graph.
+  library._canonIndex = {};  // canonicalNickel -> [libraryKey, ...]
+  for (const key in library.topologies) {
+    try {
+      const n = Nickel.fromString(key);
+      const c = canonicalize(n.edges);
+      const canon = c.string;
+      if (!library._canonIndex[canon]) library._canonIndex[canon] = [];
+      library._canonIndex[canon].push(key);
+      // Precompute JS-canonical labels for each config under this topology.
+      const topoObj = library.topologies[key];
+      const cfgs = topoObj.configs || {};
+      for (const ck in cfgs) {
+        try {
+          cfgs[ck]._jsLabels = libraryConfigLabelsInJSOrder(key, ck);
+        } catch (_) {
+          cfgs[ck]._jsLabels = null;
+        }
+      }
+    } catch (_) {}
+  }
+}
+
 function doLiveMatch() {
   updateIntegralCard();
   const edgeData = buildEdgeData();
@@ -5783,33 +5917,12 @@ function doLiveMatch() {
       }
     } catch (_) { /* collapsed topology may be degenerate — skip silently */ }
 
-    // Build canonical Nickel index: re-canonicalize each library topology's Nickel
-    // using the same canonicalize() function the canvas uses, so both forms match.
-    // Also precompute JS-canonical-ordered labels for each config, so matching
-    // can compare labels 1:1 with canvasMasses even when Python and JS
-    // canonicalizers pick different representatives for the same graph.
-    if (!library._canonIndex) {
-      library._canonIndex = {};  // canonicalNickel -> [libraryKey, ...]
-      for (const key in library.topologies) {
-        try {
-          const n = Nickel.fromString(key);
-          const c = canonicalize(n.edges);
-          const canon = c.string;
-          if (!library._canonIndex[canon]) library._canonIndex[canon] = [];
-          library._canonIndex[canon].push(key);
-          // Precompute JS-canonical labels for each config under this topology.
-          const topoObj = library.topologies[key];
-          const cfgs = topoObj.configs || {};
-          for (const ck in cfgs) {
-            try {
-              cfgs[ck]._jsLabels = libraryConfigLabelsInJSOrder(key, ck);
-            } catch (_) {
-              cfgs[ck]._jsLabels = null;
-            }
-          }
-        } catch(_) {}
-      }
-    }
+    // Ensure the canonical Nickel index and per-config JS label arrays are
+    // built.  The actual work lives in ensureCanonIndex() so it can also be
+    // triggered off the critical path via requestIdleCallback after library
+    // load (see loadLibrary()).  This call is a no-op when the idle prebuild
+    // already ran.
+    ensureCanonIndex();
 
     const matches = [];
     const seenTopoKeys = new Set();
@@ -7180,7 +7293,7 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
 
     // ── Computed Results section ──
     let results = cfg.results || cfg.Results || [];
-    // Ristretto proposal records (operator decision 2026-06-07): the
+    // Odd-letter engine proposal records (operator decision 2026-06-07): the
     // "singularities" and "proposed-alphabet" resultTypes are NOT ordinary
     // computed Laurent results. Split them off so the main result loop
     // never builds a malformed card for them; they render in their own
@@ -7218,7 +7331,12 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
       const _resSuffix = _isLocalCfg ? ' (local)' : '';
       resultsSection.innerHTML = `<div class="popup-section-title"><span class="${_resStarClass}">\u2605</span> Computed Results${_resSuffix}</div>`;
 
-      results.forEach(r => {
+      // Results-split (spec §4.2): a stub record carries only the inline
+      // resultTeXPreview until ensureResultData merges the heavy sibling.
+      // The card is built by a closure so the post-merge refresh can rebuild
+      // the WHOLE card — TeX, symbol, alphabet, and the action bar, whose
+      // buttons are gated on heavy fields at build time (Plan-1 finding M1).
+      const buildResultCard = (r) => {
         const groupKey = `${r.dimension || ''}|${r.epsOrder ?? ''}`;
         const inDisagreement = disagreeingKeys.has(groupKey);
         const card = document.createElement('div');
@@ -7352,28 +7470,31 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
 
         card.innerHTML = html;
 
-        // Render TeX preview: use existing resultTeX, or decode from compressed on demand
+        // Render TeX preview: full resultTeX when available, the split
+        // record's inline resultTeXPreview while (or in case) the sibling
+        // fetch is pending/failed, or decode from compressed on demand.
         const texEl = card.querySelector('.popup-result-tex');
-        if (r.resultTeX && texEl) {
-          // Legacy path: resultTeX already available
+        const texSrc = r.resultTeX || r.resultTeXPreview;
+        if (texSrc && texEl) {
+          // Legacy path: resultTeX (or the inline preview) already available
           try {
-            const cleaned = cleanTeX(r.resultTeX);
+            const cleaned = cleanTeX(texSrc);
             katex.render('\\displaystyle ' + cleaned, texEl, {
               throwOnError: false, displayMode: true, maxSize: Infinity, maxExpand: 10000, trust: true
             });
           } catch {
             // KaTeX internal error — try again in non-display mode (more lenient)
             try {
-              katex.render(cleanTeX(r.resultTeX), texEl, {
+              katex.render(cleanTeX(texSrc), texEl, {
                 throwOnError: false, displayMode: false, maxSize: Infinity, trust: true
               });
             } catch {
               // Final fallback: formatted code block
               texEl.innerHTML = '<pre class="result-tex-fallback">' +
-                r.resultTeX.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</pre>';
+                texSrc.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</pre>';
             }
           }
-          texEl._texStr = r.resultTeX;
+          texEl._texStr = texSrc;
         } else if (r.resultCompressed && texEl && backendMode === 'full') {
           // On-demand decode from binary via kernel
           texEl.innerHTML = '<span style="color:var(--text-muted);font-size:11px">Decoding result\u2026</span>';
@@ -7383,7 +7504,7 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
               const label = dec.truncated ? ' + \\cdots' : '';
               try {
                 katex.render('\\displaystyle ' + cleaned + label, texEl, {
-                  throwOnError: false, displayMode: true, maxSize: 500
+                  throwOnError: false, displayMode: true, maxSize: 500, maxExpand: 10000
                 });
               } catch { texEl.textContent = dec.resultTeX; }
               texEl._texStr = dec.resultTeX;
@@ -7394,7 +7515,7 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
                 card.querySelector('.popup-result-symbol-details')?.removeAttribute('hidden');
                 try {
                   katex.render('\\displaystyle ' + dec.symbolTeX, symEl2, {
-                    throwOnError: false, displayMode: true, maxSize: 500
+                    throwOnError: false, displayMode: true, maxSize: 500, maxExpand: 10000
                   });
                 } catch { symEl2.textContent = dec.symbolTeX; }
               }
@@ -7407,6 +7528,11 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
         } else if (r.resultCompressed && texEl) {
           // Online mode: no kernel — show what we can
           texEl.innerHTML = '<span style="color:var(--text-muted);font-style:italic">Result stored as binary. Download .nb or open in Mathematica.</span>';
+        } else if (r.resultDataId && texEl) {
+          // Stub with no usable inline preview (resultTeXTruncated): hold a
+          // loading line until the sibling fetch resolves and the card is
+          // rebuilt (or fails, leaving this in place as the honest state).
+          texEl.innerHTML = '<span style="color:var(--text-muted);font-size:11px">Loading full result…</span>';
         } else if (texEl) {
           texEl.style.display = 'none';
         }
@@ -7418,7 +7544,7 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
           if (symbolEl && symTex && typeof katex !== 'undefined') {
             try {
               katex.render('\\displaystyle ' + symTex, symbolEl, {
-                throwOnError: false, displayMode: true, maxSize: 500
+                throwOnError: false, displayMode: true, maxSize: 500, maxExpand: 10000
               });
             } catch { symbolEl.textContent = symTex; }
           }
@@ -7480,13 +7606,32 @@ function openDetailPanel(topoKey, topo, configMatches, configKey, opts) {
           }
         });
 
+        return card;
+      };
+
+      results.forEach(r => {
+        const card = buildResultCard(r);
         resultsSection.appendChild(card);
+        // Stub record: fetch the heavy sibling and rebuild this card when
+        // the merge lands (mirrors the kernel.post('decodeResult', ...)
+        // async refresh above — a card detached by a later re-render is
+        // simply replaced in the void, harmlessly).
+        if (r.resultDataId && !r.resultCompressed) {
+          ensureResultData(topoKey, configKey).then(merged => {
+            if (!card.isConnected) return;
+            if (merged) { card.replaceWith(buildResultCard(r)); return; }
+            // No record merged: swap the indefinite loading line for the
+            // honest preview-only state (review A5, spec §10).
+            markResultDataUnavailable(card.querySelector('.popup-result-tex'),
+              !!r.resultTeXPreview);
+          });
+        }
       });
 
       content.appendChild(resultsSection);
     }
 
-    // Ristretto proposal records render LAST, in their own section, so a
+    // Odd-letter engine proposal records render LAST, in their own section, so a
     // singular-locus / proposed-alphabet proposal is never confused with a
     // numerically verified computed result. Fires whenever proposals are
     // present, including the proposals-only case (no ordinary results).
@@ -10364,7 +10509,16 @@ $('export-menu-btn').addEventListener('click', (evt) => {
 // Notebook download button
 const nbDlBtn = document.getElementById('notebook-dl-btn');
 if (nbDlBtn) {
-  nbDlBtn.addEventListener('click', () => downloadStarterNotebook(buildNotebookPayloadFromCurrentState()));
+  // Results-split (review B1): an exact library match may carry stub
+  // Results records whose heavy fields (resultCompressed, resultTeX, …)
+  // live in the sibling results.json; await the merge before rendering or
+  // the notebook silently embeds an empty Results[0] (mirrors
+  // downloadResultNotebook).
+  nbDlBtn.addEventListener('click', async () => {
+    const { payload, topoKey, configKey } = resolveNotebookPayloadFromCurrentState();
+    if (topoKey !== null) await ensureResultData(topoKey, configKey);
+    downloadStarterNotebook(payload);
+  });
 }
 function syncNotebookBtn() {
   if (nbDlBtn) nbDlBtn.disabled = !(state.edges && state.edges.length > 0);
@@ -11709,7 +11863,11 @@ function syncAdvancedToForm() {
   $('cfg-setup-parallel').value = c.setupInParallel;
   $('cfg-clear-caches').checked = c.clearCaches;
   $('cfg-reuse-results').checked = c.reuseResults;
-  $('cfg-find-roots').checked = c.findRoots;
+  // Tri-state select; normalize legacy boolean values from diagrams saved
+  // before the 2026-06-11 switch to the Automatic package default.
+  $('cfg-find-roots').value =
+    c.findRoots === true ? 'True' :
+    c.findRoots === false ? 'False' : (c.findRoots || 'Automatic');
   $('cfg-method-lr').value = c.methodLR;
   $('cfg-select-faces').value = c.selectFaces;
   $('cfg-stop-at').value = c.stopAt;
@@ -11760,7 +11918,7 @@ function syncConfigToState() {
   c.setupInParallel = $('cfg-setup-parallel').value;
   c.clearCaches = $('cfg-clear-caches').checked;
   c.reuseResults = $('cfg-reuse-results').checked;
-  c.findRoots = $('cfg-find-roots').checked;
+  c.findRoots = $('cfg-find-roots').value;
   c.methodLR = $('cfg-method-lr').value;
   c.selectFaces = $('cfg-select-faces').value;
   c.stopAt = $('cfg-stop-at').value;
@@ -11824,7 +11982,9 @@ function buildSTIntegrateOpts() {
   if (c.gauge && c.gauge !== d.gauge) opts.push(`"Gauge" -> ${c.gauge}`);
   sym('includeGauges', 'IncludeGauges', d.includeGauges);
   str('methodLR', 'MethodLR', d.methodLR);
-  bool('findRoots', 'FindRoots', d.findRoots);
+  // Tri-state ('Automatic'/'True'/'False'); sym() capitalizes these as
+  // Mathematica symbols and skips the default-matching value.
+  sym('findRoots', 'FindRoots', d.findRoots);
 
   // Scoring
   str('heuristic', 'Heuristic', d.heuristic);
@@ -13768,6 +13928,13 @@ function renderSetupPanel() {
     ['External masses', rec.externalMasses],
     ['Prop exponents',  rec.propExponents],
     ['Numerator rows',  String(rec.numeratorRows ?? 0)],
+    // Backends actually used (kernel-resolved; HyperFLINT when available
+    // for BOTH the symbolic integrator and the LR-order search engine).
+    // Distinct from the LR algorithm — Lungo/Espresso/Doppio name the
+    // linear-reducibility SEARCH strategy, not a backend.
+    ['Integrator',      rec.integrator],
+    ['LR backend',      rec.lrOrderBackend],
+    ['LR method',       rec.methodLR],
   ].filter(([_, v]) => v != null && v !== '');
 
   // Toolbar row with a Copy STIntegrate button on the right. The tab
@@ -13858,41 +14025,6 @@ function _katexToHTML(tex, displayMode) {
 }
 function escapeHTML(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-// Given LaTeX strings for the two roots of a quadratic (produced by
-// Mathematica's TeXForm of the Together'd Sqrt expressions), build a single
-// unified form that writes both roots with `\pm` instead of separate `\sqrt`
-// terms. The two inputs always differ in exactly one place — a leading `-`
-// on the `\sqrt{...}` subterm — so longest-common-prefix + longest-common-
-// suffix localises the single edit, which we rewrite to `\pm \sqrt{...}`.
-// On any mismatch the caller gets back `plusTeX` (fallback: show one root
-// explicitly rather than produce a wrong ± form).
-function buildPmTeX(minusTeX, plusTeX) {
-  const m = (minusTeX || '').trim();
-  const p = (plusTeX  || '').trim();
-  if (!m || !p) return p || m;
-  if (m === p) return p;
-  let lp = 0;
-  while (lp < m.length && lp < p.length && m[lp] === p[lp]) lp++;
-  let ls = 0;
-  while (ls < m.length - lp && ls < p.length - lp &&
-         m[m.length - 1 - ls] === p[p.length - 1 - ls]) ls++;
-  const mMid = m.slice(lp, m.length - ls).trim();
-  const pMid = p.slice(lp, p.length - ls).trim();
-  const prefix = m.slice(0, lp);
-  const suffix = p.slice(p.length - ls);
-  // Case A: the minus-root has a lone `-` where the plus-root has nothing —
-  // typical after Together'd TeX renders ± as a sign flip on \sqrt{...}. The
-  // pm equation puts \pm at the lost `-` position.
-  if (mMid === '-' && pMid === '') return prefix + '\\pm ' + suffix;
-  if (pMid === '-' && mMid === '') return prefix + '\\mp ' + suffix;
-  // Case B: one mid carries `-\sqrt{...}`, the other carries `\sqrt{...}`.
-  const reSqrt = /^-\s*(\\sqrt.*)$/;
-  if (reSqrt.test(mMid) && /^\\sqrt/.test(pMid))
-    return prefix + '\\pm ' + mMid.match(reSqrt)[1] + suffix;
-  if (reSqrt.test(pMid) && /^\\sqrt/.test(mMid))
-    return prefix + '\\pm ' + pMid.match(reSqrt)[1] + suffix;
-  return p;  // fallback: at least one concrete root
 }
 
 function _algebraicTooltipHTML(wm, wp) {
@@ -14074,7 +14206,7 @@ function renderAlphabetPills(container, wDefinitions, fallbackAlphabet) {
   }
 }
 
-// Ristretto proposal records (operator decision 2026-06-07). Renders the
+// Odd-letter engine proposal records (operator decision 2026-06-07). Renders the
 // two new Results record types at the BOTTOM of a config's result list:
 //
 //   resultType "singularities"     -> badge "Singularities"; a KaTeX list
@@ -14123,7 +14255,7 @@ function renderProposalRecords(content, records) {
     const typeBadge = isSing
       ? '<span class="badge badge-teal">Singularities</span>'
       : '<span class="badge badge-purple">Proposed alphabet</span>';
-    const propBadge = '<span class="badge badge-proposal" title="Proposal: an Euler-discriminant singular locus / Ristretto FindLetters alphabet, not a numerically verified result.">proposal</span>';
+    const propBadge = '<span class="badge badge-proposal" title="Proposal: an Euler-discriminant singular locus / odd-letter engine FindLetters alphabet, not a numerically verified result.">proposal</span>';
     const prov = r.provenance || {};
     const provBits = [];
     if (prov.engine) provBits.push(prov.engine);
@@ -14211,260 +14343,6 @@ function renderProposalRecords(content, records) {
     section.appendChild(card);
   });
   content.appendChild(section);
-}
-
-function cleanSymbolTeX(tex) {
-  if (!tex) return '';
-  // Inside an aligned block the '&' column markers are meaningful, so only
-  // apply the cleanTeX physics substitutions; skip the '&\colon' strip.
-  if (/\\begin\{aligned\}/.test(tex)) return cleanTeX(tex);
-  // Otherwise strip the stray alignment marker AND run the full cleanTeX
-  // pipeline so the symbol preview picks up the same p(1)→p_{1} substitutions
-  // used by the main result view.
-  return cleanTeX(tex.replace(/&\\colon/g, '\\colon'));
-}
-
-// Strip the outer \left(…\right) pair around every \operatorname{H}\left(…\right)
-// group. Walks the string and tracks \left/\right nesting so the
-// matching close is found even when the body contains further
-// \left … \right pairs (e.g., \left\lbrace … \right\rbrace inside an H).
-// Without this, a naive regex replace on just the opener would leave a
-// dangling \right) that KaTeX rejects.
-function stripHlogOuterDelim(s) {
-  const OPENER = '\\operatorname{H}\\left(';
-  let out = '';
-  let i = 0;
-  while (true) {
-    const k = s.indexOf(OPENER, i);
-    if (k < 0) { out += s.substring(i); return out; }
-    out += s.substring(i, k) + '\\operatorname{H}(';
-    let j = k + OPENER.length;
-    let depth = 1;
-    let rightStart = -1;
-    while (j < s.length) {
-      // \left / \right tokens must be followed by a non-letter delimiter
-      // (e.g. `(`, `\{`, `\rbrace`) — guard so we don't match \leftarrow etc.
-      if (s.startsWith('\\left', j) && /[^a-zA-Z]/.test(s[j + 5] || ' ')) {
-        depth++;
-        j += 5;
-      } else if (s.startsWith('\\right', j) && /[^a-zA-Z]/.test(s[j + 6] || ' ')) {
-        if (depth === 1) { rightStart = j; j += 6; break; }
-        depth--;
-        j += 6;
-      } else {
-        j++;
-      }
-    }
-    if (rightStart < 0) {
-      // No matching \right — bail and leave the remainder untouched.
-      out += s.substring(k + OPENER.length);
-      return out;
-    }
-    // Copy the body, skipping the \right token itself.
-    out += s.substring(k + OPENER.length, rightStart);
-    i = j;
-  }
-}
-
-function cleanTeX(tex) {
-  if (!tex) return '';
-  var t = tex;
-
-  // Strip Null artifacts from CenterDot postprocessing failures
-  t = t.replace(/\\text\{Null\}/g, '?');
-  t = t.replace(/\bNull\b/g, '?');
-
-  // Step 1: Strip \text{} wrappers (handle nested braces iteratively)
-  function stripText(s) {
-    var prev = '';
-    while (prev !== s) {
-      prev = s;
-      s = s.replace(/\\text\{([A-Za-z0-9_]+)\}/g, '$1');
-      s = s.replace(/\\text\{([^{}]*\{[^{}]*\}[^{}]*)\}/g, '$1');
-      s = s.replace(/\\text\{([^{}]+)\}/g, function(m, p1) {
-        if (/^[A-Za-z0-9_{}\\^]+$/.test(p1)) return p1;
-        if (/\s/.test(p1)) return '\\textrm{' + p1 + '}';  // preserve spaces
-        return '\\mathrm{' + p1 + '}';
-      });
-    }
-    return s;
-  }
-  t = stripText(t);
-
-  // Step 2: Physics substitutions
-  // Momentum bracket notation from TeXForm: p(1) -> p_{1}, l(1) -> \ell_{1}
-  t = t.replace(/\bl\((\d+)\)/g, '\\ell_{$1}');
-  t = t.replace(/\bp\((\d+)\)/g, 'p_{$1}');
-  t = t.replace(/\bk\((\d+)\)/g, 'k_{$1}');
-  t = t.replace(/\bq\((\d+)\)/g, 'q_{$1}');
-  // Mass-squared variables: mm/MM prefix means "mass squared".
-  // Numeric index: mm1 -> m_{1}^2, MM1 -> M_{1}^2
-  // With power: mm1^2 -> m_{1}^4 (double the exponent since mm = m^2)
-  t = t.replace(/\bmm(\d+)\^\{?(\d+)\}?/g, function(m, idx, p) { return 'm_{' + idx + '}^{' + (2*parseInt(p)) + '}'; });
-  t = t.replace(/\bMM(\d+)\^\{?(\d+)\}?/g, function(m, idx, p) { return 'M_{' + idx + '}^{' + (2*parseInt(p)) + '}'; });
-  t = t.replace(/\bmm(\d+)/g, 'm_{$1}^2');
-  t = t.replace(/\bMM(\d+)/g, 'M_{$1}^2');
-  // Alphabetic index: mmH -> m_{H}^2, mmtop -> m_{top}^2, MMW -> M_{W}^2
-  t = t.replace(/\bmm([A-Z][a-z]*)\^\{?(\d+)\}?/g, function(m, idx, p) { return 'm_{' + idx + '}^{' + (2*parseInt(p)) + '}'; });
-  t = t.replace(/\bMM([A-Z][a-z]*)\^\{?(\d+)\}?/g, function(m, idx, p) { return 'M_{' + idx + '}^{' + (2*parseInt(p)) + '}'; });
-  t = t.replace(/\bmm([A-Z][a-z]*)/g, 'm_{$1}^2');
-  t = t.replace(/\bMM([A-Z][a-z]*)/g, 'M_{$1}^2');
-  // Bare mm/MM (single mass scale): mm -> m^2, MM -> M^2
-  t = t.replace(/\bmm\^\{?(\d+)\}?/g, function(m, p) { return 'm^{' + (2*parseInt(p)) + '}'; });
-  t = t.replace(/\bmm\b/g, 'm^2');
-  t = t.replace(/\bMM\^\{?(\d+)\}?/g, function(m, p) { return 'M^{' + (2*parseInt(p)) + '}'; });
-  t = t.replace(/\bMM\b/g, 'M^2');
-  // Mass variables: m(2) -> m_{2}, M(2) -> M_{2}
-  t = t.replace(/\bm\((\d+)\)/g, 'm_{$1}');
-  t = t.replace(/\bM\((\d+)\)/g, 'M_{$1}');
-  // Mass with indices: M1 -> M_{1}, m1 -> m_{1}
-  t = t.replace(/\bM(\d+)/g, 'M_{$1}');
-  t = t.replace(/\bm(\d+)/g, 'm_{$1}');
-  // Schwinger parameters: x1 -> x_{1}
-  t = t.replace(/\bx(\d+)/g, 'x_{$1}');
-  // Mandelstam: s(23) -> s_{23}, s12 -> s_{12}
-  t = t.replace(/\bs\((\d+)\)/g, 's_{$1}');
-  t = t.replace(/\bs(\d{2,})/g, 's_{$1}');
-  // External momentum squared: p1sq^2 -> M_{1}^4, p1sq -> M_{1}^2
-  t = t.replace(/\bp(\d+)sq\^\{?(\d+)\}?/g, function(m, idx, p) { return 'M_{' + idx + '}^{' + (2*parseInt(p)) + '}'; });
-  t = t.replace(/\bp(\d+)sq\b/g, 'M_{$1}^2');
-  // Gamma roots: g1 -> g_{1}, gp -> g_{+}, gm -> g_{-}
-  t = t.replace(/\bgp\b/g, 'g_{+}');
-  t = t.replace(/\bgm\b/g, 'g_{-}');
-  t = t.replace(/\bg(\d+)/g, 'g_{$1}');
-  // eps -> \varepsilon
-  t = t.replace(/\beps\b/g, '\\varepsilon');
-  // O[...] and O(...) -> \mathcal{O}
-  t = t.replace(/O\(([^)]*)\)/g, '\\mathcal{O}\\left($1\\right)');
-  t = t.replace(/O\[([^\]]*)\]/g, '\\mathcal{O}\\left($1\\right)');
-  t = t.replace(/O\\left\(/g, '\\mathcal{O}\\left(');
-  t = t.replace(/O\(/g, '\\mathcal{O}(');
-  // Log -> \log, Hlog -> \operatorname{H}
-  t = t.replace(/(?<!\\)\bHlog\b/g, '\\operatorname{H}');
-  t = t.replace(/(?<!\\)\bLog\b/g, '\\log');
-  // Pi -> \pi
-  t = t.replace(/(?<!\\)\bPi\b/g, '\\pi');
-  // EulerGamma -> \gamma_E
-  t = t.replace(/\bEulerGamma\b/g, '\\gamma_E');
-  // Exponential: e^{...} -> \mathrm{e}^{...}
-  t = t.replace(/(?<![a-zA-Z])e\^/g, '\\mathrm{e}^');
-  // PolyGamma[n, m] -> \psi^{(n)}(m)
-  t = t.replace(/PolyGamma\[(\d+),\s*(\d+)\]/g, '\\psi^{($1)}($2)');
-  t = t.replace(/\bPolyGamma\b/g, '\\psi');
-  // Hlog[z, {a,b,c}] -> \mathrm{Hlog}(z; a,b,c)
-  t = t.replace(/\\text\{Hlog\}/g, '\\mathrm{Hlog}');
-  t = t.replace(/Hlog\[([^,\]]+),\s*\\?\{([^}]*?)\\?\}\]/g, function(m, z, args) {
-    return '\\mathrm{Hlog}\\!\\left(' + z + ';\\,' + args.replace(/,\s*/g, ',\\,') + '\\right)';
-  });
-  t = t.replace(/\\mathrm\{Hlog\}\(([^,)]+),\s*\\?\{([^}]*?)\\?\}\)/g, function(m, z, args) {
-    return '\\mathrm{Hlog}\\!\\left(' + z + ';\\,' + args.replace(/,\s*/g, ',\\,') + '\\right)';
-  });
-  t = t.replace(/\bHlog\b/g, '\\mathrm{Hlog}');
-  // mzv[a,b,c] -> \zeta_{a,b,c}
-  t = t.replace(/\\text\{mzv\}/g, '\\zeta');
-  t = t.replace(/mzv\[([^\]]+)\]/g, function(m, args) {
-    var idx = args.replace(/[{}\\]/g, '').replace(/\s+/g, '').replace(/,/g, ',');
-    return '\\zeta_{' + idx + '}';
-  });
-  t = t.replace(/\\mathrm\{mzv\}\(([^)]+)\)/g, function(m, args) {
-    var idx = args.replace(/[{}\\]/g, '').replace(/\s+/g, '').replace(/,/g, ',');
-    return '\\zeta_{' + idx + '}';
-  });
-  t = t.replace(/\bmzv\b/g, '\\zeta');
-  // Zeta[n] -> \zeta_n
-  t = t.replace(/\\text\{Zeta\}/g, '\\zeta');
-  t = t.replace(/Zeta\[(\d+)\]/g, '\\zeta_{$1}');
-  t = t.replace(/\\zeta\s*\((\d+)\)/g, '\\zeta_{$1}');
-  t = t.replace(/(?<!\\)\bZeta\b/g, '\\zeta');
-  // Gamma function
-  t = t.replace(/(?<!\\)\bGamma\b/g, '\\Gamma');
-  // Sqrt
-  t = t.replace(/(?<!\\)\bSqrt\b/g, '\\sqrt');
-
-  // Step 3: Remaining \text{} -> \mathrm{}
-  t = t.replace(/\\text\{([^{}]*)\}/g, '\\mathrm{$1}');
-
-  // Step 3b: KaTeX compatibility fixes
-  // \left\{ and \right\} as set braces cause nesting issues in KaTeX.
-  // Replace with \lbrace / \rbrace which are plain delimiters.
-  t = t.replace(/\\left\\{/g, '\\left\\lbrace ');
-  t = t.replace(/\\right\\}/g, '\\right\\rbrace ');
-  // Unmatched \left..\right from TeXForm: strip to plain parens
-  // Count left/right balance; if off, strip all \left \right
-  var lc = (t.match(/\\left[^a-zA-Z]/g) || []).length;
-  var rc = (t.match(/\\right[^a-zA-Z]/g) || []).length;
-  if (lc !== rc) {
-    t = t.replace(/\\left\s*([(\[{.|])/g, '$1');
-    t = t.replace(/\\right\s*([)\]}.)|])/g, '$1');
-    t = t.replace(/\\left\\lbrace\s*/g, '\\{');
-    t = t.replace(/\\right\\rbrace\s*/g, '\\}');
-  }
-  // \operatorname{H}\left(\left\{...\right\},...\right) pattern from Hlog.
-  // The outer \left(…\right) pair is redundant for KaTeX and tends to
-  // trip up its nested-bracket parser. Strip both halves together
-  // (balance-aware) — a naive `\left(` → `(` replace would leave the
-  // matching `\right)` dangling and KaTeX would error out on the
-  // unbalanced `\right)`.
-  t = stripHlogOuterDelim(t);
-  t = t.replace(/\\operatorname\{H\}\\\!/g, '\\operatorname{H}');
-
-  // Step 4: Clean up spacing
-  t = t.replace(/\\log \^/g, '\\log^');
-
-  // Step 4a: balance \begin{aligned} / \end{aligned}.  The library's
-  // save-side TeX generator occasionally truncates long results at
-  // '+ \cdots' without closing the environment (KaTeX then fails with
-  // "Expected & or \\ or \cr or \end").  Also guards against stray
-  // \begin without a matching \end and vice versa.  Same treatment for
-  // \left[ / \right] pairs that get cut mid-expression.
-  {
-    const nBegin = (t.match(/\\begin\{aligned\}/g) || []).length;
-    const nEnd   = (t.match(/\\end\{aligned\}/g) || []).length;
-    if (nBegin > nEnd) t += '\\end{aligned}'.repeat(nBegin - nEnd);
-    else if (nEnd > nBegin) t = '\\begin{aligned}'.repeat(nEnd - nBegin) + t;
-  }
-  {
-    // Any `\right<d>` form closes a `\left`, including `\right.` (matches
-    // any opener).  Count `\left<nonletter>` and `\right<nonletter>`
-    // tokens so the balancer doesn't double-close when truncation already
-    // appended `\right.` closers (see stTruncateTeX).
-    const nL = (t.match(/\\left(?![A-Za-z])/g) || []).length;
-    const nR = (t.match(/\\right(?![A-Za-z])/g) || []).length;
-    if (nL > nR) t += '\\right.'.repeat(nL - nR);
-  }
-
-  // Step 4b: wrap double superscripts.  SubTropica's stored TeX emits raw
-  // patterns like `W_1^-^{-1}` or `m^2^2` or `(W_1^+)^{-1}` → `W_1^+^{-1}`
-  // that LaTeX parses as "A^B^C" — illegal without brace grouping.  KaTeX
-  // flags these as "Double superscript" and renders a red error.  Wrap the
-  // first superscript with its base so the second becomes unambiguous.
-  //
-  // Repeated passes handle triple-supers (A^B^C^D → {A^B}^C^D → {{A^B}^C}^D).
-  // The pattern below matches a base token (letter/group/subscripted-letter)
-  // followed by two consecutive superscript groups; replaces with one
-  // brace-wrapped combined base.
-  for (let pass = 0; pass < 4; pass++) {
-    const before = t;
-    t = t.replace(
-      // Base (letter with optional subscript, OR a single char, OR ) / ] / } close)
-      /([A-Za-z](?:_\{[^{}]*\}|_[A-Za-z0-9])?|[\)\]\}])\^(\{[^{}]*\}|[A-Za-z0-9+\-])\^(\{|\S)/g,
-      '{$1^$2}^$3');
-    if (t === before) break;
-  }
-
-  // Step 5: Compact +/- operators ({+} and {-} render tighter in KaTeX)
-  // Only replace at brace depth 0 to avoid breaking \frac{a-b}{c+d}
-  var out = '', depth = 0;
-  for (var ci = 0; ci < t.length; ci++) {
-    if (t[ci] === '{') { depth++; out += '{'; }
-    else if (t[ci] === '}') { depth--; out += '}'; }
-    else if (depth === 0 && (t[ci] === '+' || t[ci] === '-')) {
-      out += '{' + t[ci] + '}';
-    } else { out += t[ci]; }
-  }
-  t = out;
-
-  return t;
 }
 
 function wrapSymanzikIntegral(bodyTeX, nvars) {
@@ -14741,7 +14619,7 @@ function onIntegrationComplete(data) {
         }
         if (cleaned && typeof katex !== 'undefined') {
           try {
-            katex.render('\\displaystyle ' + cleaned, texView, { throwOnError: false, displayMode: true, maxSize: 500 });
+            katex.render('\\displaystyle ' + cleaned, texView, { throwOnError: false, displayMode: true, maxSize: 500, maxExpand: 10000 });
           } catch {
             texView.textContent = data.resultTeX || data.result;
           }
@@ -14757,7 +14635,7 @@ function onIntegrationComplete(data) {
           if (symbolView && symTex && typeof katex !== 'undefined') {
             try {
               katex.render('\\displaystyle ' + symTex, symbolView, {
-                throwOnError: false, displayMode: true, maxSize: 500
+                throwOnError: false, displayMode: true, maxSize: 500, maxExpand: 10000
               });
             } catch { symbolView.textContent = symTex; }
           }
@@ -15367,6 +15245,11 @@ function lookupLibraryResult(lockResult, payload) {
       const rEps = parseInt(r.epsOrder ?? -999);
       if (rEps < epsOrder) continue;
 
+      // Results-split note: stub records (resultDataId, heavy fields in the
+      // sibling results.json) fail this gate BY DESIGN. doIntegrate runs in
+      // full mode only, where /api/library serves entries pre-merged; a stub
+      // here means a degraded static fallback, and we prefer falling through
+      // to a fresh kernel integration over a blocking sibling fetch.
       if (!r.resultCompressed && !r.resultInputForm) continue;
 
       // ── Hard check: propagator exponents (internal-edge portion only) ──
@@ -15876,10 +15759,12 @@ async function checkLinearReducibility() {
     }
 
     let verdict;
-    if (basePayload.findRoots) {
-      // Panel already has FindRoots on — single pass is enough.
+    if (basePayload.findRoots === true || basePayload.findRoots === 'True') {
+      // Panel already has FindRoots forced on — single pass is enough.
       verdict = await runPass(true);
     } else {
+      // 'Automatic' (package default) and 'False'/false both start without
+      // roots; the escalation pass mirrors the kernel's Automatic cascade.
       verdict = await runPass(false);
       if (!verdict.isLR) verdict = await runPass(true);
     }
@@ -15905,20 +15790,33 @@ function closeIntegrationPanel() {
 // automatically from the payload shape.
 
 // Pick the right payload for the notebook renderer based on the current
-// canvas + library match state. Returns a library-entry-shaped object.
+// canvas + library match state, and report WHICH library entry matched so
+// callers can await its heavy sibling (results-split spec §4.2, review B1)
+// before rendering. Returns { payload, topoKey, configKey }; both keys are
+// null in the synthesized case (i), which has no sibling to fetch.
 //   - exact library match → the stored entry (cases ii/iii in the renderer)
 //   - otherwise           → synthesized from canvas state (case i)
-function buildNotebookPayloadFromCurrentState() {
+function resolveNotebookPayloadFromCurrentState() {
   if (currentMatches) {
     for (const m of currentMatches) {
       const cm = m.configMatches || {};
       const configs = m.topo.configs || {};
       for (const ck in configs) {
-        if (cm[ck] === 'exact') return configs[ck];
+        if (cm[ck] === 'exact') {
+          return { payload: configs[ck], topoKey: m.topoKey, configKey: ck };
+        }
       }
     }
   }
-  return buildNotebookPayloadFromState();
+  return { payload: buildNotebookPayloadFromState(), topoKey: null, configKey: null };
+}
+
+// Payload-only convenience wrapper. Safe at call sites that cannot see a
+// stub Results[0]: the no-stored-results modal branch (a matched entry with
+// stub results would have populated storedResults instead) and the offline
+// notebook preview that mirrors it.
+function buildNotebookPayloadFromCurrentState() {
+  return resolveNotebookPayloadFromCurrentState().payload;
 }
 
 // Synthesize a minimal library-entry payload from the current canvas state.
@@ -16121,7 +16019,7 @@ async function downloadStarterNotebook(entry, recordIdx = 0) {
 // full entry, but the per-result button in the modal still passes a stored
 // result record (which lives inside an entry's Results[]). When that's the
 // case, walk currentMatches to recover the owning entry.
-function downloadResultNotebook(resultRecord) {
+async function downloadResultNotebook(resultRecord) {
   // Find the entry whose Results[] contains this record.
   const matches = currentMatches || [];
   for (const m of matches) {
@@ -16132,10 +16030,18 @@ function downloadResultNotebook(resultRecord) {
       const results = configs[ck].Results || configs[ck].results || [];
       const idx = results.findIndex(r => r === resultRecord ||
         (r.recordId && resultRecord.recordId && r.recordId === resultRecord.recordId));
-      if (idx >= 0) return downloadStarterNotebook(configs[ck], idx);
+      if (idx >= 0) {
+        // Results-split (spec §4.2): the .nb embeds resultCompressed, which
+        // for a stub record lives in the sibling results.json. Await the
+        // merge or the notebook would silently embed an empty result.
+        await ensureResultData(m.topoKey, ck);
+        return downloadStarterNotebook(configs[ck], idx);
+      }
     }
   }
-  // Fallback: synthesize a minimal entry wrapping just this result.
+  // Fallback: synthesize a minimal entry wrapping just this result. (An
+  // unmatched stub has no topo/config key to fetch its sibling with; the
+  // notebook then embeds whatever the record carries inline.)
   const fallback = { CNickelIndex: 'unknown', edges: '{}', nodes: '{}',
     NumPropagators: (resultRecord.propExponents || []).length,
     Records: [], Results: [resultRecord] };
@@ -16612,7 +16518,11 @@ function openIntegrateModal() {
   resultHeader.appendChild(resultLabel);
   resultFrame.appendChild(resultHeader);
 
-  // Collect results only from exact-match configs
+  // Collect results only from exact-match configs. Results-split (spec
+  // §4.2): stub records (resultDataId + inline resultTeXPreview, heavy
+  // fields in the sibling results.json) are accepted alongside monolithic
+  // ones; the owning topo/config keys ride along so ensureResultData can
+  // fetch the sibling for each card below.
   const storedResults = [];
   if (currentMatches) {
     for (const m of currentMatches) {
@@ -16622,15 +16532,19 @@ function openIntegrateModal() {
         if (cm[ck] !== 'exact') continue;
         const results = configs[ck].results || configs[ck].Results || [];
         results.forEach(r => {
-          if (r.resultCompressed || r.resultTeX) storedResults.push(r);
+          if (r.resultCompressed || r.resultTeX || r.resultDataId || r.resultTeXPreview) {
+            storedResults.push({ r, topoKey: m.topoKey, configKey: ck });
+          }
         });
       }
     }
   }
 
   if (storedResults.length > 0) {
-    // Show precomputed results
-    storedResults.forEach(r => {
+    // Show precomputed results. Card construction lives in a closure so a
+    // stub card can be rebuilt in full (TeX + alphabet + symbol + action
+    // buttons) once ensureResultData merges the heavy sibling fields.
+    const buildStoredCard = (r) => {
       const card = document.createElement('div');
       card.style.cssText = 'border-left:3px solid var(--gold);padding:8px 12px;margin-bottom:10px;background:var(--bg-warm);border-radius:var(--radius)';
 
@@ -16663,15 +16577,22 @@ function openIntegrateModal() {
         card.appendChild(paramLine);
       }
 
-      // TeX preview
+      // TeX preview: full resultTeX when present, the split record's
+      // inline resultTeXPreview before the sibling merge lands. The class
+      // lets the stub-rebuild handler below address this div on a no-merge
+      // resolution (review A5).
       const texDiv = document.createElement('div');
+      texDiv.className = 'stored-result-tex';
       texDiv.style.cssText = 'overflow-x:auto;padding:4px 0;min-height:20px';
-      if (r.resultTeX && typeof katex !== 'undefined') {
+      const texSrc = r.resultTeX || r.resultTeXPreview;
+      if (texSrc && typeof katex !== 'undefined') {
         try {
-          katex.render('\\displaystyle ' + cleanTeX(r.resultTeX), texDiv, { throwOnError: false, displayMode: true, maxSize: 500 });
-        } catch { texDiv.textContent = r.resultTeX; }
+          katex.render('\\displaystyle ' + cleanTeX(texSrc), texDiv, { throwOnError: false, displayMode: true, maxSize: 500, maxExpand: 10000 });
+        } catch { texDiv.textContent = texSrc; }
       } else if (r.resultCompressed) {
         texDiv.innerHTML = '<span style="color:var(--text-muted);font-style:italic">Result stored as binary</span>';
+      } else if (r.resultDataId) {
+        texDiv.innerHTML = '<span style="color:var(--text-muted);font-style:italic">Loading full result…</span>';
       }
       card.appendChild(texDiv);
 
@@ -16693,7 +16614,7 @@ function openIntegrateModal() {
             wDefs.forEach(def => {
               const span = document.createElement('span');
               span.style.cssText = 'display:inline-block;padding:1px 6px;background:var(--surface);border-radius:3px;font-size:11px;border:1px solid var(--border)';
-              const tex = def.label + ' = ' + def.definition;
+              const tex = cleanTeX(def.label + ' = ' + def.definition);
               try { katex.render(tex, span, { throwOnError: false }); }
               catch { span.textContent = tex; }
               alphDiv.appendChild(span);
@@ -16702,8 +16623,9 @@ function openIntegrateModal() {
             alph.forEach(a => {
               const span = document.createElement('span');
               span.style.cssText = 'display:inline-block;padding:1px 6px;background:var(--surface);border-radius:3px;font-size:11px;border:1px solid var(--border)';
-              try { katex.render(a, span, { throwOnError: false }); }
-              catch { span.textContent = a; }
+              const aTex = cleanTeX(a);
+              try { katex.render(aTex, span, { throwOnError: false }); }
+              catch { span.textContent = aTex; }
               alphDiv.appendChild(span);
             });
           }
@@ -16732,7 +16654,7 @@ function openIntegrateModal() {
           const symDiv = document.createElement('div');
           symDiv.style.cssText = 'overflow-x:auto;padding:4px 0;margin-top:4px';
           try {
-            katex.render('\\displaystyle ' + symTex, symDiv, { throwOnError: false, displayMode: true, maxSize: 500 });
+            katex.render('\\displaystyle ' + symTex, symDiv, { throwOnError: false, displayMode: true, maxSize: 500, maxExpand: 10000 });
           } catch { symDiv.textContent = symTex; }
           symDetails.appendChild(symDiv);
           card.appendChild(symDetails);
@@ -16772,7 +16694,25 @@ function openIntegrateModal() {
         btns.appendChild(dlBtn);
       }
       card.appendChild(btns);
+      return card;
+    };
+
+    storedResults.forEach(({ r, topoKey, configKey }) => {
+      const card = buildStoredCard(r);
       resultFrame.appendChild(card);
+      // Stub record: fetch the heavy sibling, then rebuild the card (incl.
+      // symbol/alphabet sections and the action buttons, all gated on heavy
+      // fields at build time) once the merge lands.
+      if (r.resultDataId && !r.resultCompressed) {
+        ensureResultData(topoKey, configKey).then(merged => {
+          if (!card.isConnected) return;
+          if (merged) { card.replaceWith(buildStoredCard(r)); return; }
+          // No record merged: swap the indefinite loading line for the
+          // honest preview-only state (review A5, spec §10).
+          markResultDataUnavailable(card.querySelector('.stored-result-tex'),
+            !!r.resultTeXPreview);
+        });
+      }
     });
   } else {
     // No stored results — offer a starter notebook download. The notebook
@@ -17683,6 +17623,15 @@ function restoreDiagram() {
       // Restore computation config
       if (data.computeConfig) {
         Object.assign(computeConfig, data.computeConfig);
+        // Canonicalize findRoots to the tri-state string form at load
+        // time: diagrams saved before 2026-06-11 carry booleans, and
+        // relying on the Advanced-panel DOM round-trip to normalize
+        // would silently reset the value to 'Automatic' on deep-linked
+        // runs where the panel is never opened.
+        computeConfig.findRoots =
+          computeConfig.findRoots === true ? 'True' :
+          computeConfig.findRoots === false ? 'False' :
+          (computeConfig.findRoots || 'Automatic');
       }
       return true;
     }

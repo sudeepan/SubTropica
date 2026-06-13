@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -364,6 +365,29 @@ void reset_lr_memos() {
     g_lr_memo.factor_on = !env_flag_off("HF_LR_FACTOR_MEMO");
 }
 
+void reset_lr_trace() { g_lr_trace = LrTrace{}; }
+
+bool lr_letter_admissible(const Poly& p, size_t var_idx,
+                          const std::vector<size_t>& forbidden_after,
+                          long max_deg) {
+    const long d = p.degree_in_var(var_idx);
+    if (d < 1 || d > max_deg) return false;
+    if (d >= 2) {
+        // Forbidden-var check (parity with the runtime guard in
+        // linear_factors.cpp:1444-1460): a deg-2 letter whose Wm/Wp
+        // definition would use a not-yet-integrated Feynman parameter
+        // is refused at runtime; model the same rejection here.
+        std::vector<size_t> used = p.used_var_indices();
+        for (size_t v : forbidden_after) {
+            if (v == var_idx) continue;  // structural no-op, kept for parity
+            for (size_t u : used) {
+                if (u == v) return false;
+            }
+        }
+    }
+    return true;
+}
+
 namespace {
 
 // Enumerate all bitmask subsets of {0,...,n-1} of a given size.
@@ -397,11 +421,31 @@ std::vector<uint64_t> subsets_of_size(size_t n, size_t k) {
 // why the carry verdict cannot ride the best-score subset-DP memo: two
 // orders reaching the same `bits` may carry different obligations.
 //
-// We keep only the SCORE-MINIMAL admissible full-order (matching the DP's
-// MinimalBy and lr_scan's score sort), with its carried-sqrt profile and
-// the deg-2 letters encountered along it (for root_polys).  Score is the
-// same accumulator as the DP / scan: sum over groups of
-// leaf_count_proxy(parent-subset letters)^1.15 at each step.
+// We keep the lexicographic (carried_sqrts, nonexec, score)-minimal
+// admissible full-order (spec 4a.2 + 2026-06-11-carry-phase2 §4), with
+// its carried-sqrt profile and the deg-2 letters encountered along it
+// (for root_polys).  Score is the same accumulator as the DP / scan:
+// sum over groups of leaf_count_proxy(parent-subset letters)^1.15 at
+// each step.
+// Lexicographic (carried_sqrts, nonexec, score) strict improvement
+// test — single source of truth for CarryDfs' leaf keep and its
+// branch-and-bound prune (the prune is its negation; keeping them
+// mirrored by hand risks silent desync).  The middle coordinate (spec
+// P2 §4) prefers, at equal carried count, an order whose every
+// obligation is executable-shaped (single integration variable,
+// degree <= 2): carried orders compete as execution CANDIDATES, and a
+// cheaper executor-inadmissible order must not shadow an executable
+// one.  All three coordinates are monotone non-decreasing along a
+// path (score additive nonnegative; nsq increment-only; nonexec a
+// monotone OR — obligations are never un-minted), so the prune stays
+// sound by the Phase-1 argument.
+static bool lex_beats(unsigned long nsq_a, bool nonexec_a, double score_a,
+                      unsigned long nsq_b, bool nonexec_b, double score_b) {
+    if (nsq_a != nsq_b) return nsq_a < nsq_b;
+    if (nonexec_a != nonexec_b) return !nonexec_a;
+    return score_a < score_b;
+}
+
 struct CarryDfs {
     // set_table[bits] -> per-group letters (G lists), un-pruned.
     const std::unordered_map<uint64_t,
@@ -416,12 +460,42 @@ struct CarryDfs {
     std::vector<size_t> best_order;     // ctx indices
     std::vector<Poly>   best_roots;     // deg-2 letters along best path
     unsigned long best_nsq = 0, best_nkin = 0, best_ntq = 0;
+    bool best_nonexec = false;          // middle lex coordinate (spec P2 §4)
+
+    // diagnostic levers, latched once (getenv is not for hot loops)
+    const bool leaf_trace = std::getenv("HF_CARRY_LEAF_TRACE") != nullptr;
+    const bool no_prune   = std::getenv("HF_CARRY_NO_PRUNE") != nullptr;
 
     // current path's deg-2-letter accumulator (parallel to `order`)
     void dfs(uint64_t bits, std::vector<size_t>& order, double score,
              std::vector<Poly>& roots, const lr_scan::PathState& st) {
         if (order.size() == n) {
-            if (!found || score < best_score) {
+            // Leaf-profile trace (diagnostic, env-gated): the gate-4b /
+            // gate-8 derivation instrument.  Combine with
+            // HF_CARRY_NO_PRUNE=1 to enumerate EVERY admissible leaf
+            // (the branch-and-bound below otherwise skips provably-worse
+            // branches; disabling it never changes the kept best, only
+            // the visit count).
+            if (leaf_trace) {
+                std::string ord;
+                for (size_t v : order) {
+                    if (!ord.empty()) ord += ",";
+                    ord += std::to_string(v);
+                }
+                std::fprintf(stderr,
+                    "[carry-leaf] order=[%s] score=%.4f nsq=%lu nkin=%lu "
+                    "ntq=%lu nonexec=%d\n",
+                    ord.c_str(), score, st.nsq, st.nkin, st.ntq,
+                    (int) st.nonexec);
+            }
+            // Lexicographic (carried_sqrts, nonexec, score) minimum
+            // (spec 2026-06-10-carry-option-design.md 4a.2 + carry-phase2
+            // §4): an admissible uncarried order must never be shadowed
+            // by a cheaper carried one, and an executable-shaped carried
+            // order must never be shadowed by a cheaper executor-
+            // inadmissible one at equal carried count.
+            if (!found || lex_beats(st.nsq, st.nonexec, score,
+                                    best_nsq, best_nonexec, best_score)) {
                 found = true;
                 best_score = score;
                 best_order = order;
@@ -429,13 +503,23 @@ struct CarryDfs {
                 best_nsq = st.nsq;
                 best_nkin = st.nkin;
                 best_ntq = st.ntq;
+                best_nonexec = st.nonexec;
             }
             return;
         }
-        // Branch-and-bound: the score is monotone non-decreasing along a
-        // path (leaf_count_proxy >= 0, pow >= 0), so a partial path that
-        // already exceeds the best complete score cannot improve on it.
-        if (found && score >= best_score) return;
+        // Branch-and-bound on the SAME lexicographic key: all three
+        // coordinates are monotone non-decreasing along a path (score
+        // is additive with nonnegative increments; st.nsq is only ever
+        // incremented; st.nonexec is a monotone OR, lr_scan.cpp
+        // PathState fold), so a partial path whose (nsq, nonexec,
+        // score) already fails to lex-beat the incumbent cannot
+        // complete to a leaf that does.  HF_CARRY_NO_PRUNE=1 disables
+        // the cut for leaf-enumeration diagnostics (selection unchanged
+        // — the prune only skips provably-worse branches).
+        if (found && !lex_beats(st.nsq, st.nonexec, score,
+                                best_nsq, best_nonexec, best_score) &&
+            !no_prune)
+            return;
 
         auto it_parent = set_table.find(bits);
         if (it_parent == set_table.end()) return;  // shouldn't happen
@@ -472,7 +556,7 @@ struct CarryDfs {
 
             lr_scan::PathState next = st;
             if (!lr_scan::step_fr_judge(letters, var_idx,
-                    lr_scan::kNoGauge, pending, next))
+                    lr_scan::kNoGauge, pending, xvar_indices, next))
                 continue;
 
             order.push_back(var_idx);
@@ -679,28 +763,19 @@ LrResult find_lr_orders(
                     const auto& gpolys = prev_set_all[g];
                     for (const auto& p : gpolys) {
                         const long d = p.degree_in_var(var_idx);
-                        if (d > max_deg) { all_linear = false; break; }
+                        // Pivot-free letters pass through the step.
+                        if (d < 1) continue;
+                        // Shared helper (factor-table spec): degree
+                        // window + deg-2 forbidden-var guard; the
+                        // forbidden set is empty when algebraic
+                        // letters are off, and d > max_deg = 1 already
+                        // rejects deg-2 there.
+                        if (!lr_letter_admissible(p, var_idx,
+                                forbidden_after_step, max_deg)) {
+                            all_linear = false;
+                            break;
+                        }
                         if (d >= 2 && allow_algebraic_letters) {
-                            // Forbidden-var check (parity with the
-                            // runtime guard).  If `p`'s used vars
-                            // intersect forbidden_after_step, the
-                            // runtime would push this factor to
-                            // out.nonlinear and partial_fractions
-                            // would throw -- mark this DP step NOLR
-                            // so the LR-scorer doesn't score it.
-                            std::vector<size_t> used = p.used_var_indices();
-                            bool has_forbidden_dep = false;
-                            for (size_t v : forbidden_after_step) {
-                                if (v == var_idx) continue;  // see scope comment above
-                                for (size_t u : used) {
-                                    if (u == v) { has_forbidden_dep = true; break; }
-                                }
-                                if (has_forbidden_dep) break;
-                            }
-                            if (has_forbidden_dep) {
-                                all_linear = false;
-                                break;
-                            }
                             // Phase 7-vii: collect the deg-2 polynomial
                             // so the caller knows which polys to turn
                             // into Wm/Wp at integration time.  Mma's
@@ -839,6 +914,89 @@ LrResult find_lr_orders(
         out.carried_sqrts = drv.best_nsq;
         out.kin_sqrts = drv.best_nkin;
         out.terminal_quads = drv.best_ntq;
+
+        // Leaf-replay obligation emission (spec 2026-06-11-carry-phase2
+        // §3.1).  The DFS records no per-node polynomials (PathState is
+        // value-copied on every descent; an append-only vector<Poly>
+        // would repeat the dark-mass regression, poly.hpp:180-189), so
+        // the obligations are materialized ONCE here: replay the winning
+        // best_order through the SAME deterministic primitive
+        // (step_fr_judge over the same un-pruned set_table letters) and
+        // collect each obligation into a path-CUMULATIVE ledger keyed on
+        // the canonical proportionality form.  An obligation that is
+        // minted, discharged, and later re-produced re-fires ++nsq in
+        // the live DFS (per-step kept_keys re-seed, step_fr_judge) but
+        // enters the ledger once: obligation_polys.size() <=
+        // carried_sqrts, with equality iff no remint occurred.  Mints
+        // are captured by scanning st.carried AFTER each step — a fresh
+        // mint survives in `carried` at least until the NEXT step's
+        // discharge filter, so the post-step scan sees every mint, and
+        // the ledger dedup makes the scan idempotent across steps.
+        {
+            // ctx index -> bit position (inverse of xvar_indices)
+            size_t max_idx = 0;
+            for (size_t v : xvar_indices) max_idx = std::max(max_idx, v);
+            std::vector<size_t> bit_of(max_idx + 1, SIZE_MAX);
+            for (size_t b = 0; b < n; ++b) bit_of[xvar_indices[b]] = b;
+
+            uint64_t bits = 0ull;
+            lr_scan::PathState replay;
+            std::set<std::string> ledger;
+            bool replay_ok = true;
+            for (size_t k = 0; k < out.order.size(); ++k) {
+                const size_t var_idx = out.order[k];
+                const size_t bit = bit_of[var_idx];
+                std::vector<size_t> pending;
+                pending.reserve(n);
+                for (size_t b = 0; b < n; ++b)
+                    if (b != bit && !(bits & (1ull << b)))
+                        pending.push_back(xvar_indices[b]);
+                const auto it_parent = set_table.find(bits);
+                if (it_parent == set_table.end()) { replay_ok = false; break; }
+                std::vector<Poly> letters;
+                for (const auto& gl : it_parent->second)
+                    letters.insert(letters.end(), gl.begin(), gl.end());
+                if (!lr_scan::step_fr_judge(letters, var_idx,
+                        lr_scan::kNoGauge, pending, xvar_indices, replay)) {
+                    replay_ok = false;
+                    break;
+                }
+                for (const auto& c : replay.carried)
+                    if (ledger.insert(
+                            c.canonical_prop_form().to_string()).second) {
+                        out.obligation_polys.push_back(c);
+                        if (std::getenv("HF_CARRY_REPLAY_TRACE")) {
+                            std::fprintf(stderr,
+                                "[carry-replay] step %zu (pivot ctx %zu): "
+                                "ledger += %s\n",
+                                k + 1, var_idx,
+                                c.canonical_prop_form().to_string().c_str());
+                        }
+                    }
+                bits |= (1ull << bit);
+            }
+            // Both failure legs are unreachable for a DFS-admissible
+            // order (same primitive, same table, same flatten order);
+            // if one fires, or the replayed profile disagrees with the
+            // DFS's, the emitted list cannot be trusted — emit NOTHING
+            // and say so loudly.  CONSUMER CONTRACT (adversarial review
+            // 2026-06-11, surface 3): suppression leaves carried_sqrts
+            // at the DFS value, so a suppressed face is observable as
+            // carried_sqrts > 0 with carried_polys == [].  The Stage-2
+            // executor must count obligations from carried_polys (never
+            // from CarriedSqrts) and must treat that inconsistent
+            // signature as a LOUD demote, not as the conic-only class.
+            if (!replay_ok || replay.nsq != out.carried_sqrts) {
+                std::fprintf(stderr,
+                    "[carry-replay] INTERNAL: best_order replay %s "
+                    "(replay nsq=%lu, dfs nsq=%lu) — carried_polys "
+                    "suppressed\n",
+                    replay_ok ? "profile mismatch" : "step rejected",
+                    replay.nsq, out.carried_sqrts);
+                std::fflush(stderr);
+                out.obligation_polys.clear();
+            }
+        }
         return out;
     }
 

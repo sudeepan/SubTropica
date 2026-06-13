@@ -1,0 +1,10 @@
+{
+ "SchemaVersion": 1,
+ "CNickelIndex": "e112|e3|e3|e|:0000|00|00|0|",
+ "Results": {
+  "ccd2051c05c8eb3d.1": {
+   "resultCompressed": "1:eJzFV71OwzAQTgmUUjF1qtgY2KE8AkgwdKgKE1uQkspSQqqm/D4Zj8ED8AAdEaoEVKLFdsiP7XNtt0nawVUc33d33/34cngb9r26ZVlREy9X7gi50bkzdiIbP7rDCOE/y9smB8jSRdHY2yJPO3jphY/uiJ6MTjpogX+enby7RoEbxUd38XIWBkPffaJw8cllKKm+nn8vAyG7GQhVR/cisvQQ90oCMifaauQV0d8NB4kdeuILXpzzX+3pVt7T5FX83zkF2Wzgpe+MUXjn+IjoRnWGCUBJM68EtUXiJO5NsTBMJ/oEHItPgoGZSnnWSph2Lq4a0UL7IiOgnJ6tRkGKdRuIl5g+nGNfIlqJ2kFuZwy3wctDfKqgPD9i8vy4iDz/MMpzCX4TMPwfxAZIygwnvlz64YD6n22RLkw95kLEJz8rbjPi1DBLJJ9CinWVYxuHFlLb0ldbSxYeo66NsarVoNqJojBoqKFM5XJATA+xD6hMrqZfcm4cGLhRTM/VcmMC1aVhN/9WxDYVtoHwyvKRrcS1qkjVgCUgit4LFei74b1mGN8VbgPxqixzfDIr1lIteWMk1B2+OsvY4XBpK6zOqKlqcNFIverGrNkGxiwOsiV4rOnBRobCn2oJgxr9b1WtWJa83FVYGLfzyrRDkyw7xkjGfdkHl4R8JVzbMPlXsK/Y/rE2QYXqXnpHk1NQoBvp3h61wn++cILAiW8LaOR+TV0ipt24Y4fi0kLMvg/+AAvwPFo=",
+   "resultTeX": "\\frac{1}{\\varepsilon^3 s_{12}}-\\frac{i \\left(-i \\log \\left(-\\frac{s_{12}+s_{23}}{s_{12}}\\right)-2 i \\log (s_{12})+2 \\pi +2 i\\right)}{\\varepsilon^2 s_{12}}+\\frac{-6 \\zeta(2)-9 \\log ^2\\left(-\\frac{s_{12}+s_{23}}{s_{12}}\\right)-12 \\log (s_{12}+s_{23})+12 \\log (s_{12}+s_{23}) \\log \\left(-\\frac{s_{12}+s_{23}}{s_{12}}\\right)+12 \\log ^2(s_{12})+24 i \\pi  \\log (s_{12})-12 \\log (s_{12})-14 \\pi ^2-12 i \\pi +24}{6 \\varepsilon s_{12}}+(\\text{more terms})+O\\left(\\varepsilon^1\\right)"
+  }
+ }
+}
