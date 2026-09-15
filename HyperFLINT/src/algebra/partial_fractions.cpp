@@ -28,7 +28,6 @@
 #include "hyperflint/algebra/poly_struct_hash.hpp"   // Lever A: cache key
 #include "hyperflint/core/zw_table.hpp"              // iter-52 C0c.1: ZWTable for linear_factors transient
 #include "hyperflint/core/factored_rat.hpp"          // B1.3: single-pole factored residue fast path
-#include "univar_rat.hpp"                              // CRT partial fractions for multi-pole denominators
 #include "hyperflint/instrumentation/dag_hashcons_probe.hpp"  // §A.1 iter-50: op_call emit at function entry
 
 #include <flint/fmpq.h>

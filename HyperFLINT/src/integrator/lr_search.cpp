@@ -108,6 +108,9 @@ struct LrBudget {
     double budget_s = 0.0;
     std::chrono::steady_clock::time_point start{};
     size_t max_operand_terms = 0;   // 0 = unlimited
+    // Issue #52 round 6: predicted-cost fuse for discriminants / resultants
+    // inside st_fubini_lr (HF_LR_MAX_STEP_COST); 0 = off.
+    double max_step_cost = 0.0;
 
     // Elapsed wall since `start`.  Cheap (one steady_clock read).
     double elapsed_s() const {
@@ -265,6 +268,32 @@ std::vector<Poly> intersect_proportional(
     return out;
 }
 
+// ---- Issue #52 round 6: predicted size of a resultant / discriminant.
+// Res_x(f, g) is the determinant of the (d_f + d_g)-square Sylvester matrix
+// whose rows hold the coefficients of f (d_g rows) and of g (d_f rows); its
+// expansion has at most t_f^{d_g} * t_g^{d_f} monomials before cancellation
+// (each product picks one coefficient term per row), so
+//   log_size(Res)  = d_g * log(t_f) + d_f * log(t_g),
+//   log_size(disc) = (2d - 1) * log(t)            (disc = Res(f, f'), t_{f'} <= t).
+// This is a genuine upper bound on the expanded term count, and it also
+// tracks the subresultant-chain blow-up (the round-6 pole face: a 57-term
+// polynomial of degree 8 in the pivot, e^60; an 89-term cubic, e^22).  It is
+// NOT a wall-clock bound: an operation below the cap can still be slow, and
+// the refusal only ever loosens a letter set (see the callers).  The first
+// version of this fuse used (t_f t_g)^min(d_f, d_g), which the cross-model
+// referee defeated with f = x^17 + y, g = x + (20-term S): Res = S^17 - y has
+// 8.6e9 monomials while the proxy gave 42.  The bound above gives 21^17.
+static double log_predicted_res_cost(const Poly& f, const Poly& g, long df, long dg) {
+    const double tf = std::max(1.0, static_cast<double>(f.n_terms()));
+    const double tg = std::max(1.0, static_cast<double>(g.n_terms()));
+    return static_cast<double>(dg) * std::log(tf) + static_cast<double>(df) * std::log(tg);
+}
+
+static double log_predicted_disc_cost(const Poly& f, long d) {
+    const double t = std::max(1.0, static_cast<double>(f.n_terms()));
+    return (2.0 * static_cast<double>(d) - 1.0) * std::log(t);
+}
+
 std::vector<Poly> st_fubini_lr(const std::vector<Poly>& polys, size_t var_idx,
                                SingCollector* sings) {
     if (polys.empty()) return {};
@@ -278,6 +307,9 @@ std::vector<Poly> st_fubini_lr(const std::vector<Poly>& polys, size_t var_idx,
     // Operand-size limit (THE load-bearing guard, latched once here for
     // the per-op checks below; 0 = unlimited).
     const size_t max_operand_terms = g_lr_budget.max_operand_terms;
+    // Issue #52 round 6: predicted-cost fuse cap (0 = off), in log form.
+    const double max_pred = g_lr_budget.max_step_cost;
+    const double log_cap = (max_pred > 0.0) ? std::log(max_pred) : 0.0;
 
     LrTrace& tr = g_lr_trace;
     const bool tron = tr.level > 0;
@@ -344,9 +376,35 @@ std::vector<Poly> st_fubini_lr(const std::vector<Poly>& polys, size_t var_idx,
                     f_nt, max_operand_terms);
                 throw LrBudgetExceeded(buf);
             }
+            // Issue #52 round 6: predicted-COST fuse (the operand guard
+            // above cannot see a small high-degree polynomial whose
+            // subresultant chain is a monster).  A linear f (n == 1) has a
+            // trivial discriminant.
+            if ((max_pred > 0.0 || tron) && n >= 2) {
+                const double lp = log_predicted_disc_cost(f, n);
+                if (tron) std::fprintf(stderr,
+                    "[lrtrace]   disc predicted log-cost=%.1f (cap %.1f)\n",
+                    lp, log_cap);
+                if (max_pred > 0.0 && lp > log_cap) {
+                    char buf[224];
+                    std::snprintf(buf, sizeof(buf),
+                        "LR predicted-cost fuse: discriminant (pivot=%zu deg=%ld "
+                        "n_terms=%zu) predicted cost ~exp(%.1f) > %.3g "
+                        "(HF_LR_MAX_STEP_COST)",
+                        var_idx, n, f_nt, lp, max_pred);
+                    if (tron) std::fprintf(stderr, "[lrtrace] %s\n", buf);
+                    throw LrStepTooLarge(buf);
+                }
+            }
             const double t0 = tron ? now_s() : 0.0;
             Poly d = f.discriminant_in_var(var_idx);
-            if (tron) tr.t_disc += now_s() - t0;
+            if (tron) {
+                const double w = now_s() - t0;
+                tr.t_disc += w;
+                std::fprintf(stderr,
+                    "[lrtrace]   disc done wall=%.3fs out_terms=%zu\n",
+                    w, d.n_terms());
+            }
             if (!fmpq_mpoly_is_zero(d.raw(), ctx)) temp.push_back(std::move(d));
         }
         // Constant term f|_{var=0} = coefficient_of_var(var_idx, 0).  This is
@@ -408,12 +466,35 @@ std::vector<Poly> st_fubini_lr(const std::vector<Poly>& polys, size_t var_idx,
                     fi_nt, fj_nt, max_operand_terms);
                 throw LrBudgetExceeded(buf);
             }
+            // Issue #52 round 6: predicted-COST fuse for the resultant.
+            if (max_pred > 0.0 || tron) {
+                const long di = fi.degree_in_var(var_idx);
+                const long dj = fj.degree_in_var(var_idx);
+                const double lp = log_predicted_res_cost(fi, fj, di, dj);
+                if (tron) std::fprintf(stderr,
+                    "[lrtrace]   res predicted log-cost=%.1f (cap %.1f)\n",
+                    lp, log_cap);
+                if (max_pred > 0.0 && lp > log_cap) {
+                    char buf[256];
+                    std::snprintf(buf, sizeof(buf),
+                        "LR predicted-cost fuse: resultant (pivot=%zu degs=%ld,%ld "
+                        "n_terms=%zu,%zu) predicted cost ~exp(%.1f) > %.3g "
+                        "(HF_LR_MAX_STEP_COST)",
+                        var_idx, di, dj, fi_nt, fj_nt, lp, max_pred);
+                    if (tron) std::fprintf(stderr, "[lrtrace] %s\n", buf);
+                    throw LrStepTooLarge(buf);
+                }
+            }
             const double t0 = tron ? now_s() : 0.0;
             Poly r = fi.resultant(fj, var_idx);
             if (tron) {
-                tr.t_res += now_s() - t0;
+                const double w = now_s() - t0;
+                tr.t_res += w;
                 ++tr.n_res;
                 tr.max_res_terms = std::max(tr.max_res_terms, r.n_terms());
+                std::fprintf(stderr,
+                    "[lrtrace]   res done wall=%.3fs out_terms=%zu\n",
+                    w, r.n_terms());
             }
             if (!fmpq_mpoly_is_zero(r.raw(), ctx)) temp.push_back(std::move(r));
         }
@@ -503,7 +584,22 @@ void reset_lr_memos() {
 
 void reset_lr_trace() { g_lr_trace = LrTrace{}; }
 
-void reset_lr_budget() {
+// Issue #52 round 6: default cap of the predicted-cost fuse when the env var
+// is unset and the fuse is active (time budget on, or verify mode).  A
+// FITTED constant (notes/issue52/round6/impl, branchSM), not a wall-clock
+// guarantee: an op below the cap can still be slow, and a refusal only
+// loosens a letter set.  With the Sylvester expansion bound, the exhaustive
+// search of the round-6 six-variable face (219-term polynomial, two groups)
+// finds the user's order at 1e9 (6.4 s) and 1e10 (7.0 s) but stays
+// incomplete-NOLR at 1e8; the five-variable pole face and the round-5
+// six-variable face return their orders at every cap from 1e8 to 1e12 (0.13 s
+// and about 1 s); the 52 STBenchmark searches and the two round-5 searches
+// keep their verdicts with the fuse on or off (the round-5 six-variable
+// search drops from 29 s to 0.9 s).  1e10 keeps one decade of headroom above
+// the smallest cap that recovers every known order.
+static constexpr double kDefaultMaxStepCost = 1.0e10;
+
+void reset_lr_budget(bool for_verify) {
     // Read the two env vars and reset the process-global budget.  Both
     // default to 0 = UNLIMITED, so an unset environment makes every
     // downstream check a no-op (the verdict path stays byte-identical).
@@ -521,6 +617,16 @@ void reset_lr_budget() {
     if (mot_env != nullptr && *mot_env != '\0') {
         const long long m = std::atoll(mot_env);
         if (m > 0) g_lr_budget.max_operand_terms = static_cast<size_t>(m);
+    }
+    // Issue #52 round 6: predicted-cost fuse.  Explicit value wins ("0"
+    // disables); unset => on with the default cap iff the time budget is
+    // active (every SubTropica search runs under one) or this is a verify.
+    const char* msc_env = std::getenv("HF_LR_MAX_STEP_COST");
+    if (msc_env != nullptr && *msc_env != '\0') {
+        const double m = std::atof(msc_env);
+        g_lr_budget.max_step_cost = (m > 0.0) ? m : 0.0;
+    } else if (g_lr_budget.time_on || for_verify) {
+        g_lr_budget.max_step_cost = kDefaultMaxStepCost;
     }
 }
 
@@ -836,6 +942,17 @@ LrResult find_lr_orders(
     // verdict path stays byte-identical).  The steady_clock deadline
     // starts here, after the (cheap) setup but before the DP work.
     reset_lr_budget();
+    // Issue #52 round 6: the carry-discharge tier is exhaustive by design
+    // (prune disabled, full set_table, its DFS reads every subset), and a
+    // kinematic-divisor collection (sings != nullptr) must see every path
+    // or its divisor list is silently incomplete; so the path-skipping fuse
+    // is OFF for both unless the user set HF_LR_MAX_STEP_COST explicitly
+    // (an explicit cap wins: a wedging carry search can still be fused).
+    // The time budget still applies.
+    if ((do_carry || sings != nullptr) &&
+        std::getenv("HF_LR_MAX_STEP_COST") == nullptr) {
+        g_lr_budget.max_step_cost = 0.0;
+    }
     if (g_lr_trace.level > 0 &&
         (g_lr_budget.time_on || g_lr_budget.max_operand_terms != 0)) {
         std::fprintf(stderr,
@@ -856,6 +973,12 @@ LrResult find_lr_orders(
     // size is recorded here; it is never used as a parent, so its (most
     // expensive) next-size reductions are never computed.  Inactive when
     // score_prune_factor is +inf (the default).
+    // Issue #52 round 6: subsets left without any surviving parent path by
+    // the predicted-cost fuse (unreachable, like a score-pruned subset), and
+    // the number of individual parent paths skipped.  Either non-empty makes
+    // the verdict incomplete (search_complete == false).
+    std::unordered_set<uint64_t> size_skipped;
+    size_t skipped_paths = 0;
     std::unordered_set<uint64_t> score_pruned;
     const bool prune_on =
         score_prune_factor < INF && score_prune_factor > 0.0 && !do_carry;
@@ -889,6 +1012,7 @@ LrResult find_lr_orders(
             // Step A: for each group g, build preSTable (one list per
             // pivot bit v ∈ bits), then intersect.
             std::vector<std::vector<Poly>> set_for_bits(G);
+            bool subset_unreachable = false;  // issue #52 round 6
             for (size_t g = 0; g < G; ++g) {
                 std::vector<std::vector<Poly>> preTable;
                 preTable.reserve(size);
@@ -898,6 +1022,9 @@ LrResult find_lr_orders(
                     // ScorePruneFactor: a score-pruned parent contributes no
                     // pivot path (do not extend the expensive branch).
                     if (prune_on && score_pruned.count(prev_bits)) continue;
+                    // Issue #52 round 6: an unreachable parent contributes
+                    // no path either.
+                    if (size_skipped.count(prev_bits)) continue;
                     auto it = set_table.find(prev_bits);
                     if (it == set_table.end()) {
                         // Parent subset was dropped by memory pruning or
@@ -912,9 +1039,33 @@ LrResult find_lr_orders(
                         g_lr_trace.cur_bits = bits;
                         g_lr_trace.cur_pivot = xvar_indices[bit];
                     }
-                    preTable.push_back(
-                        st_fubini_lr(prev_polys, xvar_indices[bit], sings));
+                    // Issue #52 round 6: a path whose reduction the
+                    // predicted-cost fuse refuses is SKIPPED, not fatal.
+                    // The intersection over the surviving paths is a
+                    // superset of the true letter set, so Step B below can
+                    // only reject more, never accept more (sound); the skip
+                    // is recorded and clears search_complete.
+                    try {
+                        preTable.push_back(
+                            st_fubini_lr(prev_polys, xvar_indices[bit], sings));
+                    } catch (const LrStepTooLarge& e) {
+                        ++skipped_paths;
+                        if (g_lr_trace.level > 0) {
+                            std::fprintf(stderr,
+                                "[lrtrace] skipped parent path bits=%llx "
+                                "pivot=%zu: %s\n",
+                                static_cast<unsigned long long>(bits),
+                                xvar_indices[bit], e.what());
+                            std::fflush(stderr);
+                        }
+                        continue;
+                    }
                 }
+                // LOAD-BEARING (adversarial review 2026-09-14): an empty
+                // preTable would intersect to an EMPTY letter set, which
+                // Step B accepts as trivially linear -- a false LR.  A
+                // subset with no surviving path must be unreachable.
+                if (preTable.empty()) { subset_unreachable = true; break; }
                 set_for_bits[g] = intersect_proportional(preTable);
                 if (euler_filter_on && !set_for_bits[g].empty()) {
                     std::vector<size_t> subset_vars;
@@ -926,6 +1077,21 @@ LrResult find_lr_orders(
                         group_polys[g], subset_vars, set_for_bits[g],
                         chi_caches[g]);
                 }
+            }
+            if (subset_unreachable) {
+                // Issue #52 round 6: no surviving path into this subset
+                // (every parent path was refused by the fuse): treat it as
+                // unreachable, like a score-pruned subset.  It gets no
+                // set_table / orders_table entry, so no order passes
+                // through it and the verdict is marked incomplete.
+                size_skipped.insert(bits);
+                if (g_lr_trace.level > 0) {
+                    std::fprintf(stderr,
+                        "[lrtrace] subset bits=%llx unreachable: every parent "
+                        "path skipped by the predicted-cost fuse\n",
+                        static_cast<unsigned long long>(bits));
+                }
+                continue;
             }
             set_table[bits] = std::move(set_for_bits);
 
@@ -984,6 +1150,11 @@ LrResult find_lr_orders(
                     const char* env = std::getenv("HF_LR_MAX_DEG");
                     if (env && allow_algebraic_letters) max_deg = std::atol(env);
                 }
+                // operator[] is safe here only because an unreachable /
+                // pruned parent has NO orders_table entry, and the
+                // orders_table.find(prev_bits) guard above `continue`d on
+                // it (every set_table write is paired with an orders_table
+                // write).  Do not reorder those two lookups.
                 const auto& prev_set_all = set_table[prev_bits];
                 bool all_linear = true;
                 double extension_score = prev.score;
@@ -1082,7 +1253,9 @@ LrResult find_lr_orders(
                 std::fflush(stderr);
             }
             LrResult early{{}, INF, {}};
-            early.search_complete = score_pruned.empty();
+            early.search_complete = score_pruned.empty()
+                && size_skipped.empty() && skipped_paths == 0;
+            early.skipped_paths = skipped_paths;
             return early;
         }
 
@@ -1260,7 +1433,9 @@ LrResult find_lr_orders(
     const uint64_t full = (n == 64) ? ~0ull : ((1ull << n) - 1);
     auto it = orders_table.find(full);
     LrResult res = (it == orders_table.end()) ? LrResult{{}, INF, {}} : it->second;
-    res.search_complete = score_pruned.empty();
+    res.search_complete = score_pruned.empty()
+        && size_skipped.empty() && skipped_paths == 0;
+    res.skipped_paths = skipped_paths;
     return res;
 }
 
@@ -1282,33 +1457,57 @@ LrResult find_lr_orders(
 // fixture and notes/verify_multigroup_bug/verify_sweep.py).
 static std::unordered_map<uint64_t, std::vector<std::vector<Poly>>>
 build_lr_set_table(const std::vector<std::vector<Poly>>& group_polys,
-                   const std::vector<size_t>& xvar_indices) {
+                   const std::vector<size_t>& xvar_indices,
+                   size_t* skipped_paths_out) {
     const size_t G = group_polys.size();
     const size_t n = xvar_indices.size();
     std::unordered_map<uint64_t, std::vector<std::vector<Poly>>> set_table;
+    // Issue #52 round 6: subsets with no surviving parent path (every path
+    // refused by the predicted-cost fuse) are left ABSENT from the table;
+    // the verify walk reports a missing prefix as inconclusive.
+    std::unordered_set<uint64_t> unreachable;
+    size_t skipped_paths = 0;
     // Seed: set_table[{}] = the raw group polynomials.
     set_table[0] = group_polys;
     for (size_t size = 1; size <= n; ++size) {
         for (uint64_t bits : subsets_of_size(n, size)) {
             std::vector<std::vector<Poly>> set_for_bits(G);
+            bool subset_unreachable = false;
             for (size_t g = 0; g < G; ++g) {
                 std::vector<std::vector<Poly>> preTable;
                 preTable.reserve(size);
                 for (size_t bit = 0; bit < n; ++bit) {
                     if (!(bits & (1ull << bit))) continue;
                     const uint64_t prev_bits = bits ^ (1ull << bit);
+                    if (unreachable.count(prev_bits)) continue;
                     auto it = set_table.find(prev_bits);
                     if (it == set_table.end())
                         throw std::runtime_error(
                             "verify_order_is_lr: missing parent subset state");
-                    preTable.push_back(
-                        st_fubini_lr(it->second[g], xvar_indices[bit], nullptr));
+                    try {
+                        preTable.push_back(
+                            st_fubini_lr(it->second[g], xvar_indices[bit], nullptr));
+                    } catch (const LrStepTooLarge& e) {
+                        ++skipped_paths;
+                        if (g_lr_trace.level > 0) {
+                            std::fprintf(stderr,
+                                "[lrtrace] verify: skipped parent path bits=%llx "
+                                "pivot=%zu: %s\n",
+                                static_cast<unsigned long long>(bits),
+                                xvar_indices[bit], e.what());
+                            std::fflush(stderr);
+                        }
+                        continue;
+                    }
                 }
+                if (preTable.empty()) { subset_unreachable = true; break; }
                 set_for_bits[g] = intersect_proportional(preTable);
             }
+            if (subset_unreachable) { unreachable.insert(bits); continue; }
             set_table[bits] = std::move(set_for_bits);
         }
     }
+    if (skipped_paths_out != nullptr) *skipped_paths_out = skipped_paths;
     return set_table;
 }
 
@@ -1339,7 +1538,7 @@ OrderVerifyResult verify_order_is_lr(
     // env vars unset this leaves the budget inert (no-op checks), so the
     // verify verdict stays byte-identical to the pre-budget engine.
     reset_lr_memos();
-    reset_lr_budget();
+    reset_lr_budget(/*for_verify=*/true);
 
     long max_deg = allow_algebraic_letters ? 2L : 1L;
     {
@@ -1409,8 +1608,18 @@ OrderVerifyResult verify_order_is_lr(
             if (step_blocks(cur, pivot, k, scratch)) { blocked = true; break; }
             if (k + 1 < n) {
                 std::vector<std::vector<Poly>> nxt(G);
-                for (size_t g = 0; g < G; ++g)
-                    nxt[g] = st_fubini_lr(cur[g], pivot, nullptr);
+                bool refused = false;  // issue #52 round 6
+                for (size_t g = 0; g < G; ++g) {
+                    try {
+                        nxt[g] = st_fubini_lr(cur[g], pivot, nullptr);
+                    } catch (const LrStepTooLarge&) {
+                        refused = true;
+                        break;
+                    }
+                }
+                // A refused reduction leaves the screen unable to certify;
+                // fall through to the intersection-refined adjudication.
+                if (refused) { blocked = true; break; }
                 cur = std::move(nxt);
             }
         }
@@ -1430,7 +1639,9 @@ OrderVerifyResult verify_order_is_lr(
         throw std::runtime_error(
             "verify_order_is_lr: > 63 integration variables (bitmask overflow)");
     }
-    const auto set_table = build_lr_set_table(group_polys, xvar_indices);
+    size_t verify_skipped = 0;  // issue #52 round 6
+    const auto set_table = build_lr_set_table(group_polys, xvar_indices,
+                                              &verify_skipped);
 
     // ctx-variable-index -> bit position in xvar_indices, for the prefix mask.
     std::unordered_map<size_t, size_t> bit_of;
@@ -1445,12 +1656,41 @@ OrderVerifyResult verify_order_is_lr(
     for (size_t k = 0; k < n; ++k) {
         const size_t pivot = order_var_indices[k];
         auto itc = set_table.find(bits);
-        if (itc == set_table.end())  // every prefix subset was built above
-            throw std::runtime_error("verify_order_is_lr: missing prefix state");
-        if (step_blocks(itc->second, pivot, k, res)) return res;
+        if (itc == set_table.end()) {
+            // Issue #52 round 6: the prefix state was left unbuilt because
+            // every reduction path into it was refused by the predicted-cost
+            // fuse.  The verdict cannot be decided: report inconclusive,
+            // never NOT-LR.
+            res.is_lr = false;
+            res.inconclusive = true;
+            res.skipped_paths = verify_skipped;
+            res.inconclusive_reason =
+                "prefix state at step " + std::to_string(k) +
+                " unavailable: " + std::to_string(verify_skipped) +
+                " reduction path(s) skipped by the predicted-cost fuse "
+                "(HF_LR_MAX_STEP_COST)";
+            return res;
+        }
+        if (step_blocks(itc->second, pivot, k, res)) {
+            res.skipped_paths = verify_skipped;
+            if (verify_skipped > 0) {
+                // The letter set that blocked is a superset of the true
+                // intersection (some paths were skipped), so the block may
+                // be spurious: inconclusive, not NOT-LR.
+                res.inconclusive = true;
+                res.inconclusive_reason =
+                    "NOT-LR reached at step " + std::to_string(k) +
+                    " on a letter set loosened by " +
+                    std::to_string(verify_skipped) +
+                    " skipped reduction path(s) (predicted-cost fuse, "
+                    "HF_LR_MAX_STEP_COST)";
+            }
+            return res;
+        }
         bits |= (1ull << bit_of[pivot]);  // integrate order[k]
     }
     res.is_lr = true;
+    res.skipped_paths = verify_skipped;
     return res;
 }
 

@@ -9,6 +9,71 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.15] - 2026-09-15
+
+Issue #52 round 6 (a 7-variable integrand whose linear-reducibility search
+timed out on every gauge although the user had a working order).
+
+### Added
+- HyperFLINT `find_lr_orders` / `verify_order` gain a predicted-cost fuse
+  (`HF_LR_MAX_STEP_COST`, on whenever the search runs under a time budget
+  and always for a verification): a discriminant or resultant whose
+  expanded Sylvester determinant would exceed the cap (a true upper bound
+  on the result's term count, not a wall-clock guarantee) is refused before
+  it starts.  The search skips
+  that one reduction path and reports the result as incomplete
+  (`search_complete: false`, `search_skipped_paths`); a found order stays
+  sound.  A verification that depends on a skipped path reports
+  `verify_inconclusive` instead of "not reducible".  The default cap (1e10,
+  a fitted constant; the cap is forwarded to the CLI transport too) was
+  calibrated on the reported integrand: the exhaustive search of its
+  six-variable face (a 219-term polynomial) now returns the user's order in
+  8 s and that of its five-variable pole face in a fraction of a second,
+  and the verification of the pinned order returns "reducible" in under a
+  second, where all three previously ran for 25 to 30 minutes without a
+  verdict; the 52 searches of the benchmark suite are unchanged.
+  Regressions `hf-issue52-lr-fuse-{verify,search,small,off}`.
+- `STIntegrate::noorderincomplete`, `STEvaluateEulerIntegral::nolrincomplete`,
+  `STEvaluateGraph::nolrincomplete`, `STIntegrate::incompletesearches`: an
+  order search that ended without an order but was INCOMPLETE (a finite
+  `"ScorePruneFactor"` discarded candidates, or the fuse skipped reduction
+  paths) is now reported as such through the gauge scan and the final
+  verdict, never as a non-reducibility verdict; the messages carry the
+  skipped-path and pruned-call counts and name the remedy for each.
+- `orderProvenance.m` records the fuse cap in force and the skipped-path
+  count of the search that produced the order.
+- `STIntegrate::intorderverifyinconclusive`: `"IntegrationOrderVerify"`
+  handles the new inconclusive verdict (the pin is kept on trust;
+  `"Strict"` still refuses to proceed).
+- `ST_LR_DUMP_DIR` (developer knob): dumps every order-search request of a
+  kernel session as JSON for replay through `hyperflint eval-json`.
+
+### Changed
+- `"TimeConstraint"` of `STFindLROrdersHF` / `STFindLROrdersScanHF` defaults
+  to `Automatic`: no ceiling on the in-process transport (a `TimeConstrained`
+  wrapper cannot interrupt a LibraryLink call, so the old 1800 s default
+  could only discard a search that had already returned, which is what the
+  user's `STFindLROrdersHF::timedout` after 1800 s was), and
+  `Max[1800, 4 x engine budget + 300]` seconds on the CLI transport, where
+  the child is killed.  The message names the option and the budget it
+  follows.
+- A face whose counter-term integrands are identically zero at every eps
+  order is no longer searched for an integration order (it needs none); on
+  the reported integrand this removed a six-variable search over a 219-term
+  polynomial that ran for the whole scan budget at Order 0.
+- `STFindLROrdersHF::prunednolr` prints the prune factor of the call, not
+  the global default, and the number of fuse-skipped paths.
+- The per-face pass now says when a skipped face carries a pinned order
+  ("pinned order ... already recorded"), since the gauge scan applies pins
+  inside its quiet section; the `IntegrationOrder` usage text describes
+  where the recorded order lives (`bestOrder.m`, `orderProvenance.m`).
+- `orderProvenance.m` records the effective per-call `"TimeBudget"`.
+
+### Removed
+- The unused `UnivarRat` helper type (a never-completed partial-fraction
+  route) and its unit test, which had failed since June without affecting
+  any result.
+
 ## [1.2.14] - 2026-09-03
 
 Issue #52 rounds 4-5 (kernel deaths that looked like out-of-memory; the

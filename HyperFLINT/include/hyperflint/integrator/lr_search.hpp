@@ -43,6 +43,25 @@ struct LrBudgetExceeded : std::runtime_error {
     using std::runtime_error::runtime_error;
 };
 
+// Issue #52 round 6 (2026-09-14): predicted-cost fuse.  A single
+// discriminant / resultant inside st_fubini_lr can run uninterrupted for
+// hours while its OPERANDS are small (the discriminant of an 89-term cubic
+// held verify_order for 25 minutes on the round-6 pole face), so the
+// operand-size fuse above cannot catch it.  This fuse bounds the EXPANDED
+// size of the result before the op starts (the Sylvester expansion bound
+// t_f^{d_g} t_g^{d_f}; see log_predicted_res_cost in lr_search.cpp) and
+// throws when the bound exceeds HF_LR_MAX_STEP_COST.  It derives from
+// LrBudgetExceeded so that any handler which does not catch it
+// specifically still reports a structured budget abort, but the two
+// callers that matter catch it and CONTINUE: find_lr_orders skips that one
+// parent path (the subset keeps the intersection over the surviving paths,
+// a superset of the true letter set, so a found order stays sound) and
+// clears search_complete; verify_order_is_lr reports a NOT-LR reached with
+// skipped paths as `inconclusive`, never as a NOT-LR verdict.
+struct LrStepTooLarge : LrBudgetExceeded {
+    using LrBudgetExceeded::LrBudgetExceeded;
+};
+
 // Per-face kinematic-divisor collector (order-resolved singularities
 // pipeline; notes/ristretto/order_resolved_singularities.md, step 2).
 // An OPT-IN side channel into the LR walk: when a non-null pointer is
@@ -111,6 +130,10 @@ struct LrResult {
     // incomplete search, not a proof that no reducible order exists
     // (issue #52 round 5).  Exhaustive searches (the default) keep true.
     bool search_complete = true;
+    // Issue #52 round 6: number of parent reduction paths skipped by the
+    // predicted-cost fuse (HF_LR_MAX_STEP_COST).  Non-zero implies
+    // search_complete == false.
+    size_t skipped_paths = 0;
     bool nolr() const { return order.empty() && score >= 1e300; }
 };
 
@@ -171,7 +194,11 @@ void reset_lr_trace();
 // past) from a prior budgeted call in the SAME process cannot throw
 // LrBudgetExceeded spuriously.  With both env vars unset it leaves the
 // budget inert (no-op checks).
-void reset_lr_budget();
+// Issue #52 round 6: `for_verify` selects the verify_order default of the
+// predicted-cost fuse (HF_LR_MAX_STEP_COST): unset => active with the
+// default cap whenever the time budget is active OR for_verify is true (a
+// verification must never wedge); "0" => off; any positive value => that cap.
+void reset_lr_budget(bool for_verify = false);
 
 // issue #52 round 3 (item 9): budget checkpoints for op bodies OUTSIDE
 // st_fubini_lr (lr_scan keep-rules, factor_table build).  Each is a
@@ -263,6 +290,17 @@ struct OrderVerifyResult {
     bool        forbidden_dep = false;  // failure was a deg-2 forbidden-var dependence
     std::string blocking_letter;        // canonical form of the offending letter ("" if LR)
     bool        malformed = false;      // order is not a permutation of xvar_indices
+    // Issue #52 round 6: the walk could not decide.  Set (with is_lr ==
+    // false) when the predicted-cost fuse skipped a reduction path that the
+    // verdict depends on: either a prefix state of the order is unavailable,
+    // or NOT-LR was reached on a letter set loosened by skipped paths.  An
+    // is_lr == true verdict is never inconclusive (a superset that passes
+    // the linearity test certifies the true set too).
+    bool        inconclusive = false;
+    std::string inconclusive_reason;    // human-readable cause ("" unless inconclusive)
+    // Reduction paths the predicted-cost fuse skipped while building the
+    // adjudication table (0 when the fast screen certified the order).
+    size_t      skipped_paths = 0;
 };
 
 // Verify whether ONE SPECIFIC order (order_var_indices, a permutation of

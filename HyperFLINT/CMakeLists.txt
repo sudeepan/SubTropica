@@ -194,7 +194,6 @@ set(HF_SOURCES
     src/algebra/algebraic_letters.cpp
     src/algebra/linear_factors.cpp
     src/algebra/partial_fractions.cpp
-    src/algebra/univar_rat.cpp
     src/algebra/shuffle.cpp
     src/algebra/convert.cpp
     src/algebra/diff.cpp
@@ -667,15 +666,6 @@ add_executable(hyperflint-test-lf-perfpow test/test_lf_perfpow.cpp)
 target_link_libraries(hyperflint-test-lf-perfpow PRIVATE hyperflint)
 add_test(NAME hf-lf-perfpow COMMAND hyperflint-test-lf-perfpow)
 
-# CRT partial fractions (2026-06-09): UnivarRat type + Cauchy-product
-# power-series inversion unit tests. Gates the CRT PF wiring in
-# partial_fractions.cpp.
-add_executable(hyperflint-test-univar-rat test/test_univar_rat.cpp)
-target_link_libraries(hyperflint-test-univar-rat PRIVATE hyperflint)
-target_include_directories(hyperflint-test-univar-rat PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/algebra)
-add_test(NAME hf-univar-rat COMMAND hyperflint-test-univar-rat)
-
 # Issue #52 round 5: unsupported 0->1 boundary periods are minted as
 # reserved atoms (reduce/zero_one_atoms.hpp) and reported in the
 # response; exhausting the pool must surface as a structured failure
@@ -695,6 +685,34 @@ add_test(NAME hf-issue52-zero-one-periods-reserved
                  $<TARGET_FILE:hyperflint-cli>
                  ${CMAKE_SOURCE_DIR}/test/fixtures/issue52_round5_face1.json reserved
                  ${CMAKE_SOURCE_DIR}/data/mzv_reductions.json)
+
+# Issue #52 round 6 (2026-09-14): predicted-cost fuse (HF_LR_MAX_STEP_COST).
+# The round-6 pole face wedged verify_order (25 min) and the exhaustive
+# find_lr_orders (30 min) inside single FLINT discriminants/resultants whose
+# OPERANDS are small; the fuse bounds the OUTPUT size and skips the path.
+# verify must return LR or inconclusive (never hang, never a bare NOT-LR);
+# search must return a verdict; a small face must keep its exact verdict
+# with the fuse on and off.
+add_test(NAME hf-issue52-lr-fuse-verify
+         COMMAND python3 ${CMAKE_SOURCE_DIR}/test/scripts/check_lr_fuse.py
+                 $<TARGET_FILE:hyperflint-cli> verify
+                 ${CMAKE_SOURCE_DIR}/test/fixtures/issue52_round6_pole_face.json)
+add_test(NAME hf-issue52-lr-fuse-search
+         COMMAND python3 ${CMAKE_SOURCE_DIR}/test/scripts/check_lr_fuse.py
+                 $<TARGET_FILE:hyperflint-cli> search
+                 ${CMAKE_SOURCE_DIR}/test/fixtures/issue52_round6_pole_face.json)
+add_test(NAME hf-issue52-lr-fuse-small
+         COMMAND python3 ${CMAKE_SOURCE_DIR}/test/scripts/check_lr_fuse.py
+                 $<TARGET_FILE:hyperflint-cli> small)
+add_test(NAME hf-issue52-lr-fuse-nofuse
+         COMMAND python3 ${CMAKE_SOURCE_DIR}/test/scripts/check_lr_fuse.py
+                 $<TARGET_FILE:hyperflint-cli> nofuse)
+add_test(NAME hf-issue52-lr-fuse-off
+         COMMAND python3 ${CMAKE_SOURCE_DIR}/test/scripts/check_lr_fuse.py
+                 $<TARGET_FILE:hyperflint-cli> off
+                 ${CMAKE_SOURCE_DIR}/test/fixtures/issue52_round6_pole_face.json)
+set_tests_properties(hf-issue52-lr-fuse-verify hf-issue52-lr-fuse-search
+                     PROPERTIES TIMEOUT 1500)
 
 # Doppio port phase 1 (2026-06-05): Euler-characteristic counter (DK
 # cleared-dlog core, msolve grevlex GBs over temp files).  The source is

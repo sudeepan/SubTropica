@@ -884,6 +884,10 @@ std::string find_lr_orders(const std::string& body) {
           // actually pruned something; true = exhaustive (or verify mode).
           << ",\"search_complete\":"
           << ((verify_requested || result.search_complete) ? "true" : "false")
+          // Issue #52 round 6: parent reduction paths skipped by the
+          // predicted-cost fuse (0 unless HF_LR_MAX_STEP_COST acted).
+          << ",\"search_skipped_paths\":"
+          << (verify_requested ? 0 : result.skipped_paths)
           << ",\"strategy\":\"" << strategy_name << "\""
           << ",\"timing_compute_s\":" << compute_s
           << ",\"nXVars\":" << xvars.size()
@@ -966,7 +970,16 @@ std::string find_lr_orders(const std::string& body) {
               << ",\"verify_forbidden_dep\":"
               << (verify_res.forbidden_dep ? "true" : "false")
               << ",\"verify_blocking_letter\":\""
-              << json_escape(verify_res.blocking_letter) << "\"";
+              << json_escape(verify_res.blocking_letter) << "\""
+              // Issue #52 round 6: the walk could not decide (a reduction
+              // path the verdict depends on was refused by the predicted-
+              // size fuse).  order_is_lr is false in that case, but it is
+              // NOT a NOT-LR verdict.
+              << ",\"verify_inconclusive\":"
+              << (verify_res.inconclusive ? "true" : "false")
+              << ",\"verify_reason\":\""
+              << json_escape(verify_res.inconclusive_reason) << "\""
+              << ",\"verify_skipped_paths\":" << verify_res.skipped_paths;
         }
         o << "}";
         return o.str();
