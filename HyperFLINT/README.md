@@ -51,8 +51,9 @@ compiler.
 
 ```bash
 brew install flint libomp              # macOS
-cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release \
-      -DOpenMP_ROOT=/opt/homebrew/opt/libomp
+export PKG_CONFIG_PATH="/opt/homebrew/lib/pkgconfig:/opt/homebrew/opt/flint/lib/pkgconfig:$PKG_CONFIG_PATH" # if necessary
+./scripts/build_static_flint.sh $PWD/flint-static
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release -DOpenMP_ROOT=/opt/homebrew/opt/libomp -DHF_FLINT_STATIC_ARCHIVE=$PWD/flint-static/lib/libflint.a
 cmake --build build-release
 ```
 
